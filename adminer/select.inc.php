@@ -254,8 +254,13 @@ if (!$columns && support("table")) {
 
 	$page = $_GET["page"];
 	if ($page == "last") {
-		$found_rows = $connection->result(count_rows($TABLE, $where, $is_group, $group));
-		$page = floor(max(0, $found_rows - 1) / $limit);
+		if (method_exists($connection, 'result')) {
+			$found_rows = $connection->result(count_rows($TABLE, $where, $is_group, $group));
+			$page = floor(max(0, $found_rows - 1) / $limit);
+		} else if (function_exists('found_rows')) {
+			$found_rows = found_rows($table_status, $where);
+			$page = floor(max(0, $found_rows - 1) / $limit);
+		}
 	}
 
 	$select2 = $select;
