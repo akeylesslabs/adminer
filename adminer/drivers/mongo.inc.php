@@ -627,10 +627,15 @@ if (isset($_GET["mongo"])) {
 			$options["authSource"] = $auth_source;
 		}
 		try {
-			$connection->_link = $connection->connect("mongodb://$server", $options);
+			$connection->_link = $connection->connect("mongodb+srv://$server", $options);
 			return $connection;
 		} catch (Exception $ex) {
-			return $ex->getMessage();
+			try {
+				$connection->_link = $connection->connect("mongodb://$server", $options);
+				return $connection;
+			} catch (Exception $ex) {
+				return $ex->getMessage();
+			}
 		}
 	}
 
