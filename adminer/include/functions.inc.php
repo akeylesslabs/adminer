@@ -812,6 +812,9 @@ function repeat_pattern($pattern, $length) {
 * @return bool
 */
 function is_utf8($val) {
+	if (!is_string($val)) {
+		return false;
+	}
 	// don't print control chars except \t\r\n
 	return (preg_match('~~u', $val) && !preg_match('~[\0-\x8\xB\xC\xE-\x1F]~', $val));
 }
@@ -1281,6 +1284,10 @@ function is_mail($email) {
 * @return bool
 */
 function is_url($string) {
+	if (!is_string($string)) {
+		return false;
+	}
+
 	$domain = '[a-z0-9]([-a-z0-9]{0,61}[a-z0-9])'; // one domain component //! IDN
 	return preg_match("~^(https?)://($domain?\\.)+$domain(:\\d+)?(/.*)?(\\?.*)?(#.*)?\$~i", $string); //! restrict path, query and fragment characters
 }
