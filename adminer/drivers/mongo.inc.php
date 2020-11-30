@@ -486,10 +486,15 @@ if (isset($_GET["mongo"])) {
 					foreach ($where as $expression) {
 						list($col, $op, $val) = explode(" ", $expression, 3);
 						if ($col == "_id") {
+							$orig_val = $val;
 							$val = str_replace('MongoDB\BSON\ObjectID("', "", $val);
 							$val = str_replace('")', "", $val);
 							$class = 'MongoDB\BSON\ObjectID';
-							$val = new $class($val);
+							try {
+								$val = new $class($val);
+							} catch (Exception $ex) {
+								$val = $orig_val;
+							}
 						}
 						if (!in_array($op, $adminer->operators)) {
 							continue;
