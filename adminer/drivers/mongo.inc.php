@@ -466,6 +466,9 @@ if (isset($_GET["mongo"])) {
 		function sql_query_where_parser($queryWhere) {
 			$queryWhere = trim(preg_replace('/WHERE[\s]?[(]?\(?/', '', $queryWhere));
 			$queryWhere = preg_replace('/\)\)\)$/', ')', $queryWhere);
+			if (substr($queryWhere, -2) === '))') {
+				$queryWhere = substr($queryWhere, 0, strlen($queryWhere)-2);
+			}
 			$wheres = explode(' AND ', $queryWhere);
 			$wheresOr = explode(') OR (', $queryWhere);
 			$where = array();
