@@ -454,8 +454,10 @@ if (isset($_GET["mongo"])) {
 		function found_rows($table_status, $where) {
 			global $connection;
 			$where = where_to_query($where);
+			$class = 'MongoDB\Driver\Query';
+			$q = new $class($where);
 			$class = 'MongoDB\Driver\Command';
-			$command = new $class(array('count' => $table_status['Name'], 'query' => $where));
+			$command = new $class(array('count' => $table_status['Name'], 'query' => $q));
 			$results = $connection->_link->executeCommand($connection->_db_name, $command);
 			$toArray = $results->toArray();
 			return $toArray[0]->n;
