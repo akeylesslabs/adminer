@@ -699,8 +699,15 @@ if (isset($_GET["mongo"])) {
 	function alter_table($table, $name, $fields, $foreign, $comment, $engine, $collation, $auto_increment, $partitioning) {
 		global $connection;
 		if ($table == "") {
-			$connection->_db->createCollection($name);
-			return true;
+			if (!is_null($connection->db)) {
+				$connection->_db->createCollection($name);
+				return true;
+			} else {
+				$class = 'MongoDB\Driver\Command';
+				$command = new $class(array('create' => $name));
+				$connection->_link->executeCommand('admin', $command);
+				return true;
+			}
 		}
 	}
 
