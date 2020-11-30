@@ -704,13 +704,13 @@ if (isset($_GET["mongo"])) {
 	function alter_table($table, $name, $fields, $foreign, $comment, $engine, $collation, $auto_increment, $partitioning) {
 		global $connection;
 		if ($table == "") {
-			if (!is_null($connection->db)) {
+			if (!is_null($connection->_db)) {
 				$connection->_db->createCollection($name);
 				return true;
 			} else {
 				$class = 'MongoDB\Driver\Command';
 				$command = new $class(array('create' => $name));
-				$connection->_link->executeCommand('admin', $command);
+				$connection->_link->executeCommand($connection->_db_name, $command);
 				return true;
 			}
 		}
