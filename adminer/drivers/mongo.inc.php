@@ -719,9 +719,15 @@ if (isset($_GET["mongo"])) {
 	function drop_tables($tables) {
 		global $connection;
 		foreach ($tables as $table) {
-			$response = $connection->_db->selectCollection($table)->drop();
-			if (!$response['ok']) {
-				return false;
+			if (!is_null($connection->_db)) {
+				$response = $connection->_db->selectCollection($table)->drop();
+				if (!$response['ok']) {
+					return false;
+				}
+			} else {
+				$class = 'MongoDB\Driver\Command';
+				$command = new $class(array('drop' => $table));
+				$connection->_link->executeCommand($connection->_db_name, $command);
 			}
 		}
 		return true;
@@ -730,9 +736,15 @@ if (isset($_GET["mongo"])) {
 	function truncate_tables($tables) {
 		global $connection;
 		foreach ($tables as $table) {
-			$response = $connection->_db->selectCollection($table)->remove();
-			if (!$response['ok']) {
-				return false;
+			if (!is_null($connection->_db)) {
+				$response = $connection->_db->selectCollection($table)->remove();
+				if (!$response['ok']) {
+					return false;
+				}
+			} else {
+				$class = 'MongoDB\Driver\Command';
+				$command = new $class(array('remove' => $table));
+				$connection->_link->executeCommand($connection->_db_name, $command);
 			}
 		}
 		return true;
