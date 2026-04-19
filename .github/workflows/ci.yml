@@ -1,0 +1,19 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: php-actions/composer@v6
+      - uses: php-actions/phpcs@v1
+        with:
+          path: .
+          standard: phpcs.xml
+      - uses: php-actions/phpstan@v3

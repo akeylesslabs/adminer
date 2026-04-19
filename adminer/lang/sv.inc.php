@@ -1,5 +1,7 @@
 <?php
-$translations = array(
+namespace Adminer;
+
+Lang::$translations = array(
 	// label for database system selection (MySQL, SQLite, ...)
 	'System' => 'System',
 	'Server' => 'Server',
@@ -14,7 +16,7 @@ $translations = array(
 	'Invalid credentials.' => 'Ogiltiga inloggningsuppgifter.',
 	'There is a space in the input password which might be the cause.' => 'Det finns ett mellanslag i lösenordet, vilket kan vara anledningen.',
 	'Adminer does not support accessing a database without a password, <a href="https://www.adminer.org/en/password/"%s>more information</a>.' => 'Adminer tillåter inte att ansluta till en databas utan lösenord. <a href="https://www.adminer.org/en/password/"%s>Mer information</a>.',
-	'Database does not support password.' => 'Databasen stöder inte lösenord.',
+	'Database does not support password.' => 'Databasen stödjer inte lösenord.',
 	'Too many unsuccessful logins, try again in %d minute(s).' => array('För många misslyckade inloggningar, försök igen om %d minut.', 'För många misslyckade inloggningar, försök igen om %d minuter.'),
 	'Master password expired. <a href="https://www.adminer.org/en/extension/"%s>Implement</a> %s method to make it permanent.' => 'Huvudlösenordet har löpt ut. <a href="https://www.adminer.org/en/extension/"%s>Implementera</a> %s en metod för att göra det permanent.',
 	'Language' => 'Språk',
@@ -25,7 +27,7 @@ $translations = array(
 	'Connecting to privileged ports is not allowed.' => 'Anslutning till privilegierade portar är inte tillåtet.',
 	'Disable %s or enable %s or %s extensions.' => 'Stäng av %s eller sätt på %s eller %s tilläggen.',
 	'Session support must be enabled.' => 'Support för sessioner måste vara på.',
-	'Session expired, please login again.' => 'Session har löpt ur, vänligen logga in igen.',
+	'Session expired, please login again.' => 'Session har löpt ut, vänligen logga in igen.',
 	'The action will be performed after successful login with the same credentials.' => 'Åtgärden kommer att utföras efter en lyckad inloggning med samma inloggningsuppgifter.',
 	'%s version: %s through PHP extension %s' => '%s version: %s genom PHP-tillägg %s',
 	'Refresh' => 'Ladda om',
@@ -89,7 +91,6 @@ $translations = array(
 	'Data' => 'Data',
 
 	'Database' => 'Databas',
-	'database' => 'databas',
 	'DB' => 'DB',
 	'Use' => 'Använd',
 	'Select database' => 'Välj databas',
@@ -207,7 +208,7 @@ $translations = array(
 	'Alter indexes' => 'Ändra index',
 	'Add next' => 'Lägg till nästa',
 	'Index Type' => 'Indextyp',
-	'Column (length)' => 'Kolumn (längd)',
+	'length' => 'längd',
 
 	'Foreign keys' => 'Främmande nycklar',
 	'Foreign key' => 'Främmande nyckel',
@@ -291,13 +292,6 @@ $translations = array(
 	'Delete' => 'Ta bort',
 	'You have no privileges to update this table.' => 'Du har inga privilegier för att uppdatera den här tabellen.',
 
-	'E-mail' => 'Email',
-	'From' => 'Från',
-	'Subject' => 'Ämne',
-	'Attachments' => 'Bilagor',
-	'Send' => 'Skicka',
-	'%d e-mail(s) have been sent.' => array('%d email har blivit skickat.', '%d email har blivit skickade.'),
-
 	// data type descriptions
 	'Numbers' => 'Nummer',
 	'Date and time' => 'Datum och tid',
@@ -347,3 +341,5 @@ $translations = array(
 	'Type has been created.' => 'Typ har skapats.',
 	'Alter type' => 'Ändra typ',
 );
+
+// run `php ../../lang.php sv` to update this file
