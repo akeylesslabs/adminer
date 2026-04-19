@@ -482,7 +482,8 @@ extends
 SqlDb{var$extension="PgSQL";var$timeout=0;private$link,$string,$database=true;function
 _error($Dc,$m){if(ini_bool("html_errors"))$m=html_entity_decode(strip_tags($m));$m=preg_replace('~^[^:]*: ~','',$m);$this->error=$m;}function
 attach($N,$V,$F){$k=adminer()->database();set_error_handler(array($this,'_error'));list($Nd,$Rg)=host_port(addcslashes($N,"'\\"));$this->string="host='$Nd'".($Rg?" port='$Rg'":"")." user='".addcslashes($V,"'\\")."' password='".addcslashes($F,"'\\")."'";$ri=adminer()->connectSsl();if(isset($ri["mode"]))$this->string
-.=" sslmode='".$ri["mode"]."'";$this->link=@pg_connect("$this->string dbname='".($k!=""?addcslashes($k,"'\\"):"postgres")."'",PGSQL_CONNECT_FORCE_NEW);if(!$this->link&&$k!=""){$this->database=false;$this->link=@pg_connect("$this->string dbname='postgres'",PGSQL_CONNECT_FORCE_NEW);}restore_error_handler();if($this->link)pg_set_client_encoding($this->link,"UTF8");return($this->link?'':$this->error);}function
+.=" sslmode='".$ri["mode"]."'";if(isset($ri["sslrootcert"])&&$ri["sslrootcert"]!=="")$this->string
+.=" sslrootcert='".addcslashes($ri["sslrootcert"],"'\\")."'";$this->link=@pg_connect("$this->string dbname='".($k!=""?addcslashes($k,"'\\"):"postgres")."'",PGSQL_CONNECT_FORCE_NEW);if(!$this->link&&$k!=""){$this->database=false;$this->link=@pg_connect("$this->string dbname='postgres'",PGSQL_CONNECT_FORCE_NEW);}restore_error_handler();if($this->link)pg_set_client_encoding($this->link,"UTF8");return($this->link?'':$this->error);}function
 quote($Q){return(function_exists('pg_escape_literal')?pg_escape_literal($this->link,$Q):"'".pg_escape_string($this->link,$Q)."'");}function
 value($X,array$n){return($n["type"]=="bytea"&&$X!==null?pg_unescape_bytea($X):$X);}function
 select_db($Pb){if($Pb==adminer()->database())return$this->database;$J=@pg_connect("$this->string dbname='".addcslashes($Pb,"'\\")."'",PGSQL_CONNECT_FORCE_NEW);if($J)$this->link=$J;return$J;}function
@@ -506,7 +507,8 @@ PgsqlDb
 extends
 PdoDb{var$extension="PDO_PgSQL";var$timeout=0;function
 attach($N,$V,$F){$k=adminer()->database();list($Nd,$Rg)=host_port(addcslashes($N,"'\\"));$oc="pgsql:host='$Nd'".($Rg?" port='$Rg'":"")." client_encoding=utf8 dbname='".($k!=""?addcslashes($k,"'\\"):"postgres")."'";$ri=adminer()->connectSsl();if(isset($ri["mode"]))$oc
-.=" sslmode='".$ri["mode"]."'";return$this->dsn($oc,$V,$F);}function
+.=" sslmode='".$ri["mode"]."'";if(isset($ri["sslrootcert"])&&$ri["sslrootcert"]!=="")$oc
+.=" sslrootcert='".addcslashes($ri["sslrootcert"],"'\\")."'";return$this->dsn($oc,$V,$F);}function
 select_db($Pb){return(adminer()->database()==$Pb);}function
 query($H,$sj=false){$J=parent::query($H,$sj);if($this->timeout){$this->timeout=0;parent::query("RESET statement_timeout");}return$J;}function
 warnings(){}function

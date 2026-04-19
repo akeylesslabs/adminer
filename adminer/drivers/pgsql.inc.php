@@ -29,6 +29,9 @@ if (isset($_GET["pgsql"])) {
 				if (isset($ssl["mode"])) {
 					$this->string .= " sslmode='" . $ssl["mode"] . "'";
 				}
+				if (isset($ssl["sslrootcert"]) && $ssl["sslrootcert"] !== "") {
+					$this->string .= " sslrootcert='" . addcslashes($ssl["sslrootcert"], "'\\") . "'";
+				}
 				$this->link = @pg_connect("$this->string dbname='" . ($db != "" ? addcslashes($db, "'\\") : "postgres") . "'", PGSQL_CONNECT_FORCE_NEW);
 				if (!$this->link && $db != "") {
 					// try to connect directly with database for performance
@@ -152,6 +155,9 @@ if (isset($_GET["pgsql"])) {
 				$ssl = adminer()->connectSsl();
 				if (isset($ssl["mode"])) {
 					$dsn .= " sslmode='" . $ssl["mode"] . "'";
+				}
+				if (isset($ssl["sslrootcert"]) && $ssl["sslrootcert"] !== "") {
+					$dsn .= " sslrootcert='" . addcslashes($ssl["sslrootcert"], "'\\") . "'";
 				}
 				return $this->dsn($dsn, $username, $password);
 			}

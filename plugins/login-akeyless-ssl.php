@@ -12,7 +12,15 @@ class AdminerAkeylessLoginSsl extends Adminer\Plugin {
 		switch ($driver) {
 			case "pgsql":
 			case "postgres":
-				return array("mode" => $sslMode);
+				// Force trust store to the bastion bundle (same env as supervisord). Without
+				// sslrootcert in the libpq conn string, some stacks still honor system CAs and
+				// verify-ca can succeed even when the corporate CA is not in the bundle.
+				$ca = getenv("PGSSLROOTCERT") ?: getenv("SSL_CERT_FILE");
+				$out = array("mode" => $sslMode);
+				if ($ca !== false && $ca !== "") {
+					$out["sslrootcert"] = $ca;
+				}
+				return $out;
 			case "server":
 			case "mysql":
 				$ca = getenv("PGSSLROOTCERT") ?: getenv("SSL_CERT_FILE");
