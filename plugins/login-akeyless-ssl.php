@@ -4,11 +4,23 @@ class AdminerAkeylessLoginSsl extends Adminer\Plugin {
 	function connectSsl() {
 		$auth = (isset($_POST["auth"]) && is_array($_POST["auth"]) ? $_POST["auth"] : array());
 		$sslMode = (isset($auth["ssl_mode"]) ? trim((string) $auth["ssl_mode"]) : "");
+		$driver = $this->currentDriver($auth);
+
+		// msodbcsql18 defaults an unset Encrypt to mandatory TLS with certificate
+		// validation, which breaks the default (no-SSL) path that connected plaintext
+		// under msodbcsql17. Always encrypt in transit; validate the server certificate
+		// only when the user opts into SSL mode, so existing connections stay reachable.
+		if ($driver == "mssql") {
+			return array(
+				"Encrypt" => true,
+				"TrustServerCertificate" => ($sslMode == ""),
+			);
+		}
+
 		if ($sslMode == "") {
 			return null;
 		}
 
-		$driver = $this->currentDriver($auth);
 		switch ($driver) {
 			case "pgsql":
 			case "postgres":
@@ -27,11 +39,6 @@ class AdminerAkeylessLoginSsl extends Adminer\Plugin {
 				return array(
 					"ca" => $ca,
 					"verify" => true,
-				);
-			case "mssql":
-				return array(
-					"Encrypt" => true,
-					"TrustServerCertificate" => false,
 				);
 		}
 
