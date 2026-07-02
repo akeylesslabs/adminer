@@ -1,2 +1,4 @@
 <?php
-$VERSION = "4.8.1";
+namespace Adminer;
+
+const VERSION = "5.4.2";
