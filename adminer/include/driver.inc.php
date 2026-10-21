@@ -12,18 +12,25 @@ function get_driver(string $id): ?string {
 }
 
 abstract class SqlDriver {
-	/** @var Driver */ static $instance;
+	/** @var ?Driver */ static $instance;
 	/** @var string[] */ static $drivers = array(); // all available drivers
 	/** @var list<string> */ static $extensions = array(); // possible extensions in the current driver
 	/** @var string */ static $jush; // JUSH identifier
+	/** @var bool */ static $passwords = true; // false in databases without passwords, they can be protected only by a plugin
+
+	/** @var list<string> */ static $serverSchemes = array(); // URL schemes allowed in the server name
+	/** @var list<int> */ static $serverPorts = array(); // privileged ports used by the protocol of the driver
+	/** @var bool */ static $serverSocket = false; // the server name can specify a socket
+	/** @var bool */ static $serverPath = false; // the server name can contain a path
+	/** @var bool */ static $serverFile = false; // the server name is a path to a file, not an address
 
 	/** @var Db */ protected $conn;
 	/** @var int[][] */ protected $types = array(); // [$group => [$type => $maximum_unsigned_length, ...], ...]
-	/** @var string */ public $delimiter = ";";
+	/** @var string */ public $delimiter = ";"; // string separating queries, it is used also as a regular expression
 	/** @var string[] */ public $insertFunctions = array(); // ["$type|$type2" => "$function/$function2"] functions used in edit and insert
 	/** @var string[] */ public $editFunctions = array(); // ["$type|$type2" => "$function/$function2"] functions used in edit only
 	/** @var list<string> */ public $unsigned = array(); // number variants
-	/** @var list<string> */ public $operators = array(); // operators used in select
+	/** @var string */ public $fulltextOperator = "AGAINST"; // printed in the fulltext search box
 	/** @var list<string> */ public $functions = array(); // functions used in select
 	/** @var list<string> */ public $grouping = array(); // grouping functions used in select
 	/** @var string */ public $onActions = "RESTRICT|NO ACTION|CASCADE|SET NULL|SET DEFAULT"; // used in foreign_keys()
@@ -31,13 +38,65 @@ abstract class SqlDriver {
 	/** @var string */ public $inout = "IN|OUT|INOUT"; // used in routines
 	/** @var string */ public $enumLength = "'(?:''|[^'\\\\]|\\\\.)*'"; // regular expression for parsing enum lengths
 	/** @var list<string> */ public $generated = array(); // allowed types of generated columns
+	/** @var string */ public $primary = ""; // name of the field identifying a row in drivers without a schema, they compute the fields from the data
+	/** @var string */ public $query = ""; // query executed by the last select(), the callers not printing it can print it later
+
+	/** Get the JUSH module of the driver; plugin drivers are not compiled so they carry it inline
+	* @return string JavaScript code, empty if the module is merged into jush.js
+	*/
+	static function jushModule(): string {
+		return "";
+	}
+
+	/** Get JavaScript expression creating the autocompleter of the query <textarea>, empty if the driver has none
+	* @param TableStatus[] $tables
+	* @param list<string>|null $statements statements offered at the beginning of a query, null for all
+	*/
+	static function jushAutocomplete(array $tables, ?array $statements): string {
+		$tablesColumns = array();
+		foreach ($tables as $table => $status) {
+			if (!$status["dependent"]) {
+				$tablesColumns[$table] = array();
+			}
+		}
+		foreach (driver()->allFields() as $table => $fields) {
+			foreach ($fields as $field) {
+				$tablesColumns[$table][] = $field["field"];
+			}
+		}
+		return "jush.autocompleteSql('" . idf_escape("") . "', " . json_encode($tablesColumns) . ", " . json_encode($statements) . ")";
+	}
 
 	/** Connect to the database
 	* @return Db|string string for error
 	*/
 	static function connect(string $server, string $username, string $password) {
+		if (static::$serverFile) {
+			$parts = server_parts(array("path" => $server)); // the driver verifies the file itself
+		} else {
+			$parts = parse_server($server);
+			if (
+				!$parts
+				|| ($parts["scheme"] && !in_array($parts["scheme"], static::$serverSchemes))
+				|| ($parts["socket"] && !static::$serverSocket)
+				|| ($parts["path"] && !static::$serverPath)
+				|| (substr($parts["host"], 0, 1) == "/" && !static::$serverSocket) // socket directory
+			) {
+				return lang('Invalid server.');
+			}
+			if (
+				$parts["port"] != ""
+				&& ($parts["port"] > 65535 || ($parts["port"] < 1024 && !in_array($parts["port"], static::$serverPorts)))
+			) {
+				return lang('Connecting to privileged ports is not allowed.');
+			}
+		}
 		$connection = new Db;
-		return ($connection->attach($server, $username, $password) ?: $connection);
+		return ($connection->attach($parts, $username, $password) ?: $connection);
+	}
+
+	/** Forget the logged user */
+	static function disconnect(): void {
 	}
 
 	/** Create object for performing database operations */
@@ -53,7 +112,7 @@ abstract class SqlDriver {
 	}
 
 	/** Get structured types
-	* @return list<string>[]|list<string> [$description => [$type, ...], ...]
+	* @return array<list<string>|string> [$description => [$type, ...], ...], a value which is not an array is a type without a description
 	*/
 	function structuredTypes(): array {
 		return array_map('array_keys', $this->types);
@@ -81,7 +140,8 @@ abstract class SqlDriver {
 	* @param int $limit result of adminer()->selectLimitProcess()
 	* @param int $page index of page starting at zero
 	* @param bool $print whether to print the query
-	* @return Result|false
+	* @return Result|bool
+	* @uses $_GET["next"] drivers with support("cursor") ignore $page, they get the cursor of the selected page here and set it to the cursor of the following page, "" if there is none
 	*/
 	function select(string $table, array $select, array $where, array $group, array $order = array(), int $limit = 1, ?int $page = 0, bool $print = false) {
 		$is_group = (count($group) < count($select));
@@ -95,8 +155,10 @@ abstract class SqlDriver {
 				"\n"
 			);
 		}
+		$this->query = $query;
 		$start = microtime(true);
-		$return = $this->conn->query($query);
+		// export gets all rows and doesn't print the query so nothing runs another query (e.g. SHOW WARNINGS) before fetching them
+		$return = $this->conn->query($query, (!$limit && !$print ? 1 : 0)); // 1 - MYSQLI_USE_RESULT, unbuffered
 		if ($print) {
 			echo adminer()->selectQuery($query, $start, !$return);
 		}
@@ -150,28 +212,46 @@ abstract class SqlDriver {
 	* @return Result|bool
 	*/
 	function insertUpdate(string $table, array $rows, array $primary) {
-		return false;
+		// drivers supporting an atomic upsert override this, the others update the row and insert it if nothing was updated
+		foreach ($rows as $set) {
+			$where = array();
+			foreach ($set as $key => $val) {
+				if (isset($primary[idf_unescape($key)])) {
+					$where[] = "$key = $val";
+				}
+			}
+			if (
+				!($where && $this->update($table, $set, " WHERE " . implode(" AND ", $where)) && $this->conn->affected_rows)
+				&& !$this->insert($table, $set)
+			) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/** Begin transaction
-	* @return Result|bool
+	* @return bool
 	*/
 	function begin() {
-		return queries("BEGIN");
+		remember_query("BEGIN");
+		return $this->conn->begin();
 	}
 
 	/** Commit transaction
-	* @return Result|bool
+	* @return bool
 	*/
 	function commit() {
-		return queries("COMMIT");
+		remember_query("COMMIT");
+		return $this->conn->commit();
 	}
 
 	/** Rollback transaction
-	* @return Result|bool
+	* @return bool
 	*/
 	function rollback() {
-		return queries("ROLLBACK");
+		remember_query("ROLLBACK");
+		return $this->conn->rollback();
 	}
 
 	/** Return query with a timeout
@@ -179,6 +259,14 @@ abstract class SqlDriver {
 	* @return string|void null if the driver doesn't support query timeouts
 	*/
 	function slowQuery(string $query, int $timeout) {
+	}
+
+	/** Get operators usable in select
+	* @param ?TableStatus $tableStatus null in the search through all tables
+	* @return list<string> a list for a single table must be a superset of the general one
+	*/
+	function operators(?array $tableStatus): array {
+		return array();
 	}
 
 	/** Convert column to be searchable
@@ -200,6 +288,22 @@ abstract class SqlDriver {
 	/** Quote binary string */
 	function quoteBinary(string $s): string {
 		return q($s);
+	}
+
+	/** Get SQL computing the hexadecimal MD5 of a column, used to identify a row by a value too long for the URL
+	* @param Field $field
+	* @return string|void null if the column can't be hashed
+	*/
+	function md5(string $column, array $field) {
+	}
+
+	/** Get type name of a result column in the same vocabulary as Field::type
+	* @param ResultField $field result of Result::fetch_field()
+	* @return string "" if unknown
+	*/
+	function typeName(\stdClass $field): string {
+		// the drivers whose extensions report something else override this method
+		return (isset($field->native_type) ? $field->native_type : "");
 	}
 
 	/** Get warnings about the last command
@@ -240,6 +344,21 @@ abstract class SqlDriver {
 		return false;
 	}
 
+	/** Check whether found_rows() is only an estimate which should be recounted in small tables */
+	function hasEstimatedRows(): bool {
+		return false;
+	}
+
+	/** Check whether a database or schema belongs to the system */
+	function isSystem(string $db, string $schema = ""): bool {
+		return information_schema($db, $schema);
+	}
+
+	/** Get regular expression matching the start of a line comment; must not match an empty string */
+	function lineComment(): string {
+		return "--";
+	}
+
 	/** Get supported engines
 	* @return list<string>
 	*/
@@ -254,12 +373,56 @@ abstract class SqlDriver {
 		return !is_view($table_status);
 	}
 
+	/** Check whether table indexes can be altered
+	* @param TableStatus $table_status
+	*/
+	function supportsAlterIndex(array $table_status): bool {
+		return true;
+	}
+
+	/** Check whether the table definition can be altered
+	* @param TableStatus $tableStatus
+	*/
+	function supportsAlterTable(array $tableStatus): bool {
+		return true;
+	}
+
 	/** Return list of supported index algorithms, first one is default
 	 * @param TableStatus $tableStatus
 	 * @return list<string>
 	 */
 	function indexAlgorithms(array $tableStatus): array {
 		return array();
+	}
+
+	/** Get operator classes usable in indexes
+	* @return list<string>
+	*/
+	function indexOpclasses(): array {
+		return array();
+	}
+
+	/** Get tables used internally by a table
+	* @return list<array{table: string, ns: string}>
+	*/
+	function shadowTables(string $table): array {
+		return array();
+	}
+
+	/** Get triggers executing a trigger function
+	* @return list<array{ns: string, table: string, trigger: string}>
+	*/
+	function routineTriggers(string $name): array {
+		return array();
+	}
+
+	/** Get a condition for a fulltext search
+	* @param string $name index name
+	* @param Index $index
+	*/
+	function fulltextSql(string $name, array $index, string $query, bool $boolean): string {
+		return "MATCH (" . implode(", ", array_map('Adminer\idf_escape', $index["columns"])) . ") AGAINST ("
+			. q($query) . ($boolean ? " IN BOOLEAN MODE" : "") . ")";
 	}
 
 	/** Get defined check constraints
@@ -269,7 +432,8 @@ abstract class SqlDriver {
 		// MariaDB contains CHECK_CONSTRAINTS.TABLE_NAME, MySQL and PostrgreSQL not
 		return get_key_vals("SELECT c.CONSTRAINT_NAME, CHECK_CLAUSE
 FROM INFORMATION_SCHEMA.CHECK_CONSTRAINTS c
-JOIN INFORMATION_SCHEMA.TABLE_CONSTRAINTS t ON c.CONSTRAINT_SCHEMA = t.CONSTRAINT_SCHEMA AND c.CONSTRAINT_NAME = t.CONSTRAINT_NAME" . ($this->conn->flavor == 'maria' ? " AND c.TABLE_NAME = t.TABLE_NAME" : "") . "
+JOIN INFORMATION_SCHEMA.TABLE_CONSTRAINTS t
+	ON c.CONSTRAINT_SCHEMA = t.CONSTRAINT_SCHEMA AND c.CONSTRAINT_NAME = t.CONSTRAINT_NAME" . ($this->conn->flavor == 'maria' ? " AND c.TABLE_NAME = " . q($table) : "") . "
 WHERE c.CONSTRAINT_SCHEMA = " . q($_GET["ns"] != "" ? $_GET["ns"] : DB) . "
 AND t.TABLE_NAME = " . q($table) . (JUSH == "pgsql" ? "
 AND CHECK_CLAUSE NOT LIKE '% IS NOT NULL'" : ""), $this->conn); // ignore default IS NOT NULL checks in PostrgreSQL
@@ -280,12 +444,22 @@ AND CHECK_CLAUSE NOT LIKE '% IS NOT NULL'" : ""), $this->conn); // ignore defaul
 	*/
 	function allFields(): array {
 		$return = array();
-		if (DB != "") {
+		if (JUSH != 'sql' && JUSH != 'mssql') { // the other core drivers override it
+			foreach (tables_list() as $table => $type) {
+				$return[$table] = array_values(fields($table));
+			}
+		} elseif (DB != "") {
+			// 'primary' is the column name or null because PostgreSQL returns booleans as 't' and 'f' (both truthy) and MS SQL doesn't support them in SELECT
 			foreach (
-				get_rows("SELECT TABLE_NAME AS tab, COLUMN_NAME AS field, IS_NULLABLE AS nullable, DATA_TYPE AS type, CHARACTER_MAXIMUM_LENGTH AS length" . (JUSH == 'sql' ? ", COLUMN_KEY = 'PRI' AS `primary`" : "") . "
-FROM INFORMATION_SCHEMA.COLUMNS
-WHERE TABLE_SCHEMA = " . q($_GET["ns"] != "" ? $_GET["ns"] : DB) . "
-ORDER BY TABLE_NAME, ORDINAL_POSITION", $this->conn) as $row
+				get_rows("SELECT c.TABLE_NAME AS tab, c.COLUMN_NAME AS field, c.IS_NULLABLE AS nullable,
+	c.DATA_TYPE AS type, c.CHARACTER_MAXIMUM_LENGTH AS length,
+	" . (JUSH == 'sql' ? "c.COLUMN_KEY = 'PRI'" : "k.COLUMN_NAME") . " AS " . idf_escape("primary") . "
+FROM INFORMATION_SCHEMA.COLUMNS c" . (JUSH == 'sql' ? "" : "
+LEFT JOIN INFORMATION_SCHEMA.TABLE_CONSTRAINTS t ON c.TABLE_SCHEMA = t.TABLE_SCHEMA AND c.TABLE_NAME = t.TABLE_NAME AND t.CONSTRAINT_TYPE = 'PRIMARY KEY'
+LEFT JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE k
+	ON t.CONSTRAINT_SCHEMA = k.CONSTRAINT_SCHEMA AND t.CONSTRAINT_NAME = k.CONSTRAINT_NAME AND c.TABLE_SCHEMA = k.TABLE_SCHEMA AND c.TABLE_NAME = k.TABLE_NAME AND c.COLUMN_NAME = k.COLUMN_NAME") . "
+WHERE c.TABLE_SCHEMA = " . q($_GET["ns"] != "" ? $_GET["ns"] : DB) . "
+ORDER BY c.TABLE_NAME, c.ORDINAL_POSITION", $this->conn) as $row
 			) {
 				$row["null"] = ($row["nullable"] == "YES");
 				$return[$row["tab"]][] = $row;

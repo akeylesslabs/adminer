@@ -2,39 +2,48 @@
 namespace Adminer;
 
 Lang::$translations = array(
-	// label for database system selection (MySQL, SQLite, ...)
-	'System' => 'Systém',
+	'System' => 'Systém', // label for database system selection (MySQL, SQLite, ...)
 	'Server' => 'Server',
 	'Username' => 'Uživatel',
 	'Password' => 'Heslo',
 	'Permanent login' => 'Trvalé přihlášení',
 	'Login' => 'Přihlásit se',
 	'Logout' => 'Odhlásit',
-	'Logged as: %s' => 'Přihlášen jako: %s',
+	'Logged in as: %s' => 'Přihlášen jako: %s',
 	'Logout successful.' => 'Odhlášení proběhlo v pořádku.',
-	'Thanks for using Adminer, consider <a href="https://www.adminer.org/en/donation/">donating</a>.' => 'Díky za použití Admineru, <a href="https://www.adminer.org/cs/donation/">přispějte</a> na vývoj.',
+	'Thanks for using Adminer. Consider <a href="https://www.adminer.org/en/donation/">donating</a>.' => 'Díky za použití Admineru, <a href="https://www.adminer.org/cs/donation/">přispějte</a> na vývoj.',
 	'hostname[:port] or :socket' => 'hostname[:port] nebo :socket',
+	'Invalid server.' => 'Neplatný server.',
 	'Invalid credentials.' => 'Neplatné přihlašovací údaje.',
-	'There is a space in the input password which might be the cause.' => 'Problém může být, že je v zadaném hesle mezera.',
-	'Adminer does not support accessing a database without a password, <a href="https://www.adminer.org/en/password/"%s>more information</a>.' => 'Adminer nepodporuje přístup k databázi bez hesla, <a href="https://www.adminer.org/cs/password/"%s>více informací</a>.',
-	'Database does not support password.' => 'Databáze nepodporuje heslo.',
+	'There is a space in the entered password, which might be the cause.' => 'Problém může být, že je v zadaném hesle mezera.',
+	'Adminer does not support accessing a database without a password.' => 'Adminer nepodporuje přístup k databázi bez hesla.',
+	'The database does not support passwords.' => 'Databáze nepodporuje heslo.',
+	'The server accepts any password, so filling it in protects nothing.' => 'Server přijímá jakékoliv heslo, takže jeho vyplnění nic nechrání.',
+	'Require a password.' => 'Vyžadovat heslo.',
+	'Save %s next to Adminer to require the entered password:' => 'Uložte %s vedle Admineru, aby vyžadoval zadané heslo:',
+	'Save %s next to Adminer to require the password %s:' => 'Uložte %s vedle Admineru, aby vyžadoval heslo %s:',
+	'Add this line to %s to require the entered password:' => 'Přidejte tento řádek do souboru %s, aby Adminer vyžadoval zadané heslo:',
+	'Add this line to %s to require the password %s:' => 'Přidejte tento řádek do souboru %s, aby Adminer vyžadoval heslo %s:',
+	'More options' => 'Další možnosti',
+	'Require a password verified by Adminer' => 'Vyžaduje heslo ověřované Adminerem',
 	'Too many unsuccessful logins, try again in %d minute(s).' => array('Příliš mnoho pokusů o přihlášení, zkuste to znovu za %d minutu.', 'Příliš mnoho pokusů o přihlášení, zkuste to znovu za %d minuty.', 'Příliš mnoho pokusů o přihlášení, zkuste to znovu za %d minut.'),
-	'Master password expired. <a href="https://www.adminer.org/en/extension/"%s>Implement</a> %s method to make it permanent.' => 'Platnost hlavního hesla vypršela. <a href="https://www.adminer.org/cs/extension/"%s>Implementujte</a> metodu %s, aby platilo stále.',
+	'Use the %s <a%s>plugin</a> if Adminer runs behind a reverse proxy.' => 'Pokud Adminer běží za reverzní proxy, použijte <a%2$s>plugin</a> %1$s.',
+	'Master password expired. <a href="https://www.adminer.org/en/extension/"%s>Implement</a> the %s method to make it permanent.' => 'Platnost hlavního hesla vypršela. <a href="https://www.adminer.org/cs/extension/"%s>Implementujte</a> metodu %s, aby platilo stále.',
 	'Language' => 'Jazyk',
-	'Invalid CSRF token. Send the form again.' => 'Neplatný token CSRF. Odešlete formulář znovu.',
-	'If you did not send this request from Adminer then close this page.' => 'Pokud jste tento požadavek neposlali z Adminera, tak tuto stránku zavřete.',
+	'Invalid CSRF token. Submit the form again.' => 'Neplatný token CSRF. Odešlete formulář znovu.',
+	'If you did not send this request from Adminer, close this page.' => 'Pokud jste tento požadavek neposlali z Admineru, tak tuto stránku zavřete.',
+	'Not found.' => 'Nenalezeno.',
 	'No extension' => 'Žádné rozšíření',
 	'None of the supported PHP extensions (%s) are available.' => 'Není dostupné žádné z podporovaných PHP rozšíření (%s).',
 	'Connecting to privileged ports is not allowed.' => 'Připojování k privilegovaným portům není povoleno.',
-	'Disable %s or enable %s or %s extensions.' => 'Zakažte %s nebo povolte rozšíření %s nebo %s.',
-	'Session support must be enabled.' => 'Session proměnné musí být povolené.',
-	'Session expired, please login again.' => 'Session vypršela, přihlaste se prosím znovu.',
+	'Disable %s or enable the %s or %s extension.' => 'Zakažte %s nebo povolte rozšíření %s nebo %s.',
+	'Session support must be enabled.' => 'Podpora sessions musí být povolená.',
+	'Session expired. Please log in again.' => 'Session vypršela, přihlaste se prosím znovu.',
 	'The action will be performed after successful login with the same credentials.' => 'Akce bude provedena po úspěšném přihlášení se stejnými přihlašovacími údaji.',
 	'%s version: %s through PHP extension %s' => 'Verze %s: %s přes PHP rozšíření %s',
 	'Refresh' => 'Obnovit',
 
-	// text direction - 'ltr' or 'rtl'
-	'ltr' => 'ltr',
+	'ltr' => 'ltr', // text direction - 'ltr' or 'rtl'
 
 	'Privileges' => 'Oprávnění',
 	'Create user' => 'Vytvořit uživatele',
@@ -56,18 +65,17 @@ Lang::$translations = array(
 	'Status' => 'Stav',
 
 	'SQL command' => 'SQL příkaz',
-	'%d query(s) executed OK.' => array('%d příkaz proběhl v pořádku.', '%d příkazy proběhly v pořádku.', '%d příkazů proběhlo v pořádku.'),
+	'%d query(ies) executed OK.' => array('%d příkaz proběhl v pořádku.', '%d příkazy proběhly v pořádku.', '%d příkazů proběhlo v pořádku.'),
 	'Query executed OK, %d row(s) affected.' => array('Příkaz proběhl v pořádku, byl změněn %d záznam.', 'Příkaz proběhl v pořádku, byly změněny %d záznamy.', 'Příkaz proběhl v pořádku, bylo změněno %d záznamů.'),
 	'No commands to execute.' => 'Žádné příkazy k vykonání.',
 	'Error in query' => 'Chyba v dotazu',
 	'Unknown error.' => 'Neznámá chyba.',
 	'Warnings' => 'Varování',
-	'ATTACH queries are not supported.' => 'Dotazy ATTACH nejsou podporované.',
+	'%s queries are not supported.' => 'Dotazy %s nejsou podporované.',
 	'Execute' => 'Provést',
 	'Stop on error' => 'Zastavit při chybě',
 	'Show only errors' => 'Zobrazit pouze chyby',
-	// sprintf() format for time of the command
-	'%.3f s' => '%.3f s',
+	'%.3f s' => '%.3f s', // sprintf() format for time of the command
 	'History' => 'Historie',
 	'Clear' => 'Vyčistit',
 	'Edit all' => 'Upravit vše',
@@ -81,9 +89,12 @@ Lang::$translations = array(
 	'File uploads are disabled.' => 'Nahrávání souborů není povoleno.',
 	'Unable to upload a file.' => 'Nepodařilo se nahrát soubor.',
 	'Maximum allowed file size is %sB.' => 'Maximální povolená velikost souboru je %sB.',
-	'Too big POST data. Reduce the data or increase the %s configuration directive.' => 'Příliš velká POST data. Zmenšete data nebo zvyšte hodnotu konfigurační direktivy %s.',
-	'You can upload a big SQL file via FTP and import it from server.' => 'Velký SQL soubor můžete nahrát pomocí FTP a importovat ho ze serveru.',
+	'The POST data is too large. Reduce the data or increase the %s configuration directive.' => 'Příliš velká POST data. Zmenšete data nebo zvyšte hodnotu konfigurační direktivy %s.',
+	'You can upload a large SQL file via FTP and import it from the server.' => 'Velký SQL soubor můžete nahrát pomocí FTP a importovat ho ze serveru.',
 	'You are offline.' => 'Jste offline.',
+	'Menu' => 'Menu',
+	'Documentation' => 'Dokumentace',
+	'Database management in a single PHP file' => 'Správa databáze v jednom PHP souboru',
 
 	'Export' => 'Export',
 	'Output' => 'Výstup',
@@ -94,9 +105,9 @@ Lang::$translations = array(
 
 	'Database' => 'Databáze',
 	'DB' => 'DB',
+	'System%s' => 'Systémové%s', // group of system databases or schemas in the menu, %s is always empty
 	'Use' => 'Vybrat',
 	'Select database' => 'Vybrat databázi',
-	'Invalid database.' => 'Nesprávná databáze.',
 	'Database has been dropped.' => 'Databáze byla odstraněna.',
 	'Databases have been dropped.' => 'Databáze byly odstraněny.',
 	'Database has been created.' => 'Databáze byla vytvořena.',
@@ -106,11 +117,9 @@ Lang::$translations = array(
 	'Create database' => 'Vytvořit databázi',
 	'Database schema' => 'Schéma databáze',
 
-	// link to current database schema layout
-	'Permanent link' => 'Trvalý odkaz',
+	'Permanent link' => 'Trvalý odkaz', // link to current database schema layout
 
-	// thousands separator - must contain single byte
-	',' => ' ',
+	'#,##0' => '# ##0',
 	'0123456789' => '0123456789',
 	'Engine' => 'Úložiště',
 	'Collation' => 'Porovnávání',
@@ -126,7 +135,7 @@ Lang::$translations = array(
 	'Repair' => 'Opravit',
 	'Truncate' => 'Vyprázdnit',
 	'Tables have been truncated.' => 'Tabulky byly vyprázdněny.',
-	'Move to other database' => 'Přesunout do jiné databáze',
+	'Move to another database' => 'Přesunout do jiné databáze',
 	'Move' => 'Přesunout',
 	'Tables have been moved.' => 'Tabulky byly přesunuty.',
 	'Copy' => 'Zkopírovat',
@@ -161,6 +170,7 @@ Lang::$translations = array(
 
 	'Tables' => 'Tabulky',
 	'Tables and views' => 'Tabulky a pohledy',
+	'All' => 'Vše', // checkbox selecting all tables and views
 	'Table' => 'Tabulka',
 	'No tables.' => 'Žádné tabulky.',
 	'Alter table' => 'Pozměnit tabulku',
@@ -187,8 +197,6 @@ Lang::$translations = array(
 	'Are you sure?' => 'Opravdu?',
 	'Size' => 'Velikost',
 	'Compute' => 'Spočítat',
-	'Move up' => 'Přesunout nahoru',
-	'Move down' => 'Přesunout dolů',
 	'Remove' => 'Odebrat',
 	'Maximum number of allowed fields exceeded. Please increase %s.' => 'Byl překročen maximální povolený počet polí. Zvyšte prosím %s.',
 
@@ -198,6 +206,7 @@ Lang::$translations = array(
 	'Values' => 'Hodnoty',
 	'Inherits from' => 'Zděděná z',
 	'Inherited by' => 'Zděděné',
+	'Shadow tables' => 'Stínové tabulky',
 
 	'View' => 'Pohled',
 	'Materialized view' => 'Materializovaný pohled',
@@ -213,11 +222,11 @@ Lang::$translations = array(
 	'Add next' => 'Přidat další',
 	'Index Type' => 'Typ indexu',
 	'length' => 'délka',
+	'operator class' => 'třída operátorů',
 	'Algorithm' => 'Algoritmus',
 	'Condition' => 'Podmínka',
 
 	'Foreign keys' => 'Cizí klíče',
-	'Foreign key' => 'Cizí klíč',
 	'Foreign key has been dropped.' => 'Cizí klíč byl odstraněn.',
 	'Foreign key has been altered.' => 'Cizí klíč byl změněn.',
 	'Foreign key has been created.' => 'Cizí klíč byl vytvořen.',
@@ -227,13 +236,13 @@ Lang::$translations = array(
 	'Target' => 'Cíl',
 	'Add column' => 'Přidat sloupec',
 	'Alter' => 'Změnit',
-	'Add foreign key' => 'Přidat cizí klíč',
+	'Alter foreign key' => 'Změnit cizí klíč',
+	'Create foreign key' => 'Vytvořit cizí klíč',
 	'ON DELETE' => 'Při smazání',
 	'ON UPDATE' => 'Při změně',
-	'Source and target columns must have the same data type, there must be an index on the target columns and referenced data must exist.' => 'Zdrojové a cílové sloupce musí mít stejný datový typ, nad cílovými sloupci musí být definován index a odkazovaná data musí existovat.',
+	'Source and target columns must have the same data type, there must be an index on the target columns and the referenced data must exist.' => 'Zdrojové a cílové sloupce musí mít stejný datový typ, nad cílovými sloupci musí být definován index a odkazovaná data musí existovat.',
 
 	'Triggers' => 'Triggery',
-	'Add trigger' => 'Přidat trigger',
 	'Trigger has been dropped.' => 'Trigger byl odstraněn.',
 	'Trigger has been altered.' => 'Trigger byl změněn.',
 	'Trigger has been created.' => 'Trigger byl vytvořen.',
@@ -254,18 +263,18 @@ Lang::$translations = array(
 	'Sort' => 'Seřadit',
 	'descending' => 'sestupně',
 	'Limit' => 'Limit',
-	'Limit rows' => 'Limit řádek',
+	'Limit rows' => 'Limit řádků',
 	'Text length' => 'Délka textů',
 	'Action' => 'Akce',
 	'Full table scan' => 'Průchod celé tabulky',
-	'Unable to select the table' => 'Nepodařilo se vypsat tabulku',
+	'Unable to select the table.' => 'Nepodařilo se vypsat tabulku.',
 	'No rows.' => 'Žádné řádky.',
 	'%d / ' => '%d / ',
 	'%d row(s)' => array('%d řádek', '%d řádky', '%d řádků'),
 	'Page' => 'Stránka',
 	'last' => 'poslední',
 	'Load more data' => 'Načíst další data',
-	'Loading' => 'Načítá se',
+	'Loading…' => 'Načítá se…',
 	'Whole result' => 'Celý výsledek',
 	'%d byte(s)' => array('%d bajt', '%d bajty', '%d bajtů'),
 
@@ -273,31 +282,29 @@ Lang::$translations = array(
 	'%d row(s) have been imported.' => array('Byl importován %d záznam.', 'Byly importovány %d záznamy.', 'Bylo importováno %d záznamů.'),
 	'File must be in UTF-8 encoding.' => 'Soubor musí být v kódování UTF-8.',
 
-	// in-place editing in select
-	'Modify' => 'Změnit',
+	'All rows on this page' => 'Všechny řádky na této stránce',
+	'Modify' => 'Změnit', // in-place editing in select
 	'Ctrl+click on a value to modify it.' => 'Ctrl+klikněte na políčko, které chcete změnit.',
-	'Use edit link to modify this value.' => 'Ke změně této hodnoty použijte odkaz upravit.',
+	'Use the edit link to modify this value.' => 'Ke změně této hodnoty použijte odkaz upravit.',
 
-	// %s can contain auto-increment value
-	'Item%s has been inserted.' => 'Položka%s byla vložena.',
+	'Item%s has been inserted.' => 'Položka%s byla vložena.', // %s can contain auto-increment value
 	'Item has been deleted.' => 'Položka byla smazána.',
 	'Item has been updated.' => 'Položka byla aktualizována.',
 	'%d item(s) have been affected.' => array('Byl ovlivněn %d záznam.', 'Byly ovlivněny %d záznamy.', 'Bylo ovlivněno %d záznamů.'),
 	'New item' => 'Nová položka',
 	'original' => 'původní',
-	// label for value '' in enum data type
-	'empty' => 'prázdné',
+	'empty' => 'prázdné', // label for value '' in enum data type
 	'edit' => 'upravit',
 	'Edit' => 'Upravit',
 	'Insert' => 'Vložit',
 	'Save' => 'Uložit',
-	'Saving' => 'Ukládá se',
-	'Save and continue edit' => 'Uložit a pokračovat v editaci',
+	'Saving…' => 'Ukládá se…',
+	'Save and continue editing' => 'Uložit a pokračovat v úpravách',
 	'Save and insert next' => 'Uložit a vložit další',
 	'Selected' => 'Označené',
 	'Clone' => 'Klonovat',
 	'Delete' => 'Smazat',
-	'You have no privileges to update this table.' => 'Nemáte oprávnění editovat tuto tabulku.',
+	'You have no privileges to update this table.' => 'Nemáte oprávnění upravovat tuto tabulku.',
 
 	// data type descriptions
 	'Numbers' => 'Čísla',
@@ -307,22 +314,20 @@ Lang::$translations = array(
 	'Lists' => 'Seznamy',
 	'Network' => 'Síť',
 	'Geometry' => 'Geometrie',
+	'Ranges' => 'Rozsahy',
 	'Relations' => 'Vztahy',
 
 	'Editor' => 'Editor',
-	// date format in Editor: $1 yyyy, $2 yy, $3 mm, $4 m, $5 dd, $6 d
-	'$1-$3-$5' => '$6.$4.$1',
-	// hint for date format - use language equivalents for day, month and year shortcuts
-	'[yyyy]-mm-dd' => 'd.m.[rrrr]',
-	// hint for time format - use language equivalents for hour, minute and second shortcuts
-	'HH:MM:SS' => 'HH:MM:SS',
+	'Data editing in a single PHP file' => 'Editace dat v jednom PHP souboru',
+	'$1-$3-$5' => '$6.$4.$1', // date format in Editor: $1 yyyy, $2 yy, $3 mm, $4 m, $5 dd, $6 d
+	'[yyyy]-mm-dd' => 'd.m.[rrrr]', // hint for date format - use language equivalents for day, month and year shortcuts
+	'HH:MM:SS' => 'HH:MM:SS', // hint for time format - use language equivalents for hour, minute and second shortcuts
 	'now' => 'teď',
 	'yes' => 'ano',
 	'no' => 'ne',
 
-	// general SQLite error in create, drop or rename database
-	'File exists.' => 'Soubor existuje.',
-	'Please use one of the extensions %s.' => 'Prosím použijte jednu z koncovek %s.',
+	'File exists.' => 'Soubor existuje.', // general SQLite error in create, drop or rename database
+	'Please use one of these file extensions: %s.' => 'Použijte prosím jednu z těchto přípon: %s.',
 
 	// PostgreSQL and MS SQL schema support
 	'Alter schema' => 'Pozměnit schéma',
@@ -331,7 +336,6 @@ Lang::$translations = array(
 	'Schema has been created.' => 'Schéma bylo vytvořeno.',
 	'Schema has been altered.' => 'Schéma bylo změněno.',
 	'Schema' => 'Schéma',
-	'Invalid schema.' => 'Nesprávné schéma.',
 
 	// PostgreSQL sequences support
 	'Sequences' => 'Sekvence',
@@ -341,12 +345,17 @@ Lang::$translations = array(
 	'Sequence has been altered.' => 'Sekvence byla změněna.',
 	'Alter sequence' => 'Pozměnit sekvenci',
 
-	// PostgreSQL user types support
+	// PostgreSQL user-defined types support
 	'User types' => 'Uživatelské typy',
 	'Create type' => 'Vytvořit typ',
 	'Type has been dropped.' => 'Typ byl odstraněn.',
 	'Type has been created.' => 'Typ byl vytvořen.',
+	'Type has been altered.' => 'Typ byl změněn.',
 	'Alter type' => 'Pozměnit typ',
+
+	// PostgreSQL extensions
+	'Extensions' => 'Rozšíření',
+	'Version' => 'Verze',
 
 	// Table check constraints
 	'Checks' => 'Kontroly',
@@ -359,6 +368,7 @@ Lang::$translations = array(
 	'Loaded plugins' => 'Nahrané pluginy',
 	'%s must <a%s>return an array</a>.' => '%s musí <a%s>vracet pole</a>.',
 	'<a%s>Configure</a> %s in %s.' => '<a%s>Nakonfigurujte</a> %s v %s.',
+	'Every plugin must <a%s>be an object</a>.' => 'Každý plugin musí <a%s>být objekt</a>.',
 	'screenshot' => 'obrázek',
 );
 

@@ -1,6 +1,6 @@
 <?php
 
-/** Use Prism Code Editor for syntax highlighting and <textarea>
+/** Use Prism Code Editor for syntax highlighting and the <textarea>
 * @link https://prism-code-editor.netlify.app/
 * @link https://www.adminer.org/plugins/#use
 * @author Jakub Vrana, https://www.vrana.cz/
@@ -33,7 +33,7 @@ import '<?php echo $this->editorRoot; ?>/prism/languages/sql.js';
 
 adminerHighlighter = els => els.forEach(el => {
 	const mode = (
-		/jush-js/.test(el.className) ? 'json' : (
+		/jush-json/.test(el.className) ? 'json' : (
 		/jush-(\w*sql|oracle|clickhouse|firebird)/.test(el.className) ? 'sql' : (
 		''
 	)));
@@ -63,7 +63,11 @@ if (el) {
 	protected $translations = array(
 		'cs' => array('' => 'Použije Prism Code Editor pro zvýrazňování syntaxe a <textarea>'),
 		'de' => array('' => 'Prism Code Editor verwenden, für die Syntaxhervorhebung und <textarea>'),
-		'ja' => array('' => '構文や <textarea> の強調表示に Prism Code Editor を使用'),
+		'hr' => array('' => 'Koristi Prism Code Editor za isticanje sintakse i SQL <textarea>'),
+		'ja' => array('' => '構文強調表示と <textarea> に Prism Code Editor を使用'), // Claude Opus 5
 		'pl' => array('' => 'Użyj Prism Code Editora do podświetlania składni i <textarea>'),
+		'ro' => array('' => 'Folosește Prism Code Editor pentru evidențierea sintaxei și <textarea>'), // Claude Opus 5
+		'sk' => array('' => 'Použije Prism Code Editor na zvýrazňovanie syntaxe a <textarea>'), // Claude Opus 5
+		'zh' => array('' => '使用 Prism Code Editor 实现语法高亮和 <textarea>'), // Claude Opus 5
 	);
 }

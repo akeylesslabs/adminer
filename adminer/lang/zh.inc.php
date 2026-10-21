@@ -2,38 +2,46 @@
 namespace Adminer;
 
 Lang::$translations = array(
-	// label for database system selection (MySQL, SQLite, ...)
-	'System' => '系统',
+	'System' => '系统', // label for database system selection (MySQL, SQLite, ...)
 	'Server' => '服务器',
 	'Username' => '用户名',
 	'Password' => '密码',
 	'Permanent login' => '保持登录',
 	'Login' => '登录',
 	'Logout' => '登出',
-	'Logged as: %s' => '登录用户：%s',
+	'Logged in as: %s' => '登录用户：%s',
 	'Logout successful.' => '成功登出。',
-	'Thanks for using Adminer, consider <a href="https://www.adminer.org/en/donation/">donating</a>.' => '感谢使用Adminer，请考虑为我们<a href="https://www.adminer.org/en/donation/">捐款（英文页面）</a>。',
+	'Thanks for using Adminer. Consider <a href="https://www.adminer.org/en/donation/">donating</a>.' => '感谢使用Adminer，请考虑为我们<a href="https://www.adminer.org/en/donation/">捐款（英文页面）</a>。',
 	'Invalid credentials.' => '无效凭据。',
-	'There is a space in the input password which might be the cause.' => '您输入的密码中有一个空格，这可能是导致问题的原因。',
-	'Adminer does not support accessing a database without a password, <a href="https://www.adminer.org/en/password/"%s>more information</a>.' => 'Adminer默认不支持访问没有密码的数据库，<a href="https://www.adminer.org/en/password/"%s>详情见这里</a>。',
-	'Database does not support password.' => '数据库不支持密码。',
+	'There is a space in the entered password, which might be the cause.' => '您输入的密码中有一个空格，这可能是导致问题的原因。',
+	'Adminer does not support accessing a database without a password.' => 'Adminer默认不支持访问没有密码的数据库。',
+	'The database does not support passwords.' => '数据库不支持密码。',
+	'The server accepts any password, so filling it in protects nothing.' => '服务器接受任何密码，因此填写密码不能提供任何保护。', // Claude Opus 5
+	'Require a password.' => '要求密码。', // Claude Opus 5
+	'Save %s next to Adminer to require the entered password:' => '将 %s 保存在 Adminer 旁边，即可要求输入的密码：', // Claude Opus 5
+	'Save %s next to Adminer to require the password %s:' => '将 %1$s 保存在 Adminer 旁边，即可要求密码 %2$s：', // Claude Opus 5
+	'Add this line to %s to require the entered password:' => '将此行添加到 %s，即可要求输入的密码：', // Claude Opus 5
+	'Add this line to %s to require the password %s:' => '将此行添加到 %1$s，即可要求密码 %2$s：', // Claude Opus 5
+	'More options' => '更多选项', // Claude Opus 5
+	'Require a password verified by Adminer' => '要求由 Adminer 验证的密码', // Claude Opus 5
 	'Too many unsuccessful logins, try again in %d minute(s).' => '登录失败次数过多，请 %d 分钟后重试。',
-	'Master password expired. <a href="https://www.adminer.org/en/extension/"%s>Implement</a> %s method to make it permanent.' => '主密码已过期。<a href="https://www.adminer.org/en/extension/"%s>请扩展</a> %s 方法让它永久化。',
+	'Use the %s <a%s>plugin</a> if Adminer runs behind a reverse proxy.' => '如果 Adminer 运行在反向代理之后，请使用 %1$s <a%2$s>插件</a>。', // Claude Opus 5
+	'Master password expired. <a href="https://www.adminer.org/en/extension/"%s>Implement</a> the %s method to make it permanent.' => '主密码已过期。<a href="https://www.adminer.org/en/extension/"%s>请扩展</a> %s 方法让它永久化。',
 	'Language' => '语言',
-	'Invalid CSRF token. Send the form again.' => '无效 CSRF 令牌。请重新发送表单。',
-	'If you did not send this request from Adminer then close this page.' => '如果您并没有从Adminer发送请求，请关闭此页面。',
+	'Invalid CSRF token. Submit the form again.' => '无效 CSRF 令牌。请重新发送表单。',
+	'If you did not send this request from Adminer, close this page.' => '如果您并没有从Adminer发送请求，请关闭此页面。',
+	'Not found.' => '未找到。', // Claude Opus 5
 	'No extension' => '没有扩展',
 	'None of the supported PHP extensions (%s) are available.' => '没有支持的 PHP 扩展可用（%s）。',
 	'Connecting to privileged ports is not allowed.' => '不允许连接到特权端口。',
-	'Disable %s or enable %s or %s extensions.' => '禁用 %s 或启用 %s 或 %s 扩展。',
+	'Disable %s or enable the %s or %s extension.' => '禁用 %s 或启用 %s 或 %s 扩展。',
 	'Session support must be enabled.' => '必须启用会话支持。',
-	'Session expired, please login again.' => '会话已过期，请重新登录。',
+	'Session expired. Please log in again.' => '会话已过期，请重新登录。',
 	'The action will be performed after successful login with the same credentials.' => '此操作将在成功使用相同的凭据登录后执行。',
 	'%s version: %s through PHP extension %s' => '%s 版本：%s， 使用PHP扩展 %s',
 	'Refresh' => '刷新',
 
-	// text direction - 'ltr' or 'rtl'
-	'ltr' => 'ltr',
+	'ltr' => 'ltr', // text direction - 'ltr' or 'rtl'
 
 	'Privileges' => '权限',
 	'Create user' => '创建用户',
@@ -54,18 +62,17 @@ Lang::$translations = array(
 	'Status' => '状态',
 
 	'SQL command' => 'SQL命令',
-	'%d query(s) executed OK.' => '%d 条查询已成功执行。',
+	'%d query(ies) executed OK.' => '%d 条查询已成功执行。',
 	'Query executed OK, %d row(s) affected.' => '查询执行完毕，%d 行受影响。',
 	'No commands to execute.' => '没有命令被执行。',
 	'Error in query' => '查询出错',
 	'Unknown error.' => '未知错误。',
 	'Warnings' => '警告',
-	'ATTACH queries are not supported.' => '不支持ATTACH查询。',
+	'%s queries are not supported.' => '不支持%s查询。',
 	'Execute' => '执行',
 	'Stop on error' => '出错时停止',
 	'Show only errors' => '仅显示错误',
-	// sprintf() format for time of the command
-	'%.3f s' => '%.3f 秒',
+	'%.3f s' => '%.3f 秒', // sprintf() format for time of the command
 	'History' => '历史',
 	'Clear' => '清除',
 	'Edit all' => '编辑全部',
@@ -78,23 +85,26 @@ Lang::$translations = array(
 	'File uploads are disabled.' => '文件上传被禁用。',
 	'Unable to upload a file.' => '不能上传文件。',
 	'Maximum allowed file size is %sB.' => '最多允许的文件大小为 %sB。',
-	'Too big POST data. Reduce the data or increase the %s configuration directive.' => 'POST 数据太大。请减少数据或者增加 %s 配置命令。',
-	'You can upload a big SQL file via FTP and import it from server.' => '您可以通过FTP上传大型SQL文件并从服务器导入。',
+	'The POST data is too large. Reduce the data or increase the %s configuration directive.' => 'POST 数据太大。请减少数据或者增加 %s 配置命令。',
+	'You can upload a large SQL file via FTP and import it from the server.' => '您可以通过FTP上传大型SQL文件并从服务器导入。',
 	'You are offline.' => '您离线了。',
+	'Menu' => '菜单', // Claude Opus 5
+	'Documentation' => '文档', // Claude Opus 5
+	'Database management in a single PHP file' => '单个 PHP 文件中的数据库管理', // Claude Opus 5
 
 	'Export' => '导出',
 	'Output' => '输出',
 	'open' => '打开',
 	'save' => '保存',
-	'Saving' => '保存中',
+	'Saving…' => '保存中…',
 	'Format' => '格式',
 	'Data' => '数据',
 
 	'Database' => '数据库',
 	'DB' => '数据库',
+	'System%s' => '系统%s', // Claude Opus 5
 	'Use' => '使用',
 	'Select database' => '选择数据库',
-	'Invalid database.' => '无效数据库。',
 	'Database has been dropped.' => '已删除数据库。',
 	'Databases have been dropped.' => '已删除数据库。',
 	'Database has been created.' => '已创建数据库。',
@@ -104,11 +114,9 @@ Lang::$translations = array(
 	'Create database' => '创建数据库',
 	'Database schema' => '数据库概要',
 
-	// link to current database schema layout
-	'Permanent link' => '固定链接',
+	'Permanent link' => '固定链接', // link to current database schema layout
 
-	// thousands separator - must contain single byte
-	',' => ',',
+	'#,##0' => '#,##0',
 	'0123456789' => '0123456789',
 	'Engine' => '引擎',
 	'Collation' => '校对',
@@ -124,7 +132,7 @@ Lang::$translations = array(
 	'Repair' => '修复',
 	'Truncate' => '清空',
 	'Tables have been truncated.' => '已清空表。',
-	'Move to other database' => '转移到其它数据库',
+	'Move to another database' => '转移到其它数据库',
 	'Move' => '转移',
 	'Tables have been moved.' => '已转移表。',
 	'Copy' => '复制',
@@ -159,6 +167,7 @@ Lang::$translations = array(
 
 	'Tables' => '表',
 	'Tables and views' => '表和视图',
+	'All' => '全部', // Claude Opus 5
 	'Table' => '表',
 	'No tables.' => '没有表。',
 	'Alter table' => '修改表',
@@ -185,8 +194,6 @@ Lang::$translations = array(
 	'Are you sure?' => '您确定吗？',
 	'Size' => '大小',
 	'Compute' => '计算',
-	'Move up' => '上移',
-	'Move down' => '下移',
 	'Remove' => '移除',
 	'Maximum number of allowed fields exceeded. Please increase %s.' => '超过最多允许的字段数量。请增加 %s。',
 
@@ -210,7 +217,6 @@ Lang::$translations = array(
 	'Index Type' => '索引类型',
 
 	'Foreign keys' => '外键',
-	'Foreign key' => '外键',
 	'Foreign key has been dropped.' => '已删除外键。',
 	'Foreign key has been altered.' => '已修改外键。',
 	'Foreign key has been created.' => '已创建外键。',
@@ -220,13 +226,13 @@ Lang::$translations = array(
 	'Target' => '目标',
 	'Add column' => '增加列',
 	'Alter' => '修改',
-	'Add foreign key' => '添加外键',
+	'Alter foreign key' => '修改外键', // Claude Opus 5
+	'Create foreign key' => '创建外键', // Claude Opus 5
 	'ON DELETE' => 'ON DELETE',
 	'ON UPDATE' => 'ON UPDATE',
-	'Source and target columns must have the same data type, there must be an index on the target columns and referenced data must exist.' => '源列和目标列必须具有相同的数据类型，在目标列上必须有一个索引并且引用的数据必须存在。',
+	'Source and target columns must have the same data type, there must be an index on the target columns and the referenced data must exist.' => '源列和目标列必须具有相同的数据类型，在目标列上必须有一个索引并且引用的数据必须存在。',
 
 	'Triggers' => '触发器',
-	'Add trigger' => '创建触发器',
 	'Trigger has been dropped.' => '已删除触发器。',
 	'Trigger has been altered.' => '已修改触发器。',
 	'Trigger has been created.' => '已创建触发器。',
@@ -251,14 +257,14 @@ Lang::$translations = array(
 	'Text length' => '文本显示限制',
 	'Action' => '动作',
 	'Full table scan' => '全表扫描',
-	'Unable to select the table' => '不能选择该表',
+	'Unable to select the table.' => '不能选择该表。',
 	'No rows.' => '无数据。',
 	'%d / ' => '%d / ',
 	'%d row(s)' => '%d 行',
 	'Page' => '页面',
 	'last' => '最后',
 	'Load more data' => '加载更多数据',
-	'Loading' => '加载中',
+	'Loading…' => '加载中…',
 	'Whole result' => '所有结果',
 	'%d byte(s)' => '%d 字节',
 
@@ -266,25 +272,23 @@ Lang::$translations = array(
 	'%d row(s) have been imported.' => '%d 行已导入。',
 	'File must be in UTF-8 encoding.' => '文件必须使用UTF-8编码。',
 
-	// in-place editing in select
-	'Modify' => '修改',
+	'All rows on this page' => '本页所有行', // Claude Opus 5
+	'Modify' => '修改', // in-place editing in select
 	'Ctrl+click on a value to modify it.' => '按住Ctrl并单击某个值进行修改。',
-	'Use edit link to modify this value.' => '使用编辑链接修改该值。',
+	'Use the edit link to modify this value.' => '使用编辑链接修改该值。',
 
-	// %s can contain auto-increment value
-	'Item%s has been inserted.' => '已插入项目%s。',
+	'Item%s has been inserted.' => '已插入项目%s。', // %s can contain auto-increment value
 	'Item has been deleted.' => '已删除项目。',
 	'Item has been updated.' => '已更新项目。',
 	'%d item(s) have been affected.' => '%d 个项目受到影响。',
 	'New item' => '新建数据',
 	'original' => '原始',
-	// label for value '' in enum data type
-	'empty' => '空',
+	'empty' => '空', // label for value '' in enum data type
 	'edit' => '编辑',
 	'Edit' => '编辑',
 	'Insert' => '插入',
 	'Save' => '保存',
-	'Save and continue edit' => '保存并继续编辑',
+	'Save and continue editing' => '保存并继续编辑',
 	'Save and insert next' => '保存并插入下一个',
 	'Selected' => '已选中',
 	'Clone' => '复制',
@@ -299,22 +303,20 @@ Lang::$translations = array(
 	'Lists' => '列表',
 	'Network' => '网络',
 	'Geometry' => '几何图形',
+	'Ranges' => '范围', // Claude Opus 5
 	'Relations' => '关联信息',
 
 	'Editor' => '编辑器',
-	// date format in Editor: $1 yyyy, $2 yy, $3 mm, $4 m, $5 dd, $6 d
-	'$1-$3-$5' => '$1.$3.$5',
-	// hint for date format - use language equivalents for day, month and year shortcuts
-	'[yyyy]-mm-dd' => '[yyyy].mm.dd',
-	// hint for time format - use language equivalents for hour, minute and second shortcuts
-	'HH:MM:SS' => 'HH:MM:SS',
+	'Data editing in a single PHP file' => '单个 PHP 文件中的数据编辑', // Claude Opus 5
+	'$1-$3-$5' => '$1.$3.$5', // date format in Editor: $1 yyyy, $2 yy, $3 mm, $4 m, $5 dd, $6 d
+	'[yyyy]-mm-dd' => '[yyyy].mm.dd', // hint for date format - use language equivalents for day, month and year shortcuts
+	'HH:MM:SS' => 'HH:MM:SS', // hint for time format - use language equivalents for hour, minute and second shortcuts
 	'now' => '现在',
 	'yes' => '是',
 	'no' => '否',
 
-	// general SQLite error in create, drop or rename database
-	'File exists.' => '文件已存在。',
-	'Please use one of the extensions %s.' => '请使用其中一个扩展：%s。',
+	'File exists.' => '文件已存在。', // general SQLite error in create, drop or rename database
+	'Please use one of these file extensions: %s.' => '请使用其中一个扩展：%s。',
 
 	// PostgreSQL and MS SQL schema support
 	'Alter schema' => '修改模式',
@@ -323,7 +325,6 @@ Lang::$translations = array(
 	'Schema has been created.' => '已创建模式。',
 	'Schema has been altered.' => '已修改模式。',
 	'Schema' => '模式',
-	'Invalid schema.' => '非法模式。',
 
 	// PostgreSQL sequences support
 	'Sequences' => '序列',
@@ -333,12 +334,37 @@ Lang::$translations = array(
 	'Sequence has been altered.' => '已修改序列。',
 	'Alter sequence' => '修改序列',
 
-	// PostgreSQL user types support
-	'User types' => '用户类型',
+	// PostgreSQL user-defined types support
+	'User types' => '用户定义类型', // Claude Fable 5
 	'Create type' => '创建类型',
 	'Type has been dropped.' => '已删除类型。',
 	'Type has been created.' => '已创建类型。',
+	'Type has been altered.' => '已修改类型。', // Claude Opus 5
 	'Alter type' => '修改类型',
+	'Extensions' => '扩展', // Claude Opus 5
+	'Version' => '版本', // Claude Opus 5
+	'Check has been dropped.' => '已删除检查约束。', // Claude Fable 5
+	'Check has been altered.' => '已修改检查约束。', // Claude Fable 5
+	'Check has been created.' => '已创建检查约束。', // Claude Fable 5
+	'Alter check' => '修改检查约束', // Claude Fable 5
+	'Create check' => '创建检查约束', // Claude Fable 5
+	'Algorithm' => '算法', // Claude Fable 5
+	'Columns' => '列', // Claude Fable 5
+	'length' => '长度', // Claude Fable 5
+	'operator class' => '运算符类', // Claude Fable 5
+	'Condition' => '条件', // Claude Fable 5
+	'Inherits from' => '继承自', // Claude Fable 5
+	'Checks' => '检查约束', // Claude Fable 5
+	'Inherited by' => '被继承', // Claude Fable 5
+	'Shadow tables' => '影子表', // Claude Opus 5
+	'hostname[:port] or :socket' => 'hostname[:port] 或 :socket', // Claude Fable 5
+	'Invalid server.' => '无效的服务器。', // Claude Fable 5
+	'Loaded plugins' => '已加载的插件', // Claude Fable 5
+	'screenshot' => '截图', // Claude Fable 5
+	'Increase %s.' => '请增大 %s。', // Claude Fable 5
+	'%s must <a%s>return an array</a>.' => '%s 必须<a%s>返回一个数组</a>。', // Claude Fable 5
+	'<a%s>Configure</a> %s in %s.' => '在 %3$s 中<a%1$s>配置</a> %2$s。', // Claude Fable 5
+	'Every plugin must <a%s>be an object</a>.' => '每个插件必须<a%s>是一个对象</a>。', // Claude Opus 5
 );
 
 // run `php ../../lang.php zh` to update this file

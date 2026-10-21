@@ -2,28 +2,26 @@
 namespace Adminer;
 
 Lang::$translations = array(
-	// label for database system selection (MySQL, SQLite, ...)
-	'System' => 'Sistem',
+	'System' => 'Sistem', // label for database system selection (MySQL, SQLite, ...)
 	'Server' => 'Server',
 	'Username' => 'Korisničko ime',
 	'Password' => 'Lozinka',
 	'Permanent login' => 'Trajna prijava',
 	'Login' => 'Prijava',
 	'Logout' => 'Odjava',
-	'Logged as: %s' => 'Prijavi se kao: %s',
+	'Logged in as: %s' => 'Prijavi se kao: %s',
 	'Logout successful.' => 'Uspešna odjava.',
 	'Invalid credentials.' => 'Nevažeće dozvole.',
 	'Language' => 'Jezik',
-	'Invalid CSRF token. Send the form again.' => 'Nevažeći CSRF kod. Proslijedite ponovo formu.',
+	'Invalid CSRF token. Submit the form again.' => 'Nevažeći CSRF kod. Proslijedite ponovo formu.',
 	'No extension' => 'Bez dodataka',
 	'None of the supported PHP extensions (%s) are available.' => 'Nijedan od podržanih PHP dodataka (%s) nije dostupan.',
 	'Session support must be enabled.' => 'Morate omogućiti podršku za sesije.',
-	'Session expired, please login again.' => 'Vaša sesija je istekla, prijavite se ponovo.',
+	'Session expired. Please log in again.' => 'Vaša sesija je istekla, prijavite se ponovo.',
 	'%s version: %s through PHP extension %s' => '%s verzija: %s pomoću PHP dodatka je %s',
 	'Refresh' => 'Osveži',
 
-	// text direction - 'ltr' or 'rtl'
-	'ltr' => 'ltr',
+	'ltr' => 'ltr', // text direction - 'ltr' or 'rtl'
 
 	'Privileges' => 'Dozvole',
 	'Create user' => 'Novi korisnik',
@@ -44,15 +42,14 @@ Lang::$translations = array(
 	'Status' => 'Status',
 
 	'SQL command' => 'SQL komanda',
-	'%d query(s) executed OK.' => array('%d upit je uspiješno izvršen.', '%d upita su uspiješno izvršena.', '%d upita je uspiješno izvršeno.'),
+	'%d query(ies) executed OK.' => array('%d upit je uspiješno izvršen.', '%d upita su uspiješno izvršena.', '%d upita je uspiješno izvršeno.'),
 	'Query executed OK, %d row(s) affected.' => array('Upit je uspiješno izvršen, %d red je ažuriran.', 'Upit je uspiješno izvršen, %d reda su ažurirana.', 'Upit je uspiješno izvršen, %d redova je ažurirano.'),
 	'No commands to execute.' => 'Bez komandi za izvršavanje.',
 	'Error in query' => 'Greška u upitu',
 	'Execute' => 'Izvrši',
 	'Stop on error' => 'Zaustavi prilikom greške',
 	'Show only errors' => 'Prikazuj samo greške',
-	// sprintf() format for time of the command
-	'%.3f s' => '%.3f s',
+	'%.3f s' => '%.3f s', // sprintf() format for time of the command
 	'History' => 'Historijat',
 	'Clear' => 'Očisti',
 	'Edit all' => 'Izmijeni sve',
@@ -65,7 +62,7 @@ Lang::$translations = array(
 	'File uploads are disabled.' => 'Onemogućeno je slanje datoteka.',
 	'Unable to upload a file.' => 'Slanje datoteke nije uspelo.',
 	'Maximum allowed file size is %sB.' => 'Najveća dozvoljena veličina datoteke je %sB.',
-	'Too big POST data. Reduce the data or increase the %s configuration directive.' => 'Preveliki POST podatak. Morate da smanjite podatak ili povećajte vrijednost konfiguracione direktive %s.',
+	'The POST data is too large. Reduce the data or increase the %s configuration directive.' => 'Preveliki POST podatak. Morate da smanjite podatak ili povećajte vrijednost konfiguracione direktive %s.',
 
 	'Export' => 'Izvoz',
 	'Output' => 'Ispis',
@@ -77,7 +74,6 @@ Lang::$translations = array(
 	'Database' => 'Baza podataka',
 	'Use' => 'Koristi',
 	'Select database' => 'Izaberite bazu',
-	'Invalid database.' => 'Neispravna baza podataka.',
 	'Database has been dropped.' => 'Baza podataka je izbrisana.',
 	'Databases have been dropped.' => 'Baze podataka su izbrisane.',
 	'Database has been created.' => 'Baza podataka je spašena.',
@@ -87,11 +83,9 @@ Lang::$translations = array(
 	'Create database' => 'Formiraj bazu podataka',
 	'Database schema' => 'Šema baze podataka',
 
-	// link to current database schema layout
-	'Permanent link' => 'Trajna veza',
+	'Permanent link' => 'Trajna veza', // link to current database schema layout
 
-	// thousands separator - must contain single byte
-	',' => ',',
+	'#,##0' => '#.##0', // Claude Opus 5
 	'0123456789' => '0123456789',
 	'Engine' => 'Stroj',
 	'Collation' => 'Sravnjivanje',
@@ -106,7 +100,7 @@ Lang::$translations = array(
 	'Repair' => 'Popravi',
 	'Truncate' => 'Isprazni',
 	'Tables have been truncated.' => 'Tabele su ispražnjene.',
-	'Move to other database' => 'Premijesti u drugu bazu podataka',
+	'Move to another database' => 'Premijesti u drugu bazu podataka',
 	'Move' => 'Premijesti',
 	'Tables have been moved.' => 'Tabele su premješćene.',
 	'Copy' => 'Umnoži',
@@ -140,6 +134,7 @@ Lang::$translations = array(
 
 	'Tables' => 'Tabele',
 	'Tables and views' => 'Tabele i pogledi',
+	'All' => 'Sve', // Claude Opus 5
 	'Table' => 'Tabela',
 	'No tables.' => 'Bez tabela.',
 	'Alter table' => 'Ažuriraj tabelu',
@@ -162,8 +157,6 @@ Lang::$translations = array(
 	'Default values' => 'Podrazumijevane vrijednosti',
 	'Drop' => 'Izbriši',
 	'Are you sure?' => 'Da li ste sigurni?',
-	'Move up' => 'Pomijeri na gore',
-	'Move down' => 'Pomijeri na dole',
 	'Remove' => 'Ukloni',
 	'Maximum number of allowed fields exceeded. Please increase %s.' => 'Premašen je maksimalni broj dozvoljenih polja. Molim uvećajte %s.',
 
@@ -185,9 +178,9 @@ Lang::$translations = array(
 	'Add next' => 'Dodaj slijedeći',
 	'Index Type' => 'Tip indeksa',
 	'length' => 'dužina',
+	'operator class' => 'klasa operatora', // Claude Fable 5
 
 	'Foreign keys' => 'Strani ključevi',
-	'Foreign key' => 'Strani ključ',
 	'Foreign key has been dropped.' => 'Strani ključ je izbrisan.',
 	'Foreign key has been altered.' => 'Strani ključ je izmijenjen.',
 	'Foreign key has been created.' => 'Strani ključ je spašen.',
@@ -197,13 +190,13 @@ Lang::$translations = array(
 	'Target' => 'Cilj',
 	'Add column' => 'Dodaj kolumnu',
 	'Alter' => 'Ažuriraj',
-	'Add foreign key' => 'Dodaj strani ključ',
+	'Alter foreign key' => 'Ažuriraj strani ključ', // Claude Opus 5
+	'Create foreign key' => 'Napravi strani ključ', // Claude Opus 5
 	'ON DELETE' => 'ON DELETE (prilikom brisanja)',
 	'ON UPDATE' => 'ON UPDATE (prilikom osvežavanja)',
-	'Source and target columns must have the same data type, there must be an index on the target columns and referenced data must exist.' => 'Izvorne i ciljne kolumne moraju biti istog tipa, ciljna kolumna mora biti indeksirana i izvorna tabela mora sadržati podatke iz ciljne.',
+	'Source and target columns must have the same data type, there must be an index on the target columns and the referenced data must exist.' => 'Izvorne i ciljne kolumne moraju biti istog tipa, ciljna kolumna mora biti indeksirana i izvorna tabela mora sadržati podatke iz ciljne.',
 
 	'Triggers' => 'Okidači',
-	'Add trigger' => 'Dodaj okidač',
 	'Trigger has been dropped.' => 'Okidač je izbrisan.',
 	'Trigger has been altered.' => 'Okidač je izmijenjen.',
 	'Trigger has been created.' => 'Okidač je spašen.',
@@ -228,12 +221,12 @@ Lang::$translations = array(
 	'Text length' => 'Dužina teksta',
 	'Action' => 'Akcija',
 	'Full table scan' => 'Skreniranje kompletne tabele',
-	'Unable to select the table' => 'Ne mogu da izaberem tabelu',
+	'Unable to select the table.' => 'Ne mogu da izaberem tabelu.',
 	'No rows.' => 'Bez redova.',
 	'%d row(s)' => array('%d red', '%d reda', '%d redova'),
 	'Page' => 'Strana',
 	'last' => 'poslijednja',
-	'Loading' => 'Učitavam',
+	'Loading…' => 'Učitavam…',
 	'Load more data' => 'Učitavam još podataka',
 	'Whole result' => 'Ceo rezultat',
 	'%d byte(s)' => array('%d bajt', '%d bajta', '%d bajtova'),
@@ -241,24 +234,21 @@ Lang::$translations = array(
 	'Import' => 'Uvoz',
 	'%d row(s) have been imported.' => array('%d red je uvežen.', '%d reda su uvežena.', '%d redova je uveženo.'),
 
-	// in-place editing in select
-	'Ctrl+click on a value to modify it.' => 'Ctrl+klik na vrijednost za izmijenu.',
-	'Use edit link to modify this value.' => 'Koristi vezu za izmijenu ove vrijednosti.',
+	'Ctrl+click on a value to modify it.' => 'Ctrl+klik na vrijednost za izmijenu.', // in-place editing in select
+	'Use the edit link to modify this value.' => 'Koristi vezu za izmijenu ove vrijednosti.',
 
-	// %s can contain auto-increment value
-	'Item%s has been inserted.' => 'Stavka %s je spašena.',
+	'Item%s has been inserted.' => 'Stavka %s je spašena.', // %s can contain auto-increment value
 	'Item has been deleted.' => 'Stavka je izbrisana.',
 	'Item has been updated.' => 'Stavka je izmijenjena.',
 	'%d item(s) have been affected.' => array('%d stavka je ažurirana.', '%d stavke su ažurirane.', '%d stavki je ažurirano.'),
 	'New item' => 'Nova stavka',
 	'original' => 'original',
-	// label for value '' in enum data type
-	'empty' => 'prazno',
+	'empty' => 'prazno', // label for value '' in enum data type
 	'edit' => 'izmijeni',
 	'Edit' => 'Izmijeni',
 	'Insert' => 'Umetni',
 	'Save' => 'Sačuvaj',
-	'Save and continue edit' => 'Sačuvaj i nastavi uređenje',
+	'Save and continue editing' => 'Sačuvaj i nastavi uređenje',
 	'Save and insert next' => 'Sačuvaj i umijetni slijedeće',
 	'Clone' => 'Dupliraj',
 	'Delete' => 'Izbriši',
@@ -272,22 +262,20 @@ Lang::$translations = array(
 	'Lists' => 'Liste',
 	'Network' => 'Mreža',
 	'Geometry' => 'Geometrija',
+	'Ranges' => 'Rasponi', // Claude Opus 5
 	'Relations' => 'Odnosi',
 
 	'Editor' => 'Uređivač',
-	// date format in Editor: $1 yyyy, $2 yy, $3 mm, $4 m, $5 dd, $6 d
-	'$1-$3-$5' => '$5.$3.$1.',
-	// hint for date format - use language equivalents for day, month and year shortcuts
-	'[yyyy]-mm-dd' => 'dd.mm.[yyyy].',
-	// hint for time format - use language equivalents for hour, minute and second shortcuts
-	'HH:MM:SS' => 'HH:MM:SS',
+	'Data editing in a single PHP file' => 'Uređivanje podataka u jednoj PHP datoteci', // Claude Opus 5
+	'$1-$3-$5' => '$5.$3.$1.', // date format in Editor: $1 yyyy, $2 yy, $3 mm, $4 m, $5 dd, $6 d
+	'[yyyy]-mm-dd' => 'dd.mm.[yyyy].', // hint for date format - use language equivalents for day, month and year shortcuts
+	'HH:MM:SS' => 'HH:MM:SS', // hint for time format - use language equivalents for hour, minute and second shortcuts
 	'now' => 'sad',
 	'yes' => 'da',
 	'no' => 'ne',
 
-	// general SQLite error in create, drop or rename database
-	'File exists.' => 'Datoteka već postoji.',
-	'Please use one of the extensions %s.' => 'Molim koristite jedan od nastavaka %s.',
+	'File exists.' => 'Datoteka već postoji.', // general SQLite error in create, drop or rename database
+	'Please use one of these file extensions: %s.' => 'Molim koristite jedan od nastavaka %s.',
 
 	// PostgreSQL and MS SQL schema support
 	'Alter schema' => 'Ažuriraj šemu',
@@ -296,7 +284,6 @@ Lang::$translations = array(
 	'Schema has been created.' => 'Šema je spašena.',
 	'Schema has been altered.' => 'Šema je izmijenjena.',
 	'Schema' => 'Šema',
-	'Invalid schema.' => 'Šema nije ispravna.',
 
 	// PostgreSQL sequences support
 	'Sequences' => 'Nizovi',
@@ -306,12 +293,78 @@ Lang::$translations = array(
 	'Sequence has been altered.' => 'Niz je izmijenjen.',
 	'Alter sequence' => 'Ažuriraj niz',
 
-	// PostgreSQL user types support
+	// PostgreSQL user-defined types support
 	'User types' => 'Korisnički tipovi',
 	'Create type' => 'Definiši tip',
 	'Type has been dropped.' => 'Tip je izbrisan.',
 	'Type has been created.' => 'tip je spašen.',
+	'Type has been altered.' => 'Tip je izmijenjen.', // Claude Opus 5
 	'Alter type' => 'Ažuriraj tip',
+	'Extensions' => 'Ekstenzije', // Claude Opus 5
+	'Version' => 'Verzija', // Claude Opus 5
+	'Check has been dropped.' => 'Provjera je izbrisana.', // Claude Fable 5
+	'Check has been altered.' => 'Provjera je izmijenjena.', // Claude Fable 5
+	'Check has been created.' => 'Provjera je napravljena.', // Claude Fable 5
+	'Alter check' => 'Izmijeni provjeru', // Claude Fable 5
+	'Create check' => 'Napravi provjeru', // Claude Fable 5
+	'Drop %s?' => 'Izbrisati %s?', // Claude Fable 5
+	'Vacuum' => 'Očisti', // Claude Fable 5
+	'overwrite' => 'prepiši', // Claude Fable 5
+	'DB' => 'DB', // Claude Fable 5
+	'System%s' => 'Sistemske%s', // Claude Opus 5
+	'Algorithm' => 'Algoritam', // Claude Fable 5
+	'Columns' => 'Kolumne', // Claude Fable 5
+	'Condition' => 'Uslov', // Claude Fable 5
+	'File must be in UTF-8 encoding.' => 'Datoteka mora biti u UTF-8 kodiranju.', // Claude Fable 5
+	'All rows on this page' => 'Svi redovi na ovoj stranici', // Claude Opus 5
+	'%s queries are not supported.' => '%s upiti nisu podržani.', // Claude Fable 5
+	'Warnings' => 'Upozorenja', // Claude Fable 5
+	'%d / ' => '%d / ', // Claude Fable 5
+	'Limit rows' => 'Ograniči broj redova', // Claude Fable 5
+	'Materialized view' => 'Materijalizirani pogled', // Claude Fable 5
+	'Inherits from' => 'Nasljeđuje od', // Claude Fable 5
+	'Checks' => 'Provjere', // Claude Fable 5
+	'Inherited by' => 'Naslijeđeno od', // Claude Fable 5
+	'Shadow tables' => 'Sjenovite tabele', // Claude Opus 5
+	'hostname[:port] or :socket' => 'hostname[:port] ili :socket', // Claude Fable 5
+	'Adminer does not support accessing a database without a password.' => 'Adminer ne podržava pristup bazi podataka bez lozinke.', // Claude Fable 5
+	'Default value' => 'Zadana vrijednost', // Claude Fable 5
+	'Too many unsuccessful logins, try again in %d minute(s).' => array('Previše neuspješnih prijava, pokušajte ponovo za %d minutu.', 'Previše neuspješnih prijava, pokušajte ponovo za %d minute.', 'Previše neuspješnih prijava, pokušajte ponovo za %d minuta.'), // Claude Fable 5
+	'Use the %s <a%s>plugin</a> if Adminer runs behind a reverse proxy.' => 'Koristite <a%2$s>dodatak</a> %1$s ako Adminer radi iza reverznog proxyja.', // Claude Opus 5
+	'Thanks for using Adminer. Consider <a href="https://www.adminer.org/en/donation/">donating</a>.' => 'Hvala što koristite Adminer, razmislite o <a href="https://www.adminer.org/en/donation/">donaciji</a>.', // Claude Fable 5
+	'Master password expired. <a href="https://www.adminer.org/en/extension/"%s>Implement</a> the %s method to make it permanent.' => 'Glavna lozinka je istekla. <a href="https://www.adminer.org/en/extension/"%s>Implementirajte</a> metodu %s da biste je učinili trajnom.', // Claude Fable 5
+	'The action will be performed after successful login with the same credentials.' => 'Radnja će biti izvršena nakon uspješne prijave s istim podacima.', // Claude Fable 5
+	'Invalid server.' => 'Nevažeći server.', // Claude Fable 5
+	'Connecting to privileged ports is not allowed.' => 'Povezivanje na privilegirane portove nije dozvoljeno.', // Claude Fable 5
+	'There is a space in the entered password, which might be the cause.' => 'U unesenoj lozinci postoji razmak, što bi mogao biti uzrok.', // Claude Fable 5
+	'If you did not send this request from Adminer, close this page.' => 'Ako niste poslali ovaj zahtjev iz Adminera, zatvorite ovu stranicu.', // Claude Fable 5
+	'Not found.' => 'Nije pronađeno.', // Claude Opus 5
+	'You can upload a large SQL file via FTP and import it from the server.' => 'Veliku SQL datoteku možete poslati putem FTP-a i uvesti je sa servera.', // Claude Fable 5
+	'Size' => 'Veličina', // Claude Fable 5
+	'Compute' => 'Izračunaj', // Claude Fable 5
+	'Loaded plugins' => 'Učitani dodaci', // Claude Fable 5
+	'screenshot' => 'snimak ekrana', // Claude Fable 5
+	'You are offline.' => 'Van mreže ste.', // Claude Fable 5
+	'Menu' => 'Meni', // Claude Opus 5
+	'Documentation' => 'Dokumentacija', // Claude Opus 5
+	'Database management in a single PHP file' => 'Upravljanje bazom podataka u jednoj PHP datoteci', // Claude Opus 5
+	'Increase %s.' => 'Povećajte %s.', // Claude Fable 5
+	'You have no privileges to update this table.' => 'Nemate privilegije za ažuriranje ove tabele.', // Claude Fable 5
+	'Saving…' => 'Spašavam…', // Claude Fable 5
+	'Unknown error.' => 'Nepoznata greška.', // Claude Fable 5
+	'%s must <a%s>return an array</a>.' => '%s mora <a%s>vratiti niz</a>.', // Claude Fable 5
+	'<a%s>Configure</a> %s in %s.' => '<a%s>Konfigurirajte</a> %s u %s.', // Claude Fable 5
+	'Every plugin must <a%s>be an object</a>.' => 'Svaki dodatak mora <a%s>biti objekat</a>.', // Claude Opus 5
+	'Disable %s or enable the %s or %s extension.' => 'Onemogućite %s ili omogućite ekstenzije %s ili %s.', // Claude Opus 5
+	'The database does not support passwords.' => 'Baza podataka ne podržava lozinku.', // Claude Fable 5
+	'The server accepts any password, so filling it in protects nothing.' => 'Server prihvata bilo koju lozinku, pa njeno unošenje ništa ne štiti.', // Claude Opus 5
+	'Require a password.' => 'Zahtijevaj lozinku.', // Claude Opus 5
+	'Save %s next to Adminer to require the entered password:' => 'Sačuvajte %s pored Adminera da bi se zahtijevala unesena lozinka:', // Claude Opus 5
+	'Save %s next to Adminer to require the password %s:' => 'Sačuvajte %s pored Adminera da bi se zahtijevala lozinka %s:', // Claude Opus 5
+	'Add this line to %s to require the entered password:' => 'Dodajte ovaj red u %s da bi se zahtijevala unesena lozinka:', // Claude Opus 5
+	'Add this line to %s to require the password %s:' => 'Dodajte ovaj red u %s da bi se zahtijevala lozinka %s:', // Claude Opus 5
+	'More options' => 'Više opcija', // Claude Opus 5
+	'Require a password verified by Adminer' => 'Zahtijeva lozinku koju provjerava Adminer', // Claude Opus 5
 );
 
 // run `php ../../lang.php bs` to update this file

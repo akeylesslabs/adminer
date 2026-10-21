@@ -8,18 +8,18 @@ if ($_POST && !$error && !$_POST["add"]) {
 	if ($_POST["drop"]) {
 		$_GET["db"] = ""; // to save in global history
 		queries_redirect(remove_from_uri("db|database"), lang('Database has been dropped.'), drop_databases(array(DB)));
-	} elseif (DB !== $name) {
+	} elseif ($name !== DB) {
 		// create or rename database
 		if (DB != "") {
 			$_GET["db"] = $name;
-			queries_redirect(preg_replace('~\bdb=[^&]*&~', '', ME) . "db=" . urlencode($name), lang('Database has been renamed.'), rename_database($name, $row["collation"]));
+			queries_redirect(preg_replace('~\bdb=[^&]*&~', '', ME) . "db=" . url_escape($name), lang('Database has been renamed.'), rename_database($name, (string) $row["collation"]));
 		} else {
 			$databases = explode("\n", str_replace("\r", "", $name));
 			$success = true;
 			$last = "";
 			foreach ($databases as $db) {
 				if (count($databases) == 1 || $db != "") { // ignore empty lines but always try to create single database
-					if (!create_database($db, $row["collation"])) {
+					if (!create_database($db, (string) $row["collation"])) {
 						$success = false;
 					}
 					$last = $db;
@@ -27,18 +27,30 @@ if ($_POST && !$error && !$_POST["add"]) {
 			}
 			restart_session();
 			set_session("dbs", null);
-			queries_redirect(ME . "db=" . urlencode($last), lang('Database has been created.'), $success);
+			queries_redirect(preg_replace('~&db=[^&]*~', '', ME) . "db=" . url_escape($last), lang('Database has been created.'), $success);
 		}
 	} else {
 		// alter database
 		if (!$row["collation"]) {
 			redirect(substr(ME, 0, -1));
 		}
-		query_redirect("ALTER DATABASE " . idf_escape($name) . (preg_match('~^[a-z0-9_]+$~i', $row["collation"]) ? " COLLATE $row[collation]" : ""), substr(ME, 0, -1), lang('Database has been altered.'));
+		query_redirect(
+			"ALTER DATABASE " . idf_escape($name) . (preg_match('~^[a-z0-9_]+$~i', $row["collation"]) ? " COLLATE $row[collation]" : ""),
+			substr(ME, 0, -1),
+			lang('Database has been altered.')
+		);
 	}
 }
 
-page_header(DB != "" ? lang('Alter database') : lang('Create database'), $error, array(), h(DB));
+$statement = (DB != "" ? "alter" : "create");
+page_header(DB != "" ? lang('Alter database') : lang('Create database'), $error, array(), h(DB), false, doc_link(array(
+	'sql' => "$statement-database.html",
+	'mariadb' => (DB != "" ? "" : "$statement-database"), // create-database/ redirects to a search
+	'pgsql' => "sql-$statement" . "database.html",
+	'cockroach' => "$statement-database",
+	'mssql' => "t-sql/statements/$statement-database-transact-sql",
+	'oracle' => "sqlrf/" . strtoupper($statement) . "-USER.html", // a database is a user
+)));
 
 $collations = collations();
 $name = DB;
@@ -63,16 +75,17 @@ if ($_POST) {
 echo ($_POST["add"] || strpos($name, "\n")
 	? '<textarea autofocus name="name" rows="10" cols="40">' . h($name) . '</textarea><br>'
 	: '<input name="name" autofocus value="' . h($name) . '" data-maxlength="64" autocapitalize="off">'
-) . "\n" . ($collations ? html_select("collation", array("" => "(" . lang('collation') . ")") + $collations, $row["collation"]) . doc_link(array(
+) . "\n";
+echo ($collations ? html_select("collation", array("" => "(" . lang('collation') . ")") + $collations, $row["collation"]) . doc_link(array(
 	'sql' => "charset-charsets.html",
 	'mariadb' => "supported-character-sets-and-collations/",
 	'mssql' => "relational-databases/system-functions/sys-fn-helpcollations-transact-sql",
-)) : "");
+)) : "") . "\n";
 ?>
-<input type="submit" value="<?php echo lang('Save'); ?>">
+<input type='submit' value='<?php echo lang('Save'); ?>'>
 <?php
 if (DB != "") {
-	echo "<input type='submit' name='drop' value='" . lang('Drop') . "'>" . confirm(lang('Drop %s?', DB)) . "\n";
+	echo "<input type='submit' name='drop' value='" . lang('Drop') . "'" . confirm(lang('Drop %s?', DB)) . ">\n";
 } elseif (!$_POST["add"] && $_GET["db"] == "") {
 	echo icon("plus", "add[0]", "+", lang('Add next')) . "\n";
 }

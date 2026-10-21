@@ -2,31 +2,31 @@
 namespace Adminer;
 
 Lang::$translations = array(
-	// label for database system selection (MySQL, SQLite, ...)
-	'System' => 'Система',
+	'System' => 'Система', // label for database system selection (MySQL, SQLite, ...)
 	'Server' => 'Сървър',
 	'Username' => 'Потребител',
 	'Password' => 'Парола',
 	'Permanent login' => 'Запаметяване',
 	'Login' => 'Вход',
 	'Logout' => 'Изход',
-	'Logged as: %s' => 'Текущ потребител: %s',
+	'Logged in as: %s' => 'Текущ потребител: %s',
 	'Logout successful.' => 'Излизането е успешно.',
 	'Invalid credentials.' => 'Невалидни потребителски данни.',
 	'Too many unsuccessful logins, try again in %d minute(s).' => array('Прекалено много неуспешни опити за вход, опитайте пак след %d минута.', 'Прекалено много неуспешни опити за вход, опитайте пак след %d минути.'),
-	'Master password expired. <a href="https://www.adminer.org/en/extension/"%s>Implement</a> %s method to make it permanent.' => 'Главната парола вече е невалидна. <a href="https://www.adminer.org/en/extension/"%s>Изберете</a> %s метод, за да я направите постоянна.',
+	'Use the %s <a%s>plugin</a> if Adminer runs behind a reverse proxy.' => 'Използвайте <a%2$s>плъгина</a> %1$s, ако Adminer работи зад обратно прокси.',
+	'Master password expired. <a href="https://www.adminer.org/en/extension/"%s>Implement</a> the %s method to make it permanent.' => 'Главната парола вече е невалидна. <a href="https://www.adminer.org/en/extension/"%s>Изберете</a> %s метод, за да я направите постоянна.',
 	'Language' => 'Език',
-	'Invalid CSRF token. Send the form again.' => 'Невалиден шифроващ ключ. Попълнете и изпратете формуляра отново.',
-	'If you did not send this request from Adminer then close this page.' => 'Ако не сте изпратили тази заявка през Adminer, затворете тази страница.',
+	'Invalid CSRF token. Submit the form again.' => 'Невалиден шифроващ ключ. Попълнете и изпратете формуляра отново.',
+	'If you did not send this request from Adminer, close this page.' => 'Ако не сте изпратили тази заявка през Adminer, затворете тази страница.',
+	'Not found.' => 'Не е намерено.', // Claude Opus 5
 	'No extension' => 'Няма разширение',
 	'None of the supported PHP extensions (%s) are available.' => 'Никое от поддържаните PHP разширения (%s) не е налично.',
 	'Session support must be enabled.' => 'Поддръжката на сесии трябва да е разрешена.',
-	'Session expired, please login again.' => 'Сесията е изтекла; моля, влезте отново.',
+	'Session expired. Please log in again.' => 'Сесията е изтекла; моля, влезте отново.',
 	'%s version: %s through PHP extension %s' => '%s версия: %s през PHP разширение %s',
 	'Refresh' => 'Обновяване',
 
-	// text direction - 'ltr' or 'rtl'
-	'ltr' => 'ltr',
+	'ltr' => 'ltr', // text direction - 'ltr' or 'rtl'
 
 	'Privileges' => 'Права',
 	'Create user' => 'Създаване на потребител',
@@ -47,15 +47,14 @@ Lang::$translations = array(
 	'Status' => 'Състояние',
 
 	'SQL command' => 'SQL команда',
-	'%d query(s) executed OK.' => array('%d заявка е изпълнена.', '%d заявки са изпълнени.'),
+	'%d query(ies) executed OK.' => array('%d заявка е изпълнена.', '%d заявки са изпълнени.'),
 	'Query executed OK, %d row(s) affected.' => array('Заявката е изпълнена, %d ред е засегнат.', 'Заявката е изпълнена, %d редове са засегнати.'),
 	'No commands to execute.' => 'Няма команди за изпълнение.',
 	'Error in query' => 'Грешка в заявката',
 	'Execute' => 'Изпълнение',
 	'Stop on error' => 'Спиране при грешка',
 	'Show only errors' => 'Показване само на грешките',
-	// sprintf() format for time of the command
-	'%.3f s' => '%.3f s',
+	'%.3f s' => '%.3f s', // sprintf() format for time of the command
 	'History' => 'Хронология',
 	'Clear' => 'Изчистване',
 	'Edit all' => 'Редактиране на всички',
@@ -68,9 +67,12 @@ Lang::$translations = array(
 	'File uploads are disabled.' => 'Прикачването на файлове е забранено.',
 	'Unable to upload a file.' => 'Неуспешно прикачване на файл.',
 	'Maximum allowed file size is %sB.' => 'Максимално разрешената големина на файл е %sB.',
-	'Too big POST data. Reduce the data or increase the %s configuration directive.' => 'Изпратени са прекалено много данни. Намалете обема на данните или увеличете %s управляващата директива.',
-	'You can upload a big SQL file via FTP and import it from server.' => 'Можете да прикачите голям SQL файл чрез FTP и да го импортирате от сървъра.',
+	'The POST data is too large. Reduce the data or increase the %s configuration directive.' => 'Изпратени са прекалено много данни. Намалете обема на данните или увеличете %s управляващата директива.',
+	'You can upload a large SQL file via FTP and import it from the server.' => 'Можете да прикачите голям SQL файл чрез FTP и да го импортирате от сървъра.',
 	'You are offline.' => 'Вие сте офлайн.',
+	'Menu' => 'Меню',
+	'Documentation' => 'Документация', // Claude Opus 5
+	'Database management in a single PHP file' => 'Управление на бази данни в един PHP файл',
 
 	'Export' => 'Експорт',
 	'Output' => 'Резултат',
@@ -82,7 +84,6 @@ Lang::$translations = array(
 	'Database' => 'База данни',
 	'Use' => 'Избор',
 	'Select database' => 'Избор на база данни',
-	'Invalid database.' => 'Невалидна база данни.',
 	'Database has been dropped.' => 'Базата данни беше премахната.',
 	'Databases have been dropped.' => 'Базите данни бяха премехнати.',
 	'Database has been created.' => 'Базата данни беше създадена.',
@@ -92,11 +93,9 @@ Lang::$translations = array(
 	'Create database' => 'Създаване на база данни',
 	'Database schema' => 'Схема на базата данни',
 
-	// link to current database schema layout
-	'Permanent link' => 'Постоянна препратка',
+	'Permanent link' => 'Постоянна препратка', // link to current database schema layout
 
-	// thousands separator - must contain single byte
-	',' => ',',
+	'#,##0' => '# ##0',
 	'0123456789' => '0123456789',
 	'Engine' => 'Система',
 	'Collation' => 'Кодировка',
@@ -112,7 +111,7 @@ Lang::$translations = array(
 	'Repair' => 'Поправка',
 	'Truncate' => 'Изрязване',
 	'Tables have been truncated.' => 'Таблиците бяха изрязани.',
-	'Move to other database' => 'Преместване в друга база данни',
+	'Move to another database' => 'Преместване в друга база данни',
 	'Move' => 'Преместване',
 	'Tables have been moved.' => 'Таблиците бяха преместени.',
 	'Copy' => 'Копиране',
@@ -146,6 +145,7 @@ Lang::$translations = array(
 
 	'Tables' => 'Таблици',
 	'Tables and views' => 'Таблици и изгледи',
+	'All' => 'Всички',
 	'Table' => 'Таблица',
 	'No tables.' => 'Няма таблици.',
 	'Alter table' => 'Промяна на таблица',
@@ -171,8 +171,6 @@ Lang::$translations = array(
 	'Are you sure?' => 'Сигурни ли сте?',
 	'Size' => 'Големина',
 	'Compute' => 'Изчисляване',
-	'Move up' => 'Преместване нагоре',
-	'Move down' => 'Преместване надолу',
 	'Remove' => 'Премахване',
 	'Maximum number of allowed fields exceeded. Please increase %s.' => 'Максималния брой полета е превишен. Моля, увеличете %s.',
 
@@ -195,9 +193,9 @@ Lang::$translations = array(
 	'Add next' => 'Добавяне на следващ',
 	'Index Type' => 'Вид на индекса',
 	'length' => 'дължина',
+	'operator class' => 'клас оператори',
 
 	'Foreign keys' => 'Препратки',
-	'Foreign key' => 'Препратка',
 	'Foreign key has been dropped.' => 'Препратката беше премахната.',
 	'Foreign key has been altered.' => 'Препратката беше променена.',
 	'Foreign key has been created.' => 'Препратката беше създадена.',
@@ -207,13 +205,13 @@ Lang::$translations = array(
 	'Target' => 'Цел',
 	'Add column' => 'Добавяне на колона',
 	'Alter' => 'Промяна',
-	'Add foreign key' => 'Добавяне на препратка',
+	'Alter foreign key' => 'Промяна на препратка',
+	'Create foreign key' => 'Създаване на препратка',
 	'ON DELETE' => 'При изтриване',
 	'ON UPDATE' => 'При промяна',
-	'Source and target columns must have the same data type, there must be an index on the target columns and referenced data must exist.' => 'Колоните източник и цел трябва да са от еднакъв вид, трябва да има индекс на колоните приемник и да има въведени данни.',
+	'Source and target columns must have the same data type, there must be an index on the target columns and the referenced data must exist.' => 'Колоните източник и цел трябва да са от еднакъв вид, трябва да има индекс на колоните приемник и да има въведени данни.',
 
 	'Triggers' => 'Тригери',
-	'Add trigger' => 'Добавяне на тригер',
 	'Trigger has been dropped.' => 'Тригера беше премахнат.',
 	'Trigger has been altered.' => 'Тригера беше променен.',
 	'Trigger has been created.' => 'Тригера беше създаден.',
@@ -238,14 +236,14 @@ Lang::$translations = array(
 	'Text length' => 'Текст',
 	'Action' => 'Действие',
 	'Full table scan' => 'Пълно сканиране на таблицата',
-	'Unable to select the table' => 'Неуспешно показване на таблицата',
+	'Unable to select the table.' => 'Неуспешно показване на таблицата.',
 	'No rows.' => 'Няма редове.',
 	'%d / ' => '%d / ',
 	'%d row(s)' => array('%d ред', '%d реда'),
 	'Page' => 'Страница',
 	'last' => 'последен',
 	'Load more data' => 'Зареждане на повече данни',
-	'Loading' => 'Зареждане',
+	'Loading…' => 'Зареждане…',
 	'Whole result' => 'Пълен резултат',
 	'%d byte(s)' => array('%d байт', '%d байта'),
 
@@ -253,26 +251,24 @@ Lang::$translations = array(
 	'%d row(s) have been imported.' => array('%d ред беше импортиран.', '%d реда бяха импортирани.'),
 	'File must be in UTF-8 encoding.' => 'Файла трябва да е с UTF-8 кодировка.',
 
-	// in-place editing in select
-	'Modify' => 'Промяна',
+	'All rows on this page' => 'Всички редове на тази страница',
+	'Modify' => 'Промяна', // in-place editing in select
 	'Ctrl+click on a value to modify it.' => 'Ctrl+щракване в стойността, за да я промените.',
-	'Use edit link to modify this value.' => 'Използвайте \'редакция\' за промяна на данните.',
+	'Use the edit link to modify this value.' => 'Използвайте \'редакция\' за промяна на данните.',
 
-	// %s can contain auto-increment value
-	'Item%s has been inserted.' => 'Елементи%s бяха вмъкнати.',
+	'Item%s has been inserted.' => 'Елементи%s бяха вмъкнати.', // %s can contain auto-increment value
 	'Item has been deleted.' => 'Елемента беше изтрит.',
 	'Item has been updated.' => 'Елемента беше обновен.',
 	'%d item(s) have been affected.' => array('%d елемент беше засегнат.', '%d елемента бяха засегнати.'),
 	'New item' => 'Нов елемент',
 	'original' => 'оригинал',
-	// label for value '' in enum data type
-	'empty' => 'празно',
+	'empty' => 'празно', // label for value '' in enum data type
 	'edit' => 'редакция',
 	'Edit' => 'Редактиране',
 	'Insert' => 'Вмъкване',
 	'Save' => 'Запис',
-	'Saving' => 'Записване',
-	'Save and continue edit' => 'Запис и редакция',
+	'Saving…' => 'Записване…',
+	'Save and continue editing' => 'Запис и редакция',
 	'Save and insert next' => 'Запис и нов',
 	'Selected' => 'Избран',
 	'Clone' => 'Клониране',
@@ -287,22 +283,20 @@ Lang::$translations = array(
 	'Lists' => 'Списъци',
 	'Network' => 'Мрежа',
 	'Geometry' => 'Геометрия',
+	'Ranges' => 'Диапазони',
 	'Relations' => 'Зависимости',
 
 	'Editor' => 'Редактор',
-	// date format in Editor: $1 yyyy, $2 yy, $3 mm, $4 m, $5 dd, $6 d
-	'$1-$3-$5' => '$1-$3-$5',
-	// hint for date format - use language equivalents for day, month and year shortcuts
-	'[yyyy]-mm-dd' => '[гггг]-мм-дд',
-	// hint for time format - use language equivalents for hour, minute and second shortcuts
-	'HH:MM:SS' => 'ЧЧ:ММ:СС',
+	'Data editing in a single PHP file' => 'Редактиране на данни в един PHP файл',
+	'$1-$3-$5' => '$1-$3-$5', // date format in Editor: $1 yyyy, $2 yy, $3 mm, $4 m, $5 dd, $6 d
+	'[yyyy]-mm-dd' => '[гггг]-мм-дд', // hint for date format - use language equivalents for day, month and year shortcuts
+	'HH:MM:SS' => 'ЧЧ:ММ:СС', // hint for time format - use language equivalents for hour, minute and second shortcuts
 	'now' => 'сега',
 	'yes' => 'да',
 	'no' => 'не',
 
-	// general SQLite error in create, drop or rename database
-	'File exists.' => 'Файла вече съществува.',
-	'Please use one of the extensions %s.' => 'Моля, използвайте някое от разширенията %s.',
+	'File exists.' => 'Файла вече съществува.', // general SQLite error in create, drop or rename database
+	'Please use one of these file extensions: %s.' => 'Моля, използвайте някое от разширенията %s.',
 
 	// PostgreSQL and MS SQL schema support
 	'Alter schema' => 'Промяна на схемата',
@@ -311,7 +305,6 @@ Lang::$translations = array(
 	'Schema has been created.' => 'Схемата беше създадена.',
 	'Schema has been altered.' => 'Схемата беше променена.',
 	'Schema' => 'Схема',
-	'Invalid schema.' => 'Невалидна схема.',
 
 	// PostgreSQL sequences support
 	'Sequences' => 'Последователности',
@@ -321,12 +314,57 @@ Lang::$translations = array(
 	'Sequence has been altered.' => 'Последователността беше променена.',
 	'Alter sequence' => 'Промяна на последователност',
 
-	// PostgreSQL user types support
-	'User types' => 'Видове потребители',
+	// PostgreSQL user-defined types support
+	'User types' => 'Потребителски типове',
 	'Create type' => 'Създаване на вид',
 	'Type has been dropped.' => 'Вида беше пермахнат.',
 	'Type has been created.' => 'Вида беше създаден.',
+	'Type has been altered.' => 'Вида беше променен.',
 	'Alter type' => 'Промяна на вид',
+	'Extensions' => 'Разширения', // Claude Opus 5
+	'Version' => 'Версия', // Claude Opus 5
+	'Check has been dropped.' => 'Проверката беше премахната.',
+	'Check has been altered.' => 'Проверката беше променена.',
+	'Check has been created.' => 'Проверката беше създадена.',
+	'Alter check' => 'Промяна на проверка',
+	'Create check' => 'Създаване на проверка',
+	'Drop %s?' => 'Премахване на %s?',
+	'overwrite' => 'презаписване',
+	'DB' => 'БД',
+	'System%s' => 'Системни%s', // Claude Opus 5
+	'Algorithm' => 'Алгоритъм',
+	'Columns' => 'Колони',
+	'Condition' => 'Условие',
+	'%s queries are not supported.' => 'Заявките %s не се поддържат.',
+	'Warnings' => 'Предупреждения',
+	'Inherits from' => 'Наследява от',
+	'Checks' => 'Проверки',
+	'Inherited by' => 'Наследен от',
+	'Shadow tables' => 'Сенчести таблици',
+	'hostname[:port] or :socket' => 'hostname[:port] или :socket',
+	'Adminer does not support accessing a database without a password.' => 'Adminer не поддържа достъп до база данни без парола.',
+	'Thanks for using Adminer. Consider <a href="https://www.adminer.org/en/donation/">donating</a>.' => 'Благодарим ви, че използвате Adminer, помислете за <a href="https://www.adminer.org/en/donation/">дарение</a>.',
+	'The action will be performed after successful login with the same credentials.' => 'Действието ще бъде извършено след успешно влизане със същите данни.',
+	'Invalid server.' => 'Невалиден сървър.',
+	'Connecting to privileged ports is not allowed.' => 'Свързването към привилегировани портове не е разрешено.',
+	'There is a space in the entered password, which might be the cause.' => 'Има интервал във въведената парола, което може да е причината.',
+	'Loaded plugins' => 'Заредени плъгини',
+	'screenshot' => 'екранна снимка',
+	'Increase %s.' => 'Увеличете %s.',
+	'Unknown error.' => 'Неизвестна грешка.',
+	'%s must <a%s>return an array</a>.' => '%s трябва да <a%s>връща масив</a>.',
+	'<a%s>Configure</a> %s in %s.' => '<a%s>Конфигурирайте</a> %s в %s.',
+	'Every plugin must <a%s>be an object</a>.' => 'Всеки плъгин трябва да <a%s>бъде обект</a>.',
+	'Disable %s or enable the %s or %s extension.' => 'Изключете %s или включете разширенията %s или %s.',
+	'The database does not support passwords.' => 'Базата данни не поддържа пароли.',
+	'The server accepts any password, so filling it in protects nothing.' => 'Сървърът приема всяка парола, така че попълването ѝ не защитава нищо.',
+	'Require a password.' => 'Изискване на парола.',
+	'Save %s next to Adminer to require the entered password:' => 'Запазете %s до Adminer, за да се изисква въведената парола:',
+	'Save %s next to Adminer to require the password %s:' => 'Запазете %s до Adminer, за да се изисква паролата %s:',
+	'Add this line to %s to require the entered password:' => 'Добавете този ред в %s, за да се изисква въведената парола:',
+	'Add this line to %s to require the password %s:' => 'Добавете този ред в %s, за да се изисква паролата %s:',
+	'More options' => 'Още възможности',
+	'Require a password verified by Adminer' => 'Изисква парола, проверена от Adminer',
 );
 
 // run `php ../../lang.php bg` to update this file

@@ -2,34 +2,34 @@
 namespace Adminer;
 
 Lang::$translations = array(
-	// label for database system selection (MySQL, SQLite, ...)
-	'System' => 'Sistem',
+	'System' => 'Sistem', // label for database system selection (MySQL, SQLite, ...)
 	'Server' => 'Sunucu',
 	'Username' => 'Kullanıcı',
 	'Password' => 'Parola',
 	'Permanent login' => 'Beni hatırla',
 	'Login' => 'Giriş',
 	'Logout' => 'Çıkış',
-	'Logged as: %s' => '%s olarak giriş yapıldı.',
+	'Logged in as: %s' => '%s olarak giriş yapıldı',
 	'Logout successful.' => 'Oturum başarıyla sonlandı.',
-	'Thanks for using Adminer, consider <a href="https://www.adminer.org/en/donation/">donating</a>.' => 'Adminer kullandığınız için teşekkür ederiz <a href="https://www.adminer.org/en/donation/">bağış yapmayı düşünün</a>.',
+	'Thanks for using Adminer. Consider <a href="https://www.adminer.org/en/donation/">donating</a>.' => 'Adminer kullandığınız için teşekkür ederiz <a href="https://www.adminer.org/en/donation/">bağış yapmayı düşünün</a>.',
 	'Invalid credentials.' => 'Geçersiz kimlik bilgileri.',
 	'Too many unsuccessful logins, try again in %d minute(s).' => array('Çok fazla oturum açma denemesi yapıldı.', '%d Dakika sonra tekrar deneyiniz.'),
-	'Master password expired. <a href="https://www.adminer.org/en/extension/"%s>Implement</a> %s method to make it permanent.' => 'Ana şifrenin süresi doldu. Kalıcı olması için <a href="https://www.adminer.org/en/extension/"%s>%s medodunu</a> kullanın.',
+	'Use the %s <a%s>plugin</a> if Adminer runs behind a reverse proxy.' => 'Adminer bir ters proxy arkasında çalışıyorsa %s <a%s>eklentisini</a> kullanın.', // Claude Opus 5
+	'Master password expired. <a href="https://www.adminer.org/en/extension/"%s>Implement</a> the %s method to make it permanent.' => 'Ana şifrenin süresi doldu. Kalıcı olması için <a href="https://www.adminer.org/en/extension/"%s>%s medodunu</a> kullanın.',
 	'Language' => 'Dil',
-	'Invalid CSRF token. Send the form again.' => 'Geçersiz (CSRF) jetonu. Formu tekrar yolla.',
-	'If you did not send this request from Adminer then close this page.' => 'Bu isteği Adminer\'den göndermediyseniz bu sayfayı kapatın.',
+	'Invalid CSRF token. Submit the form again.' => 'Geçersiz (CSRF) jetonu. Formu tekrar yolla.',
+	'If you did not send this request from Adminer, close this page.' => 'Bu isteği Adminer\'den göndermediyseniz bu sayfayı kapatın.',
+	'Not found.' => 'Bulunamadı.', // Claude Opus 5
 	'No extension' => 'Uzantı yok',
 	'None of the supported PHP extensions (%s) are available.' => 'Desteklenen PHP eklentilerinden (%s) hiçbiri mevcut değil.',
 	'Connecting to privileged ports is not allowed.' => 'Ayrıcalıklı bağlantı noktalarına bağlanmaya izin verilmiyor.',
 	'Session support must be enabled.' => 'Oturum desteği etkin olmalıdır.',
-	'Session expired, please login again.' => 'Oturum süresi doldu, lütfen tekrar giriş yapın.',
+	'Session expired. Please log in again.' => 'Oturum süresi doldu, lütfen tekrar giriş yapın.',
 	'The action will be performed after successful login with the same credentials.' => 'İşlem, aynı kimlik bilgileriyle başarıyla oturum açıldıktan sonra gerçekleştirilecektir.',
 	'%s version: %s through PHP extension %s' => '%s sürüm: %s, %s PHP eklentisi ile',
 	'Refresh' => 'Tazele',
 
-	// text direction
-	'ltr' => 'ltr',
+	'ltr' => 'ltr', // text direction
 
 	'Privileges' => 'İzinler',
 	'Create user' => 'Kullanıcı oluştur',
@@ -50,17 +50,16 @@ Lang::$translations = array(
 	'Status' => 'Durum',
 
 	'SQL command' => 'SQL komutu',
-	'%d query(s) executed OK.' => array('%d sorgu başarıyla çalıştırıldı.', '%d adet sorgu başarıyla çalıştırıldı.'),
-	'Query executed OK, %d row(s) affected.' => array('Sorgu başarıyla çalıştırıldı, %d adet kayıt etkilendi.', 'Sorgu başarıyla çalıştırıldı, %d adet kayıt etkilendi.'),
+	'%d query(ies) executed OK.' => array('%d sorgu başarıyla çalıştırıldı.', '%d adet sorgu başarıyla çalıştırıldı.'),
+	'Query executed OK, %d row(s) affected.' => 'Sorgu başarıyla çalıştırıldı, %d adet kayıt etkilendi.',
 	'No commands to execute.' => 'Çalıştırılacak komut yok.',
 	'Error in query' => 'Sorguda hata',
 	'Warnings' => 'Uyarılar',
-	'ATTACH queries are not supported.' => 'ATTACH sorguları desteklenmiyor.',
+	'%s queries are not supported.' => '%s sorguları desteklenmiyor.',
 	'Execute' => 'Çalıştır',
 	'Stop on error' => 'Hata oluşursa dur',
 	'Show only errors' => 'Sadece hataları göster',
-	// sprintf() format for time of the command
-	'%.3f s' => '%.3f s',
+	'%.3f s' => '%.3f s', // sprintf() format for time of the command
 	'History' => 'Geçmiş',
 	'Clear' => 'Temizle',
 	'Edit all' => 'Tümünü düzenle',
@@ -73,23 +72,26 @@ Lang::$translations = array(
 	'File uploads are disabled.' => 'Dosya gönderimi etkin değil.',
 	'Unable to upload a file.' => 'Dosya gönderilemiyor.',
 	'Maximum allowed file size is %sB.' => 'İzin verilen dosya boyutu sınırı %sB.',
-	'Too big POST data. Reduce the data or increase the %s configuration directive.' => 'Çok büyük POST verisi, veriyi azaltın ya da %s ayar yönergesini uygun olarak yapılandırın.',
-	'You can upload a big SQL file via FTP and import it from server.' => 'FTP yoluyla büyük bir SQL dosyası yükleyebilir ve sunucudan içe aktarabilirsiniz.',
+	'The POST data is too large. Reduce the data or increase the %s configuration directive.' => 'Çok büyük POST verisi, veriyi azaltın ya da %s ayar yönergesini uygun olarak yapılandırın.',
+	'You can upload a large SQL file via FTP and import it from the server.' => 'FTP yoluyla büyük bir SQL dosyası yükleyebilir ve sunucudan içe aktarabilirsiniz.',
 	'You are offline.' => 'Çevrimdışısınız.',
+	'Menu' => 'Menü', // Claude Opus 5
+	'Documentation' => 'Dokümantasyon', // Claude Opus 5
+	'Database management in a single PHP file' => 'Tek bir PHP dosyasında veri tabanı yönetimi', // Claude Opus 5
 
 	'Export' => 'Dışarı Aktar',
 	'Output' => 'Çıktı',
 	'open' => 'aç',
 	'save' => 'kaydet',
-	'Saving' => 'Saydediliyor',
+	'Saving…' => 'Saydediliyor…',
 	'Format' => 'Biçim',
 	'Data' => 'Veri',
 
 	'Database' => 'Veri Tabanı',
 	'DB' => 'DB',
+	'System%s' => 'Sistem%s', // Claude Opus 5
 	'Use' => 'Kullan',
 	'Select database' => 'Veri tabanı seç',
-	'Invalid database.' => 'Geçersiz veri tabanı.',
 	'Database has been dropped.' => 'Veri tabanı silindi.',
 	'Databases have been dropped.' => 'Veritabanları silindi.',
 	'Database has been created.' => 'Veri tabanı oluşturuldu.',
@@ -99,11 +101,9 @@ Lang::$translations = array(
 	'Create database' => 'Veri tabanı oluştur',
 	'Database schema' => 'Veri tabanı şeması',
 
-	// link to current database schema layout
-	'Permanent link' => 'Kalıcı bağlantı',
+	'Permanent link' => 'Kalıcı bağlantı', // link to current database schema layout
 
-	// thousands separator - must contain single byte
-	',' => ' ',
+	'#,##0' => '#.##0', // Claude Opus 5
 	'0123456789' => '0123456789',
 	'Engine' => 'Motor',
 	'Collation' => 'Karşılaştırma',
@@ -119,7 +119,7 @@ Lang::$translations = array(
 	'Repair' => 'Tamir Et',
 	'Truncate' => 'Boşalt',
 	'Tables have been truncated.' => 'Tablolar boşaltıldı.',
-	'Move to other database' => 'Başka veri tabanına taşı',
+	'Move to another database' => 'Başka veri tabanına taşı',
 	'Move' => 'Taşı',
 	'Tables have been moved.' => 'Tablolar taşındı.',
 	'Copy' => 'Kopyala',
@@ -153,6 +153,7 @@ Lang::$translations = array(
 
 	'Tables' => 'Tablolar',
 	'Tables and views' => 'Tablolar ve görünümler',
+	'All' => 'Tümü', // Claude Opus 5
 	'Table' => 'Tablo',
 	'No tables.' => 'Tablo yok.',
 	'Alter table' => 'Tabloyu değiştir',
@@ -179,8 +180,6 @@ Lang::$translations = array(
 	'Are you sure?' => 'Emin misiniz?',
 	'Size' => 'Boyut',
 	'Compute' => 'Hesapla',
-	'Move up' => 'Yukarı taşı',
-	'Move down' => 'Aşağı taşı',
 	'Remove' => 'Sil',
 	'Maximum number of allowed fields exceeded. Please increase %s.' => 'İzin verilen en fazla alan sayısı aşıldı. Lütfen %s değerlerini artırın.',
 
@@ -203,9 +202,9 @@ Lang::$translations = array(
 	'Add next' => 'Bundan sonra ekle',
 	'Index Type' => 'İndex Türü',
 	'length' => 'uzunluğu',
+	'operator class' => 'operatör sınıfı', // Claude Fable 5
 
 	'Foreign keys' => 'Dış anahtarlar',
-	'Foreign key' => 'Dış anahtar',
 	'Foreign key has been dropped.' => 'Dış anahtar silindi.',
 	'Foreign key has been altered.' => 'Dış anahtar değiştirildi.',
 	'Foreign key has been created.' => 'Dış anahtar oluşturuldu.',
@@ -215,13 +214,13 @@ Lang::$translations = array(
 	'Target' => 'Hedef',
 	'Add column' => 'Kolon ekle',
 	'Alter' => 'Değiştir',
-	'Add foreign key' => 'Dış anahtar ekle',
+	'Alter foreign key' => 'Dış anahtarı değiştir', // Claude Opus 5
+	'Create foreign key' => 'Dış anahtar oluştur', // Claude Opus 5
 	'ON DELETE' => 'ON DELETE (Hedefteki Kayıt Silinirse)',
 	'ON UPDATE' => 'ON UPDATE (Hedefteki Kayıt Değiştirilirse)',
-	'Source and target columns must have the same data type, there must be an index on the target columns and referenced data must exist.' => 'Kaynak ve hedef kolonlar aynı veri türünde olmalı, hedef kolonlarda dizin bulunmalı ve başvurulan veri mevcut olmalı.',
+	'Source and target columns must have the same data type, there must be an index on the target columns and the referenced data must exist.' => 'Kaynak ve hedef kolonlar aynı veri türünde olmalı, hedef kolonlarda dizin bulunmalı ve başvurulan veri mevcut olmalı.',
 
 	'Triggers' => 'Tetikler',
-	'Add trigger' => 'Tetik ekle',
 	'Trigger has been dropped.' => 'Tetik silindi.',
 	'Trigger has been altered.' => 'Tetik değiştirildi.',
 	'Trigger has been created.' => 'Tetik oluşturuldu.',
@@ -246,40 +245,38 @@ Lang::$translations = array(
 	'Text length' => 'Metin Boyutu',
 	'Action' => 'İşlem',
 	'Full table scan' => 'Tam tablo taraması',
-	'Unable to select the table' => 'Tablo seçilemedi',
+	'Unable to select the table.' => 'Tablo seçilemedi.',
 	'No rows.' => 'Kayıt yok.',
 	'%d / ' => '%d / ',
 	'%d row(s)' => array('%d kayıt', '%d adet kayıt'),
 	'Page' => 'Sayfa',
 	'last' => 'son',
 	'Load more data' => 'Daha fazla veri yükle',
-	'Loading' => 'Yükleniyor',
+	'Loading…' => 'Yükleniyor…',
 	'Whole result' => 'Tüm sonuç',
-	'%d byte(s)' => array('%d bayt', '%d bayt'),
+	'%d byte(s)' => '%d bayt',
 
 	'Import' => 'İçeri Aktar',
 	'%d row(s) have been imported.' => array('%d kayıt içeri aktarıldı.', '%d adet kayıt içeri aktarıldı.'),
 	'File must be in UTF-8 encoding.' => 'Dosya UTF-8 kodlamasında olmalıdır.',
 
-	// in-place editing in select
-	'Modify' => 'Düzenle',
+	'All rows on this page' => 'Bu sayfadaki tüm satırlar', // Claude Opus 5
+	'Modify' => 'Düzenle', // in-place editing in select
 	'Ctrl+click on a value to modify it.' => 'Bir değeri değiştirmek için üzerine Ctrl+tıklayın.',
-	'Use edit link to modify this value.' => 'Değeri değiştirmek için düzenleme bağlantısını kullanın.',
+	'Use the edit link to modify this value.' => 'Değeri değiştirmek için düzenleme bağlantısını kullanın.',
 
-	// %s can contain auto-increment value
-	'Item%s has been inserted.' => 'Kayıt%s eklendi.',
+	'Item%s has been inserted.' => 'Kayıt%s eklendi.', // %s can contain auto-increment value
 	'Item has been deleted.' => 'Kayıt silindi.',
 	'Item has been updated.' => 'Kayıt güncellendi.',
 	'%d item(s) have been affected.' => array('%d kayıt etkilendi.', '%d adet kayıt etkilendi.'),
 	'New item' => 'Yeni kayıt',
 	'original' => 'orijinal',
-	// label for value '' in enum data type
-	'empty' => 'boş',
+	'empty' => 'boş', // label for value '' in enum data type
 	'edit' => 'düzenle',
 	'Edit' => 'Düzenle',
 	'Insert' => 'Ekle',
 	'Save' => 'Kaydet',
-	'Save and continue edit' => 'Kaydet ve düzenlemeye devam et',
+	'Save and continue editing' => 'Kaydet ve düzenlemeye devam et',
 	'Save and insert next' => 'Kaydet ve sonrakini ekle',
 	'Selected' => 'Seçildi',
 	'Clone' => 'Kopyala',
@@ -294,22 +291,20 @@ Lang::$translations = array(
 	'Lists' => 'Listeler',
 	'Network' => 'Ağ',
 	'Geometry' => 'Geometri',
+	'Ranges' => 'Aralıklar', // Claude Opus 5
 	'Relations' => 'İlişkiler',
 
 	'Editor' => 'Düzenleyici',
-	// date format in Editor: $1 yyyy, $2 yy, $3 mm, $4 m, $5 dd, $6 d
-	'$1-$3-$5' => '$6.$4.$1',
-	// hint for date format - use language equivalents for day, month and year shortcuts
-	'[yyyy]-mm-dd' => 'g.a.[yyyy]',
-	// hint for time format - use language equivalents for hour, minute and second shortcuts
-	'HH:MM:SS' => 'SS:DD:ss',
+	'Data editing in a single PHP file' => 'Tek bir PHP dosyasında veri düzenleme', // Claude Opus 5
+	'$1-$3-$5' => '$6.$4.$1', // date format in Editor: $1 yyyy, $2 yy, $3 mm, $4 m, $5 dd, $6 d
+	'[yyyy]-mm-dd' => 'g.a.[yyyy]', // hint for date format - use language equivalents for day, month and year shortcuts
+	'HH:MM:SS' => 'SS:DD:ss', // hint for time format - use language equivalents for hour, minute and second shortcuts
 	'now' => 'şimdi',
 	'yes' => 'evet',
 	'no' => 'hayır',
 
-	// general SQLite error in create, drop or rename database
-	'File exists.' => 'Dosya zaten mevcut.',
-	'Please use one of the extensions %s.' => '%s uzantılarından birini kullanın.',
+	'File exists.' => 'Dosya zaten mevcut.', // general SQLite error in create, drop or rename database
+	'Please use one of these file extensions: %s.' => '%s uzantılarından birini kullanın.',
 
 	// PostgreSQL and MS SQL schema support
 	'Alter schema' => 'Şemayı değiştir',
@@ -318,7 +313,6 @@ Lang::$translations = array(
 	'Schema has been created.' => 'Şema oluşturuldu.',
 	'Schema has been altered.' => 'Şema değiştirildi.',
 	'Schema' => 'Şema',
-	'Invalid schema.' => 'Geçersiz şema.',
 
 	// PostgreSQL sequences support
 	'Sequences' => 'Diziler',
@@ -328,12 +322,49 @@ Lang::$translations = array(
 	'Sequence has been altered.' => 'Dizi değiştirildi.',
 	'Alter sequence' => 'Diziyi değiştir',
 
-	// PostgreSQL user types support
+	// PostgreSQL user-defined types support
 	'User types' => 'Kullanıcı türleri',
 	'Create type' => 'Tür oluştur',
 	'Type has been dropped.' => 'Tür silindi.',
 	'Type has been created.' => 'Tür oluşturuldu.',
+	'Type has been altered.' => 'Tür değiştirildi.', // Claude Opus 5
 	'Alter type' => 'Türü değiştir',
+	'Extensions' => 'Eklentiler', // Claude Opus 5
+	'Version' => 'Sürüm', // Claude Opus 5
+	'Check has been dropped.' => 'Kontrol silindi.', // Claude Fable 5
+	'Check has been altered.' => 'Kontrol değiştirildi.', // Claude Fable 5
+	'Check has been created.' => 'Kontrol oluşturuldu.', // Claude Fable 5
+	'Alter check' => 'Kontrolü değiştir', // Claude Fable 5
+	'Create check' => 'Kontrol oluştur', // Claude Fable 5
+	'overwrite' => 'üzerine yaz', // Claude Fable 5
+	'Algorithm' => 'Algoritma', // Claude Fable 5
+	'Columns' => 'Kolonlar', // Claude Fable 5
+	'Condition' => 'Koşul', // Claude Fable 5
+	'Inherits from' => 'Miras aldığı tablolar', // Claude Fable 5
+	'Checks' => 'Kontroller', // Claude Fable 5
+	'Inherited by' => 'Miras alan tablolar', // Claude Fable 5
+	'Shadow tables' => 'Gölge tablolar', // Claude Opus 5
+	'hostname[:port] or :socket' => 'hostname[:port] veya :socket', // Claude Fable 5
+	'Adminer does not support accessing a database without a password.' => 'Adminer parolasız bir veri tabanına erişimi desteklemez.', // Claude Fable 5
+	'Invalid server.' => 'Geçersiz sunucu.', // Claude Fable 5
+	'There is a space in the entered password, which might be the cause.' => 'Girilen parolada boşluk var, sorunun nedeni bu olabilir.', // Claude Fable 5
+	'Loaded plugins' => 'Yüklenen eklentiler', // Claude Fable 5
+	'screenshot' => 'ekran görüntüsü', // Claude Fable 5
+	'Increase %s.' => '%s değerini artırın.', // Claude Fable 5
+	'Unknown error.' => 'Bilinmeyen hata.', // Claude Fable 5
+	'%s must <a%s>return an array</a>.' => '%s <a%s>bir dizi döndürmelidir</a>.', // Claude Fable 5
+	'<a%s>Configure</a> %s in %s.' => '%2$s ögesini %3$s içinde <a%1$s>yapılandırın</a>.', // Claude Fable 5
+	'Every plugin must <a%s>be an object</a>.' => 'Her eklenti <a%s>bir nesne olmalıdır</a>.', // Claude Opus 5
+	'Disable %s or enable the %s or %s extension.' => '%s ayarını devre dışı bırakın veya %s ya da %s eklentilerini etkinleştirin.', // Claude Opus 5
+	'The database does not support passwords.' => 'Veri tabanı parolayı desteklemez.', // Claude Fable 5
+	'The server accepts any password, so filling it in protects nothing.' => 'Sunucu her parolayı kabul ediyor, bu yüzden parolayı doldurmak hiçbir şeyi korumaz.', // Claude Opus 5
+	'Require a password.' => 'Parola iste.', // Claude Opus 5
+	'Save %s next to Adminer to require the entered password:' => 'Girilen parolanın istenmesi için %s dosyasını Adminer\'ın yanına kaydedin:', // Claude Opus 5
+	'Save %s next to Adminer to require the password %s:' => '%2$s parolasının istenmesi için %1$s dosyasını Adminer\'ın yanına kaydedin:', // Claude Opus 5
+	'Add this line to %s to require the entered password:' => 'Girilen parolanın istenmesi için bu satırı %s dosyasına ekleyin:', // Claude Opus 5
+	'Add this line to %s to require the password %s:' => '%2$s parolasının istenmesi için bu satırı %1$s dosyasına ekleyin:', // Claude Opus 5
+	'More options' => 'Diğer seçenekler', // Claude Opus 5
+	'Require a password verified by Adminer' => 'Adminer tarafından doğrulanan bir parola ister', // Claude Opus 5
 );
 
 // run `php ../../lang.php tr` to update this file

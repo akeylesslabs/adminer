@@ -2,28 +2,26 @@
 namespace Adminer;
 
 Lang::$translations = array(
-	// label for database system selection (MySQL, SQLite, ...)
-	'System' => 'Sistem',
+	'System' => 'Sistem', // label for database system selection (MySQL, SQLite, ...)
 	'Server' => 'Server',
 	'Username' => 'Pengguna',
 	'Password' => 'Sandi',
 	'Permanent login' => 'Masuk permanen',
 	'Login' => 'Masuk',
 	'Logout' => 'Keluar',
-	'Logged as: %s' => 'Masuk sebagai: %s',
+	'Logged in as: %s' => 'Masuk sebagai: %s',
 	'Logout successful.' => 'Berhasil keluar.',
 	'Invalid credentials.' => 'Akses tidak sah.',
 	'Language' => 'Bahasa',
-	'Invalid CSRF token. Send the form again.' => 'Token CSRF tidak sah. Kirim ulang formulir.',
+	'Invalid CSRF token. Submit the form again.' => 'Token CSRF tidak sah. Kirim ulang formulir.',
 	'No extension' => 'Ekstensi tidak ada',
 	'None of the supported PHP extensions (%s) are available.' => 'Ekstensi PHP yang didukung (%s) tidak ada.',
 	'Session support must be enabled.' => 'Dukungan sesi harus aktif.',
-	'Session expired, please login again.' => 'Sesi habis, silakan masuk lagi.',
+	'Session expired. Please log in again.' => 'Sesi habis, silakan masuk lagi.',
 	'%s version: %s through PHP extension %s' => 'Versi %s: %s dengan ekstensi PHP %s',
 	'Refresh' => 'Segarkan',
 
-	// text direction - 'ltr' or 'rtl'
-	'ltr' => 'ltr',
+	'ltr' => 'ltr', // text direction - 'ltr' or 'rtl'
 
 	'Privileges' => 'Privilese',
 	'Create user' => 'Buat pengguna',
@@ -44,15 +42,14 @@ Lang::$translations = array(
 	'Status' => 'Status',
 
 	'SQL command' => 'Perintah SQL',
-	'%d query(s) executed OK.' => '%d kueri berhasil dijalankan.',
+	'%d query(ies) executed OK.' => '%d kueri berhasil dijalankan.',
 	'Query executed OK, %d row(s) affected.' => 'Kueri berhasil, %d baris terpengaruh.',
 	'No commands to execute.' => 'Tidak ada perintah untuk dijalankan.',
 	'Error in query' => 'Galat dalam kueri',
 	'Execute' => 'Jalankan',
 	'Stop on error' => 'Hentikan jika galat',
 	'Show only errors' => 'Hanya tampilkan galat',
-	// sprintf() format for time of the command
-	'%.3f s' => '%.3f s',
+	'%.3f s' => '%.3f s', // sprintf() format for time of the command
 	'History' => 'Riwayat',
 	'Clear' => 'Bersihkan',
 
@@ -65,7 +62,7 @@ Lang::$translations = array(
 	'File uploads are disabled.' => 'Pengunggahan berkas dimatikan.',
 	'Unable to upload a file.' => 'Tidak dapat mengunggah berkas.',
 	'Maximum allowed file size is %sB.' => 'Besar berkas yang diizinkan adalah %sB.',
-	'Too big POST data. Reduce the data or increase the %s configuration directive.' => 'Data POST terlalu besar. Kurangi data atau perbesar direktif konfigurasi %s.',
+	'The POST data is too large. Reduce the data or increase the %s configuration directive.' => 'Data POST terlalu besar. Kurangi data atau perbesar direktif konfigurasi %s.',
 
 	'Export' => 'Ekspor',
 	'Output' => 'Hasil',
@@ -77,7 +74,6 @@ Lang::$translations = array(
 	'Database' => 'Basis data',
 	'Use' => 'Gunakan',
 	'Select database' => 'Pilih basis data',
-	'Invalid database.' => 'Basis data tidak sah.',
 	'Database has been dropped.' => 'Basis data berhasil dihapus.',
 	'Databases have been dropped.' => 'Basis data berhasil dihapus.',
 	'Database has been created.' => 'Basis data berhasil dibuat.',
@@ -87,11 +83,9 @@ Lang::$translations = array(
 	'Create database' => 'Buat basis data',
 	'Database schema' => 'Skema basis data',
 
-	// link to current database schema layout
-	'Permanent link' => 'Pranala permanen',
+	'Permanent link' => 'Pranala permanen', // link to current database schema layout
 
-	// thousands separator - must contain single byte
-	',' => '.',
+	'#,##0' => '#.##0',
 	'0123456789' => '0123456789',
 	'Engine' => 'Mesin',
 	'Collation' => 'Kolasi',
@@ -106,7 +100,7 @@ Lang::$translations = array(
 	'Repair' => 'Perbaiki',
 	'Truncate' => 'Kosongkan',
 	'Tables have been truncated.' => 'Tabel berhasil dikosongkan.',
-	'Move to other database' => 'Pindahkan ke basis data lain',
+	'Move to another database' => 'Pindahkan ke basis data lain',
 	'Move' => 'Pindahkan',
 	'Tables have been moved.' => 'Tabel berhasil dipindahkan.',
 	'Copy' => 'Salin',
@@ -140,6 +134,7 @@ Lang::$translations = array(
 
 	'Tables' => 'Tabel',
 	'Tables and views' => 'Tabel dan tampilan',
+	'All' => 'Semua', // Claude Opus 5
 	'Table' => 'Tabel',
 	'No tables.' => 'Tidak ada tabel.',
 	'Alter table' => 'Ubah tabel',
@@ -162,8 +157,6 @@ Lang::$translations = array(
 	'Default values' => 'Nilai bawaan',
 	'Drop' => 'Hapus',
 	'Are you sure?' => 'Anda yakin?',
-	'Move up' => 'Naik',
-	'Move down' => 'Turun',
 	'Remove' => 'Hapus',
 	'Maximum number of allowed fields exceeded. Please increase %s.' => 'Sudah lebih dumlah ruas maksimum yang diizinkan. Harap naikkan %s.',
 
@@ -173,6 +166,7 @@ Lang::$translations = array(
 	'Values' => 'Nilai',
 
 	'View' => 'Tampilan',
+	'Materialized view' => 'Tampilan termaterialisasi', // Claude Opus 5
 	'View has been dropped.' => 'Tampilan berhasil dihapus.',
 	'View has been altered.' => 'Tampilan berhasil diubah.',
 	'View has been created.' => 'Tampilan berhasil dibuat.',
@@ -185,9 +179,9 @@ Lang::$translations = array(
 	'Add next' => 'Tambah setelahnya',
 	'Index Type' => 'Jenis Indeks',
 	'length' => 'panjang',
+	'operator class' => 'kelas operator', // Claude Fable 5
 
 	'Foreign keys' => 'Kunci asing',
-	'Foreign key' => 'Kunci asing',
 	'Foreign key has been dropped.' => 'Kunci asing berhasil dihapus.',
 	'Foreign key has been altered.' => 'Kunci asing berhasil diubah.',
 	'Foreign key has been created.' => 'Kunci asing berhasil dibuat.',
@@ -197,13 +191,13 @@ Lang::$translations = array(
 	'Target' => 'Sasaran',
 	'Add column' => 'Tambah kolom',
 	'Alter' => 'Ubah',
-	'Add foreign key' => 'Tambah kunci asing',
+	'Alter foreign key' => 'Ubah kunci asing', // Claude Opus 5
+	'Create foreign key' => 'Buat kunci asing', // Claude Opus 5
 	'ON DELETE' => 'ON DELETE',
 	'ON UPDATE' => 'ON UPDATE',
-	'Source and target columns must have the same data type, there must be an index on the target columns and referenced data must exist.' => 'Kolom sumber dan sasaran harus memiliki jenis data yang sama. Kolom sasaran harus memiliki indeks dan data rujukan harus ada.',
+	'Source and target columns must have the same data type, there must be an index on the target columns and the referenced data must exist.' => 'Kolom sumber dan sasaran harus memiliki jenis data yang sama. Kolom sasaran harus memiliki indeks dan data rujukan harus ada.',
 
 	'Triggers' => 'Pemicu',
-	'Add trigger' => 'Tambah pemicu',
 	'Trigger has been dropped.' => 'Pemicu berhasil dihapus.',
 	'Trigger has been altered.' => 'Pemicu berhasil diubah.',
 	'Trigger has been created.' => 'Pemicu berhasil dibuat.',
@@ -227,7 +221,7 @@ Lang::$translations = array(
 	'Text length' => 'Panjang teks',
 	'Action' => 'Tindakan',
 	'Full table scan' => 'Pindai tabel lengkap',
-	'Unable to select the table' => 'Gagal memilih tabel',
+	'Unable to select the table.' => 'Gagal memilih tabel.',
 	'No rows.' => 'Tidak ada baris.',
 	'%d row(s)' => '%d baris',
 	'Page' => 'Halaman',
@@ -238,23 +232,20 @@ Lang::$translations = array(
 	'Import' => 'Impor',
 	'%d row(s) have been imported.' => '%d baris berhasil diimpor.',
 
-	// in-place editing in select
-	'Use edit link to modify this value.' => 'Gunakan pranala suntingan untuk mengubah nilai ini.',
+	'Use the edit link to modify this value.' => 'Gunakan pranala suntingan untuk mengubah nilai ini.', // in-place editing in select
 
-	// %s can contain auto-increment value
-	'Item%s has been inserted.' => 'Entri%s berhasil disisipkan.',
+	'Item%s has been inserted.' => 'Entri%s berhasil disisipkan.', // %s can contain auto-increment value
 	'Item has been deleted.' => 'Entri berhasil dihapus.',
 	'Item has been updated.' => 'Entri berhasil diperbarui.',
 	'%d item(s) have been affected.' => '%d entri terpengaruh.',
 	'New item' => 'Entri baru',
 	'original' => 'asli',
-	// label for value '' in enum data type
-	'empty' => 'kosong',
+	'empty' => 'kosong', // label for value '' in enum data type
 	'edit' => 'sunting',
 	'Edit' => 'Sunting',
 	'Insert' => 'Sisipkan',
 	'Save' => 'Simpan',
-	'Save and continue edit' => 'Simpan dan lanjut menyunting',
+	'Save and continue editing' => 'Simpan dan lanjut menyunting',
 	'Save and insert next' => 'Simpan dan sisipkan berikutnya',
 	'Clone' => 'Gandakan',
 	'Delete' => 'Hapus',
@@ -267,22 +258,20 @@ Lang::$translations = array(
 	'Lists' => 'Daftar',
 	'Network' => 'Jaringan',
 	'Geometry' => 'Geometri',
+	'Ranges' => 'Rentang', // Claude Opus 5
 	'Relations' => 'Relasi',
 
 	'Editor' => 'Editor',
-	// date format in Editor: $1 yyyy, $2 yy, $3 mm, $4 m, $5 dd, $6 d
-	'$1-$3-$5' => '$1-$3-$5',
-	// hint for date format - use language equivalents for day, month and year shortcuts
-	'[yyyy]-mm-dd' => '[yyyy]-mm-dd',
-	// hint for time format - use language equivalents for hour, minute and second shortcuts
-	'HH:MM:SS' => 'HH:MM:SS',
+	'Data editing in a single PHP file' => 'Penyuntingan data dalam satu berkas PHP', // Claude Opus 5
+	'$1-$3-$5' => '$1-$3-$5', // date format in Editor: $1 yyyy, $2 yy, $3 mm, $4 m, $5 dd, $6 d
+	'[yyyy]-mm-dd' => '[yyyy]-mm-dd', // hint for date format - use language equivalents for day, month and year shortcuts
+	'HH:MM:SS' => 'HH:MM:SS', // hint for time format - use language equivalents for hour, minute and second shortcuts
 	'now' => 'now',
 	'yes' => 'yes',
 	'no' => 'no',
 
-	// general SQLite error in create, drop or rename database
-	'File exists.' => 'Berkas sudah ada.',
-	'Please use one of the extensions %s.' => 'Harap gunakan salah satu ekstensi %s.',
+	'File exists.' => 'Berkas sudah ada.', // general SQLite error in create, drop or rename database
+	'Please use one of these file extensions: %s.' => 'Harap gunakan salah satu ekstensi %s.',
 
 	// PostgreSQL and MS SQL schema support
 	'Alter schema' => 'Ubah skema',
@@ -291,7 +280,6 @@ Lang::$translations = array(
 	'Schema has been created.' => 'Skema berhasil dibuat.',
 	'Schema has been altered.' => 'Skema berhasil diubah.',
 	'Schema' => 'Skema',
-	'Invalid schema.' => 'Skema tidak sah.',
 
 	// PostgreSQL sequences support
 	'Sequences' => 'Deret',
@@ -301,12 +289,82 @@ Lang::$translations = array(
 	'Sequence has been altered.' => 'Deret berhasil diubah.',
 	'Alter sequence' => 'Ubah deret',
 
-	// PostgreSQL user types support
+	// PostgreSQL user-defined types support
 	'User types' => 'Jenis pengguna',
 	'Create type' => 'Buat jenis',
 	'Type has been dropped.' => 'Jenis berhasil dihapus.',
 	'Type has been created.' => 'Jenis berhasil dibuat.',
+	'Type has been altered.' => 'Jenis berhasil diubah.', // Claude Opus 5
 	'Alter type' => 'Ubah jenis',
+	'Extensions' => 'Ekstensi', // Claude Opus 5
+	'Version' => 'Versi', // Claude Opus 5
+	'Check has been dropped.' => 'Pemeriksaan berhasil dihapus.', // Claude Fable 5
+	'Check has been altered.' => 'Pemeriksaan berhasil diubah.', // Claude Fable 5
+	'Check has been created.' => 'Pemeriksaan berhasil dibuat.', // Claude Fable 5
+	'Alter check' => 'Ubah pemeriksaan', // Claude Fable 5
+	'Create check' => 'Buat pemeriksaan', // Claude Fable 5
+	'Drop %s?' => 'Hapus %s?', // Claude Fable 5
+	'Vacuum' => 'Bersihkan', // Claude Fable 5
+	'Selected' => 'Terpilih', // Claude Fable 5
+	'overwrite' => 'timpa', // Claude Fable 5
+	'DB' => 'DB', // Claude Fable 5
+	'System%s' => 'Sistem%s', // Claude Opus 5
+	'Algorithm' => 'Algoritme', // Claude Fable 5
+	'Columns' => 'Kolom', // Claude Fable 5
+	'Condition' => 'Kondisi', // Claude Fable 5
+	'Ctrl+click on a value to modify it.' => 'Ctrl+klik pada nilai untuk mengubahnya.', // Claude Fable 5
+	'File must be in UTF-8 encoding.' => 'Berkas harus dalam pengodean UTF-8.', // Claude Fable 5
+	'All rows on this page' => 'Semua baris di halaman ini', // Claude Opus 5
+	'Modify' => 'Ubah', // Claude Fable 5
+	'Load more data' => 'Muat lebih banyak data', // Claude Fable 5
+	'Loading…' => 'Memuat…', // Claude Fable 5
+	'%s queries are not supported.' => 'Kueri %s tidak didukung.', // Claude Fable 5
+	'Warnings' => 'Peringatan', // Claude Fable 5
+	'%d / ' => '%d / ', // Claude Fable 5
+	'Limit rows' => 'Batas baris', // Claude Fable 5
+	'Inherits from' => 'Mewarisi dari', // Claude Fable 5
+	'Checks' => 'Pemeriksaan', // Claude Fable 5
+	'Inherited by' => 'Diwarisi oleh', // Claude Fable 5
+	'Shadow tables' => 'Tabel bayangan', // Claude Opus 5
+	'hostname[:port] or :socket' => 'hostname[:port] atau :socket', // Claude Fable 5
+	'Adminer does not support accessing a database without a password.' => 'Adminer tidak mendukung akses basis data tanpa sandi.', // Claude Fable 5
+	'Default value' => 'Nilai bawaan', // Claude Fable 5
+	'Too many unsuccessful logins, try again in %d minute(s).' => 'Terlalu banyak upaya masuk yang gagal, coba lagi dalam %d menit.', // Claude Fable 5
+	'Use the %s <a%s>plugin</a> if Adminer runs behind a reverse proxy.' => 'Gunakan <a%2$s>plugin</a> %1$s jika Adminer berjalan di belakang reverse proxy.', // Claude Opus 5
+	'Thanks for using Adminer. Consider <a href="https://www.adminer.org/en/donation/">donating</a>.' => 'Terima kasih telah menggunakan Adminer, pertimbangkan untuk <a href="https://www.adminer.org/en/donation/">berdonasi</a>.', // Claude Fable 5
+	'Master password expired. <a href="https://www.adminer.org/en/extension/"%s>Implement</a> the %s method to make it permanent.' => 'Sandi utama kedaluwarsa. <a href="https://www.adminer.org/en/extension/"%s>Implementasikan</a> metode %s agar permanen.', // Claude Fable 5
+	'The action will be performed after successful login with the same credentials.' => 'Tindakan akan dilakukan setelah berhasil masuk dengan kredensial yang sama.', // Claude Fable 5
+	'Invalid server.' => 'Server tidak valid.', // Claude Fable 5
+	'Connecting to privileged ports is not allowed.' => 'Koneksi ke port istimewa tidak diizinkan.', // Claude Fable 5
+	'There is a space in the entered password, which might be the cause.' => 'Ada spasi pada sandi yang dimasukkan yang mungkin menjadi penyebabnya.', // Claude Fable 5
+	'If you did not send this request from Adminer, close this page.' => 'Jika Anda tidak mengirim permintaan ini dari Adminer, tutup halaman ini.', // Claude Fable 5
+	'Not found.' => 'Tidak ditemukan.', // Claude Opus 5
+	'You can upload a large SQL file via FTP and import it from the server.' => 'Anda dapat mengunggah berkas SQL besar melalui FTP dan mengimpornya dari server.', // Claude Fable 5
+	'Size' => 'Ukuran', // Claude Fable 5
+	'Compute' => 'Hitung', // Claude Fable 5
+	'Loaded plugins' => 'Plugin yang dimuat', // Claude Fable 5
+	'screenshot' => 'tangkapan layar', // Claude Fable 5
+	'You are offline.' => 'Anda sedang luring.', // Claude Fable 5
+	'Menu' => 'Menu', // Claude Opus 5
+	'Documentation' => 'Dokumentasi', // Claude Opus 5
+	'Database management in a single PHP file' => 'Manajemen basis data dalam satu berkas PHP', // Claude Opus 5
+	'Increase %s.' => 'Naikkan %s.', // Claude Fable 5
+	'You have no privileges to update this table.' => 'Anda tidak memiliki hak istimewa untuk memperbarui tabel ini.', // Claude Fable 5
+	'Saving…' => 'Menyimpan…', // Claude Fable 5
+	'Unknown error.' => 'Kesalahan tidak dikenal.', // Claude Fable 5
+	'%s must <a%s>return an array</a>.' => '%s harus <a%s>mengembalikan array</a>.', // Claude Fable 5
+	'<a%s>Configure</a> %s in %s.' => '<a%s>Konfigurasikan</a> %s di %s.', // Claude Fable 5
+	'Every plugin must <a%s>be an object</a>.' => 'Setiap plugin harus <a%s>berupa objek</a>.', // Claude Opus 5
+	'Disable %s or enable the %s or %s extension.' => 'Nonaktifkan %s atau aktifkan ekstensi %s atau %s.', // Claude Opus 5
+	'The database does not support passwords.' => 'Basis data tidak mendukung sandi.', // Claude Fable 5
+	'The server accepts any password, so filling it in protects nothing.' => 'Server menerima sandi apa pun, sehingga mengisinya tidak melindungi apa-apa.', // Claude Opus 5
+	'Require a password.' => 'Wajibkan sandi.', // Claude Opus 5
+	'Save %s next to Adminer to require the entered password:' => 'Simpan %s di samping Adminer agar sandi yang dimasukkan diwajibkan:', // Claude Opus 5
+	'Save %s next to Adminer to require the password %s:' => 'Simpan %s di samping Adminer agar sandi %s diwajibkan:', // Claude Opus 5
+	'Add this line to %s to require the entered password:' => 'Tambahkan baris ini ke %s agar sandi yang dimasukkan diwajibkan:', // Claude Opus 5
+	'Add this line to %s to require the password %s:' => 'Tambahkan baris ini ke %s agar sandi %s diwajibkan:', // Claude Opus 5
+	'More options' => 'Opsi lainnya', // Claude Opus 5
+	'Require a password verified by Adminer' => 'Mewajibkan sandi yang diverifikasi oleh Adminer', // Claude Opus 5
 );
 
 // run `php ../../lang.php id` to update this file

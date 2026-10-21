@@ -2,38 +2,48 @@
 namespace Adminer;
 
 Lang::$translations = array(
-	// label for database system selection (MySQL, SQLite, ...)
-	'System' => 'Rodzaj bazy',
+	'System' => 'Rodzaj bazy', // label for database system selection (MySQL, SQLite, ...)
 	'Server' => 'Serwer',
 	'Username' => 'Użytkownik',
 	'Password' => 'Hasło',
 	'Permanent login' => 'Zapamiętaj sesję',
 	'Login' => 'Zaloguj się',
 	'Logout' => 'Wyloguj się',
-	'Logged as: %s' => 'Zalogowany jako: %s',
+	'Logged in as: %s' => 'Zalogowany jako: %s',
 	'Logout successful.' => 'Wylogowano pomyślnie.',
-	'Thanks for using Adminer, consider <a href="https://www.adminer.org/en/donation/">donating</a>.' => 'Dziękujemy za używanie Adminera, rozważ <a href="https://www.adminer.org/pl/donation/">dotację</a>.',
+	'Thanks for using Adminer. Consider <a href="https://www.adminer.org/en/donation/">donating</a>.' => 'Dziękujemy za używanie Adminera, rozważ <a href="https://www.adminer.org/pl/donation/">dotację</a>.',
+	'hostname[:port] or :socket' => 'hostname[:port] lub :socket',
+	'Invalid server.' => 'Nieprawidłowy serwer.',
 	'Invalid credentials.' => 'Nieprawidłowe dane logowania.',
-	'There is a space in the input password which might be the cause.' => 'W haśle wejściowym znajduje się spacja, która może być przyczyną.',
-	'Adminer does not support accessing a database without a password, <a href="https://www.adminer.org/en/password/"%s>more information</a>.' => 'Adminer nie obsługuje dostępu do bazy danych bez hasła, <a href="https://www.adminer.org/pl/password/"%s>więcej informacji</a>.',
-	'Database does not support password.' => 'Baza danych nie obsługuje hasła.',
+	'There is a space in the entered password, which might be the cause.' => 'W haśle wejściowym znajduje się spacja, która może być przyczyną.',
+	'Adminer does not support accessing a database without a password.' => 'Adminer nie obsługuje dostępu do bazy danych bez hasła.',
+	'The database does not support passwords.' => 'Baza danych nie obsługuje hasła.',
+	'The server accepts any password, so filling it in protects nothing.' => 'Serwer akceptuje dowolne hasło, więc jego wpisanie niczego nie chroni.',
+	'Require a password.' => 'Wymagaj hasła.',
+	'Save %s next to Adminer to require the entered password:' => 'Zapisz %s obok Adminera, aby wymagane było wpisane hasło:',
+	'Save %s next to Adminer to require the password %s:' => 'Zapisz %s obok Adminera, aby wymagane było hasło %s:',
+	'Add this line to %s to require the entered password:' => 'Dodaj tę linię do %s, aby wymagane było wpisane hasło:',
+	'Add this line to %s to require the password %s:' => 'Dodaj tę linię do %s, aby wymagane było hasło %s:',
+	'More options' => 'Więcej opcji',
+	'Require a password verified by Adminer' => 'Wymagaj hasła weryfikowanego przez Adminera',
 	'Too many unsuccessful logins, try again in %d minute(s).' => array('Za dużo nieudanych prób logowania, spróbuj ponownie za %d minutę.', 'Za dużo nieudanych prób logowania, spróbuj ponownie za %d minuty.', 'Za dużo nieudanych prób logowania, spróbuj ponownie za %d minut.'),
-	'Master password expired. <a href="https://www.adminer.org/en/extension/"%s>Implement</a> %s method to make it permanent.' => 'Ważność hasła głównego wygasła. <a href="https://www.adminer.org/pl/extension/"%s>Zaimplementuj</a> własną metodę %s, aby ustawić je na stałe.',
+	'Use the %s <a%s>plugin</a> if Adminer runs behind a reverse proxy.' => 'Jeśli Adminer działa za odwrotnym proxy, użyj <a%2$s>wtyczki</a> %1$s.',
+	'Master password expired. <a href="https://www.adminer.org/en/extension/"%s>Implement</a> the %s method to make it permanent.' => 'Ważność hasła głównego wygasła. <a href="https://www.adminer.org/pl/extension/"%s>Zaimplementuj</a> własną metodę %s, aby ustawić je na stałe.',
 	'Language' => 'Język',
-	'Invalid CSRF token. Send the form again.' => 'Nieprawidłowy token CSRF. Spróbuj wysłać formularz ponownie.',
-	'If you did not send this request from Adminer then close this page.' => 'Jeżeli nie wywołałeś tej strony z Adminera, zamknij to okno.',
+	'Invalid CSRF token. Submit the form again.' => 'Nieprawidłowy token CSRF. Spróbuj wysłać formularz ponownie.',
+	'If you did not send this request from Adminer, close this page.' => 'Jeżeli nie wywołałeś tej strony z Adminera, zamknij to okno.',
+	'Not found.' => 'Nie znaleziono.', // Claude Opus 5
 	'No extension' => 'Brak rozszerzenia',
 	'None of the supported PHP extensions (%s) are available.' => 'Żadne z rozszerzeń PHP umożliwiających połączenie się z bazą danych (%s) nie jest dostępne.',
 	'Connecting to privileged ports is not allowed.' => 'Łączenie do portów uprzywilejowanych jest niedozwolone.',
-	'Disable %s or enable %s or %s extensions.' => 'Wyłącz %s lub włącz rozszerzenia %s lub %s.',
+	'Disable %s or enable the %s or %s extension.' => 'Wyłącz %s lub włącz rozszerzenia %s lub %s.',
 	'Session support must be enabled.' => 'Wymagana jest obsługa sesji w PHP.',
-	'Session expired, please login again.' => 'Sesja wygasła, zaloguj się ponownie.',
+	'Session expired. Please log in again.' => 'Sesja wygasła, zaloguj się ponownie.',
 	'The action will be performed after successful login with the same credentials.' => 'Czynność zostanie wykonana po pomyślnym zalogowaniu przy użyciu tych samych danych logowania.',
 	'%s version: %s through PHP extension %s' => 'Wersja %s: %s za pomocą %s',
 	'Refresh' => 'Odśwież',
 
-	// text direction - 'ltr' or 'rtl'
-	'ltr' => 'ltr',
+	'ltr' => 'ltr', // text direction - 'ltr' or 'rtl'
 
 	'Privileges' => 'Uprawnienia użytkowników',
 	'Create user' => 'Dodaj użytkownika',
@@ -55,18 +65,17 @@ Lang::$translations = array(
 	'Status' => 'Status',
 
 	'SQL command' => 'Zapytanie SQL',
-	'%d query(s) executed OK.' => array('Pomyślnie wykonano %d zapytanie.', 'Pomyślnie wykonano %d zapytania.', 'Pomyślnie wykonano %d zapytań.'),
+	'%d query(ies) executed OK.' => array('Pomyślnie wykonano %d zapytanie.', 'Pomyślnie wykonano %d zapytania.', 'Pomyślnie wykonano %d zapytań.'),
 	'Query executed OK, %d row(s) affected.' => array('Zapytanie wykonane pomyślnie, zmieniono %d rekord.', 'Zapytanie wykonane pomyślnie, zmieniono %d rekordy.', 'Zapytanie wykonane pomyślnie, zmieniono %d rekordów.'),
 	'No commands to execute.' => 'Nic do wykonania.',
 	'Error in query' => 'Błąd w zapytaniu',
 	'Unknown error.' => 'Nieznany błąd.',
 	'Warnings' => 'Ostrzeżenia',
-	'ATTACH queries are not supported.' => 'Zapytania ATTACH są niewspierane.',
+	'%s queries are not supported.' => 'Zapytania %s są niewspierane.',
 	'Execute' => 'Wykonaj',
 	'Stop on error' => 'Zatrzymaj w przypadku błędu',
 	'Show only errors' => 'Pokaż tylko błędy',
-	// sprintf() format for time of the command
-	'%.3f s' => '%.3f s',
+	'%.3f s' => '%.3f s', // sprintf() format for time of the command
 	'History' => 'Historia',
 	'Clear' => 'Wyczyść',
 	'Edit all' => 'Edytuj wszystkie',
@@ -80,23 +89,26 @@ Lang::$translations = array(
 	'File uploads are disabled.' => 'Wgrywanie plików jest wyłączone.',
 	'Unable to upload a file.' => 'Wgranie pliku było niemożliwe.',
 	'Maximum allowed file size is %sB.' => 'Maksymalna wielkość pliku to %sB.',
-	'Too big POST data. Reduce the data or increase the %s configuration directive.' => 'Przesłano zbyt dużo danych. Zmniejsz objętość danych lub zwiększ zmienną konfiguracyjną %s.',
-	'You can upload a big SQL file via FTP and import it from server.' => 'Większe pliki SQL możesz wgrać na serwer poprzez FTP przed zaimportowaniem.',
+	'The POST data is too large. Reduce the data or increase the %s configuration directive.' => 'Przesłano zbyt dużo danych. Zmniejsz objętość danych lub zwiększ zmienną konfiguracyjną %s.',
+	'You can upload a large SQL file via FTP and import it from the server.' => 'Większe pliki SQL możesz wgrać na serwer poprzez FTP przed zaimportowaniem.',
 	'You are offline.' => 'Jesteś offline.',
+	'Menu' => 'Menu',
+	'Documentation' => 'Dokumentacja', // Claude Opus 5
+	'Database management in a single PHP file' => 'Zarządzanie bazą danych w jednym pliku PHP',
 
 	'Export' => 'Eksportuj',
 	'Output' => 'Rezultat',
 	'open' => 'otwórz',
 	'save' => 'zapisz',
-	'Saving' => 'Zapisywanie',
+	'Saving…' => 'Zapisywanie…',
 	'Format' => 'Format',
 	'Data' => 'Dane',
 
 	'Database' => 'Baza danych',
 	'DB' => 'BD',
+	'System%s' => 'Systemowe%s', // Claude Opus 5
 	'Use' => 'Wybierz',
 	'Select database' => 'Wybierz bazę danych',
-	'Invalid database.' => 'Nie znaleziono bazy danych.',
 	'Database has been dropped.' => 'Baza danych została usunięta.',
 	'Databases have been dropped.' => 'Bazy danych zostały usunięte.',
 	'Database has been created.' => 'Baza danych została utworzona.',
@@ -106,11 +118,9 @@ Lang::$translations = array(
 	'Create database' => 'Utwórz bazę danych',
 	'Database schema' => 'Schemat bazy danych',
 
-	// link to current database schema layout
-	'Permanent link' => 'Trwały link',
+	'Permanent link' => 'Trwały link', // link to current database schema layout
 
-	// thousands separator - must contain single byte
-	',' => ' ',
+	'#,##0' => '# ##0',
 	'0123456789' => '0123456789',
 	'Engine' => 'Składowanie',
 	'Collation' => 'Porównywanie znaków',
@@ -126,7 +136,7 @@ Lang::$translations = array(
 	'Repair' => 'Napraw',
 	'Truncate' => 'Opróżnij',
 	'Tables have been truncated.' => 'Tabele zostały opróżnione.',
-	'Move to other database' => 'Przenieś do innej bazy danych',
+	'Move to another database' => 'Przenieś do innej bazy danych',
 	'Move' => 'Przenieś',
 	'Tables have been moved.' => 'Tabele zostały przeniesione.',
 	'Copy' => 'Kopiuj',
@@ -161,6 +171,7 @@ Lang::$translations = array(
 
 	'Tables' => 'Tabele',
 	'Tables and views' => 'Tabele i perspektywy',
+	'All' => 'Wszystko',
 	'Table' => 'Tabela',
 	'No tables.' => 'Brak tabel.',
 	'Alter table' => 'Zmień tabelę',
@@ -187,8 +198,6 @@ Lang::$translations = array(
 	'Are you sure?' => 'Czy na pewno?',
 	'Size' => 'Rozmiar',
 	'Compute' => 'Oblicz',
-	'Move up' => 'Przesuń w górę',
-	'Move down' => 'Przesuń w dół',
 	'Remove' => 'Usuń',
 	'Maximum number of allowed fields exceeded. Please increase %s.' => 'Przekroczono maksymalną liczbę pól. Zwiększ %s.',
 
@@ -198,6 +207,7 @@ Lang::$translations = array(
 	'Values' => 'Wartości',
 	'Inherits from' => 'Dziedziczy po',
 	'Inherited by' => 'Odziedziczone przez',
+	'Shadow tables' => 'Tabele cienia',
 
 	'View' => 'Perspektywa',
 	'Materialized view' => 'Zmaterializowana perspektywa',
@@ -213,11 +223,11 @@ Lang::$translations = array(
 	'Add next' => 'Dodaj następny',
 	'Index Type' => 'Typ indeksu',
 	'length' => 'długość',
+	'operator class' => 'klasa operatorów',
 	'Algorithm' => 'Algorytm',
 	'Condition' => 'Warunek',
 
 	'Foreign keys' => 'Klucze obce',
-	'Foreign key' => 'Klucz obcy',
 	'Foreign key has been dropped.' => 'Klucz obcy został usunięty.',
 	'Foreign key has been altered.' => 'Klucz obcy został zmieniony.',
 	'Foreign key has been created.' => 'Klucz obcy został utworzony.',
@@ -227,13 +237,13 @@ Lang::$translations = array(
 	'Target' => 'Cel',
 	'Add column' => 'Dodaj kolumnę',
 	'Alter' => 'Zmień',
-	'Add foreign key' => 'Dodaj klucz obcy',
+	'Alter foreign key' => 'Zmień klucz obcy',
+	'Create foreign key' => 'Utwórz klucz obcy',
 	'ON DELETE' => 'W przypadku usunięcia',
 	'ON UPDATE' => 'W przypadku zmiany',
-	'Source and target columns must have the same data type, there must be an index on the target columns and referenced data must exist.' => 'Źródłowa i docelowa kolumna muszą być tego samego typu, powinien istnieć indeks na docelowej kolumnie oraz muszą istnieć dane referencyjne.',
+	'Source and target columns must have the same data type, there must be an index on the target columns and the referenced data must exist.' => 'Źródłowa i docelowa kolumna muszą być tego samego typu, powinien istnieć indeks na docelowej kolumnie oraz muszą istnieć dane referencyjne.',
 
 	'Triggers' => 'Wyzwalacze',
-	'Add trigger' => 'Dodaj wyzwalacz',
 	'Trigger has been dropped.' => 'Wyzwalacz został usunięty.',
 	'Trigger has been altered.' => 'Wyzwalacz został zmieniony.',
 	'Trigger has been created.' => 'Wyzwalacz został utworzony.',
@@ -258,14 +268,14 @@ Lang::$translations = array(
 	'Text length' => 'Długość tekstu',
 	'Action' => 'Czynność',
 	'Full table scan' => 'Wymaga pełnego przeskanowania tabeli',
-	'Unable to select the table' => 'Nie udało się pobrać danych z tabeli',
+	'Unable to select the table.' => 'Nie udało się pobrać danych z tabeli.',
 	'No rows.' => 'Brak rekordów.',
 	'%d / ' => '%d / ',
 	'%d row(s)' => array('%d rekord', '%d rekordy', '%d rekordów'),
 	'Page' => 'Strona',
 	'last' => 'ostatni',
 	'Load more data' => 'Wczytaj więcej danych',
-	'Loading' => 'Wczytywanie',
+	'Loading…' => 'Wczytywanie…',
 	'Whole result' => 'Wybierz wszystkie',
 	'%d byte(s)' => array('%d bajt', '%d bajty', '%d bajtów'),
 
@@ -273,25 +283,23 @@ Lang::$translations = array(
 	'%d row(s) have been imported.' => array('%d rekord został zaimportowany.', '%d rekordy zostały zaimportowane.', '%d rekordów zostało zaimportowanych.'),
 	'File must be in UTF-8 encoding.' => 'Kodowanie pliku musi być ustawione na UTF-8.',
 
-	// in-place editing in select
-	'Modify' => 'Zmień',
+	'All rows on this page' => 'Wszystkie wiersze na tej stronie',
+	'Modify' => 'Zmień', // in-place editing in select
 	'Ctrl+click on a value to modify it.' => 'Ctrl+kliknij wartość, aby ją edytować.',
-	'Use edit link to modify this value.' => 'Użyj linku edycji, aby zmienić tę wartość.',
+	'Use the edit link to modify this value.' => 'Użyj linku edycji, aby zmienić tę wartość.',
 
-	// %s can contain auto-increment value
-	'Item%s has been inserted.' => 'Rekord%s został dodany.',
+	'Item%s has been inserted.' => 'Rekord%s został dodany.', // %s can contain auto-increment value
 	'Item has been deleted.' => 'Rekord został usunięty.',
 	'Item has been updated.' => 'Rekord został zaktualizowany.',
 	'%d item(s) have been affected.' => array('Zmieniono %d rekord.', 'Zmieniono %d rekordy.', 'Zmieniono %d rekordów.'),
 	'New item' => 'Nowy rekord',
 	'original' => 'bez zmian',
-	// label for value '' in enum data type
-	'empty' => 'puste',
+	'empty' => 'puste', // label for value '' in enum data type
 	'edit' => 'edytuj',
 	'Edit' => 'Edytuj',
 	'Insert' => 'Dodaj',
 	'Save' => 'Zapisz zmiany',
-	'Save and continue edit' => 'Zapisz i kontynuuj edycję',
+	'Save and continue editing' => 'Zapisz i kontynuuj edycję',
 	'Save and insert next' => 'Zapisz i dodaj następny',
 	'Selected' => 'Zaznaczone',
 	'Clone' => 'Duplikuj',
@@ -306,22 +314,20 @@ Lang::$translations = array(
 	'Lists' => 'Listy',
 	'Network' => 'Sieć',
 	'Geometry' => 'Geometria',
+	'Ranges' => 'Zakresy',
 	'Relations' => 'Relacje',
 
 	'Editor' => 'Edytor',
-	// date format in Editor: $1 yyyy, $2 yy, $3 mm, $4 m, $5 dd, $6 d
-	'$1-$3-$5' => '$6.$4.$1',
-	// hint for date format - use language equivalents for day, month and year shortcuts
-	'[yyyy]-mm-dd' => 'd.m.[rrrr]',
-	// hint for time format - use language equivalents for hour, minute and second shortcuts
-	'HH:MM:SS' => 'HH:MM:SS',
+	'Data editing in a single PHP file' => 'Edycja danych w jednym pliku PHP',
+	'$1-$3-$5' => '$6.$4.$1', // date format in Editor: $1 yyyy, $2 yy, $3 mm, $4 m, $5 dd, $6 d
+	'[yyyy]-mm-dd' => 'd.m.[rrrr]', // hint for date format - use language equivalents for day, month and year shortcuts
+	'HH:MM:SS' => 'HH:MM:SS', // hint for time format - use language equivalents for hour, minute and second shortcuts
 	'now' => 'teraz',
 	'yes' => 'tak',
 	'no' => 'nie',
 
-	// general SQLite error in create, drop or rename database
-	'File exists.' => 'Plik już istnieje.',
-	'Please use one of the extensions %s.' => 'Proszę użyć jednego z rozszerzeń: %s.',
+	'File exists.' => 'Plik już istnieje.', // general SQLite error in create, drop or rename database
+	'Please use one of these file extensions: %s.' => 'Proszę użyć jednego z rozszerzeń: %s.',
 
 	// PostgreSQL and MS SQL schema support
 	'Alter schema' => 'Zmień schemat',
@@ -330,7 +336,6 @@ Lang::$translations = array(
 	'Schema has been created.' => 'Schemat został utworzony.',
 	'Schema has been altered.' => 'Schemat został zmieniony.',
 	'Schema' => 'Schemat',
-	'Invalid schema.' => 'Nieprawidłowy schemat.',
 
 	// PostgreSQL sequences support
 	'Sequences' => 'Sekwencje',
@@ -340,12 +345,17 @@ Lang::$translations = array(
 	'Sequence has been altered.' => 'Sekwencja została zmieniona.',
 	'Alter sequence' => 'Zmień sekwencję',
 
-	// PostgreSQL user types support
+	// PostgreSQL user-defined types support
 	'User types' => 'Typy użytkownika',
 	'Create type' => 'Utwórz typ',
 	'Type has been dropped.' => 'Typ został usunięty.',
 	'Type has been created.' => 'Typ został utworzony.',
+	'Type has been altered.' => 'Typ został zmieniony.',
 	'Alter type' => 'Zmień typ',
+
+	// PostgreSQL extensions
+	'Extensions' => 'Rozszerzenia', // Claude Opus 5
+	'Version' => 'Wersja', // Claude Opus 5
 
 	// Table check constraints
 	'Checks' => 'Kontrole',
@@ -358,6 +368,7 @@ Lang::$translations = array(
 	'Loaded plugins' => 'Wczytane wtyczki',
 	'%s must <a%s>return an array</a>.' => '%s musi <a%s>zwrócić tablicę</a>.',
 	'<a%s>Configure</a> %s in %s.' => '<a%s>Skonfiguruj</a> %s w %s.',
+	'Every plugin must <a%s>be an object</a>.' => 'Każda wtyczka musi <a%s>być obiektem</a>.',
 	'screenshot' => 'zrzut ekranu',
 );
 

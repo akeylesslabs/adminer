@@ -9,7 +9,7 @@
 class AdminerMenuLinks extends Adminer\Plugin {
 	private $menu;
 
-	/** @param ''|'table'|'select'|'auto' $menu see config() for explanation */
+	/** @param ''|'hover'|'table'|'select'|'auto' $menu see config() for explanation */
 	function __construct($menu = '') {
 		$this->menu = $menu;
 	}
@@ -19,10 +19,28 @@ class AdminerMenuLinks extends Adminer\Plugin {
 			'select' => $this->lang('Select data'),
 			'table' => $this->lang('Show structure'),
 			'' => $this->lang('Both'),
-			'auto' => $this->lang('Auto (select on select page, structure otherwise)'),
+			'hover' => $this->lang('Both, select on hover'),
+			'auto' => $this->lang('Auto (select on the select page, structure otherwise)'),
 		);
 		$menu = Adminer\get_setting("menu", "adminer_config", $this->menu);
 		return array($this->lang('Menu table links') => Adminer\html_radios('config[menu]', $options, $menu, "<br>"));
+	}
+
+	function head($dark = null) {
+		if (Adminer\get_setting("menu", "adminer_config", $this->menu) != 'hover') {
+			return;
+		}
+		// Adminer marks the repeated links and checkboxes by the hover class but doesn't style them
+		?>
+<style>
+/* opacity keeps the elements focusable and the layout stable */
+@media (hover: hover) { .hover:not(td), td.hover > * { opacity: 0.3; } }
+li:hover .hover, p:hover .hover, div:hover > .hover, .hover.active, tr:hover td.hover > *, td.hover:has(:focus) > *, td.hover:has(:checked) > * { opacity: 1; }
+</style>
+<?php
+		//! table names in menu should be aligned left
+		//! the column with edit link in select should be invisible (also checkboxes in db and elsewhere), same as the Alter links
+		//! skins are not compatible with .actions
 	}
 
 	function tablesPrint(array $tables) {
@@ -31,21 +49,22 @@ class AdminerMenuLinks extends Adminer\Plugin {
 			'select' => $this->lang('Select data'),
 			'table' => $this->lang('Show structure'),
 		);
+		$both = (!$menu || $menu == 'hover'); // 'hover' - like Adminer, the select link is shown on hovering the row
 		// this is copied from Adminer::tablesPrint()
-		echo "<ul id='tables'>" . Adminer\script("mixin(qs('#tables'), {onmouseover: menuOver, onmouseout: menuOut});");
+		echo "<ul id='tables'" . Adminer\on('mouseover', 'menuOver') . Adminer\on('mouseout', 'menuOut') . ">";
 		foreach ($tables as $table => $status) {
 			$table = "$table"; // do not highlight "0" as active everywhere
 			$name = Adminer\adminer()->tableName($status);
-			if ($name != "" && !$status["partition"]) {
+			if ($name != "" && !$status["dependent"]) {
 				echo '<li>';
-				if (!$menu) {
-					echo '<a href="' . Adminer\h(Adminer\ME) . 'select=' . urlencode($table) . '"'
-						. Adminer\bold($_GET["select"] == $table || $_GET["edit"] == $table, "select")
+				if ($both) {
+					echo '<a href="' . Adminer\h(Adminer\ME) . 'select=' . Adminer\url_escape($table) . '"'
+						. Adminer\bold($_GET["select"] == $table || $_GET["edit"] == $table, "select" . ($menu ? " hover" : ""))
 						. " title='$titles[select]'>" . $this->lang('select') . "</a> "
 					;
 				}
 				$actives = array($_GET["table"], $_GET["create"], $_GET["indexes"], $_GET["foreign"], $_GET["trigger"], $_GET["check"], $_GET["view"]);
-				if ($menu) {
+				if (!$both) {
 					$actives[] = $_GET["select"];
 					$actives[] = $_GET["edit"];
 				}
@@ -56,7 +75,7 @@ class AdminerMenuLinks extends Adminer\Plugin {
 				));
 				$class = ($link == "select" ? "select" : (Adminer\is_view($status) ? "view" : "structure"));
 				echo (Adminer\support("table") || Adminer\support("indexes") || $menu
-					? '<a href="' . Adminer\h(Adminer\ME) . "$link=" . urlencode($table) . '"'
+					? '<a href="' . Adminer\h(Adminer\ME) . "$link=" . Adminer\url_escape($table) . '"'
 						. Adminer\bold(in_array($table, $actives), $class)
 						. " title='$titles[$link]'>$name</a>"
 					: "<span>$name</span>"
@@ -77,40 +96,71 @@ class AdminerMenuLinks extends Adminer\Plugin {
 			'' => 'Konfigurace odkazů na tabulky v menu; kombinovatelné s AdminerConfig',
 			'Menu table links' => 'Odkazy na tabulky v menu',
 			'Both' => 'Oboje',
-			'Auto (select on select page, structure otherwise)' => 'Auto (vypsat na výpisech, jinak struktura)',
+			'Both, select on hover' => 'Oboje, vypsat při najetí myší',
+			'Auto (select on the select page, structure otherwise)' => 'Auto (vypsat na výpisech, jinak struktura)',
 			// this is copied from adminer/lang/
 			'select' => 'vypsat',
 			'Select data' => 'Vypsat data',
 			'Show structure' => 'Zobrazit strukturu',
 		),
-		'pl' => array(
-			'Menu table links' => 'Linki do tabel w menu',
-			'Both' => 'Obie',
-			'Auto (select on select page, structure otherwise)' => 'Auto (pokaż na stronie przeglądania, w przeciwnym razie struktura)',
-			// this is copied from adminer/lang/
-			'select' => 'przeglądaj',
-			'Select data' => 'Pokaż dane',
-			'Show structure' => 'Struktura tabeli',
-		),
 		'de' => array(
 			'' => 'Menü- und Tabellen-Links konfigurieren. Kombinierbar mit AdminerConfig',
 			'Both' => 'Beide',
-			'Auto (select on select page, structure otherwise)' => 'Auto (Auswahl auf der ausgewählten Seite, sonst Struktur)',
+			'Both, select on hover' => 'Beide, zeigen beim Überfahren mit der Maus', // Claude Opus 5
+			'Auto (select on the select page, structure otherwise)' => 'Auto (Auswahl auf der ausgewählten Seite, sonst Struktur)',
 			'Menu table links' => 'Links verwenden in „Tabelle“',
 			// this is copied from adminer/lang/
 			'select' => 'zeigen',
 			'Select data' => 'Daten auswählen',
 			'Show structure' => 'Struktur anzeigen',
 		),
+		'hr' => array(
+			'' => 'Prikazuje veze na odabir podataka ili strukturu tablice u izborniku',
+			'Select data' => 'Odaberi podatke',
+			'Show structure' => 'Prikaži strukturu',
+			'Both' => 'Oboje',
+			'Both, select on hover' => 'Oboje, odaberi prelaskom miša', // Claude Opus 5
+			'Auto (select on the select page, structure otherwise)' => 'Automatski (odabir na stranici odabira, inače struktura)',
+			'Menu table links' => 'Veze tablice u izborniku',
+			'select' => 'odaberi',
+		),
 		'ja' => array(
 			'' => 'メニュー内テーブルへのリンク設定; AdminerConfig との併用可',
 			'Both' => '両方',
-			'Auto (select on select page, structure otherwise)' => '自動 (選択ページでは選択、それ以外では構造)',
+			'Both, select on hover' => '両方 (選択はマウスオーバー時)', // Claude Opus 5
+			'Auto (select on the select page, structure otherwise)' => '自動 (選択ページでは選択、それ以外では構造)',
 			'Menu table links' => 'メニューテーブルへのリンク',
 			// this is copied from adminer/lang/
 			'select' => '選択',
 			'Select data' => 'データ',
 			'Show structure' => '構造',
+		),
+		'pl' => array(
+			'' => 'Konfiguruj łącza tabeli menu; można je łączyć za pomocą AdminerConfig',
+			'Menu table links' => 'Linki do tabel w menu',
+			'Both' => 'Obie',
+			'Both, select on hover' => 'Obie, przeglądaj po najechaniu myszą', // Claude Opus 5
+			'Auto (select on the select page, structure otherwise)' => 'Auto (pokaż na stronie przeglądania, w przeciwnym razie struktura)',
+			// this is copied from adminer/lang/
+			'select' => 'przeglądaj',
+			'Select data' => 'Pokaż dane',
+			'Show structure' => 'Struktura tabeli',
+		),
+		'ro' => array(
+			'' => 'Configurarea link-urilor către tabele din meniu; se poate combina cu AdminerConfig', // Claude Opus 5
+		),
+		'sk' => array(
+			'' => 'Konfigurácia odkazov na tabuľky v menu; kombinovateľné s AdminerConfig', // Claude Opus 5
+		),
+		'zh' => array(
+			'' => '配置菜单中表的链接，可与 AdminerConfig 组合使用', // Claude Opus 5
+			'Select data' => '选择数据', // Claude Opus 5
+			'Show structure' => '显示结构', // Claude Opus 5
+			'Both' => '两者', // Claude Opus 5
+			'Both, select on hover' => '两者，悬停时显示选择数据', // Claude Opus 5
+			'Auto (select on the select page, structure otherwise)' => '自动（在选择数据页面显示选择数据，其他页面显示结构）', // Claude Opus 5
+			'Menu table links' => '菜单中表的链接', // Claude Opus 5
+			'select' => '选择', // Claude Opus 5
 		),
 	);
 }

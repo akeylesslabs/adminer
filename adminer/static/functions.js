@@ -1,18 +1,18 @@
 'use strict';
 
 /** Get first element by selector
-* @param string
-* @param [HTMLElement] defaults to document
-* @return HTMLElement
+* @param {string} selector
+* @param {HTMLElement} [context=document]
+* @return {HTMLElement}
 */
-function qs(selector, context) {
-	return (context || document).querySelector(selector);
+function qs(selector, context = document) {
+	return context.querySelector(selector);
 }
 
 /** Get last element by selector
-* @param string
-* @param [HTMLElement] defaults to document
-* @return HTMLElement
+* @param {string} selector
+* @param {HTMLElement} [context=document]
+* @return {HTMLElement}
 */
 function qsl(selector, context) {
 	const els = qsa(selector, context);
@@ -20,63 +20,48 @@ function qsl(selector, context) {
 }
 
 /** Get all elements by selector
-* @param string
-* @param [HTMLElement] defaults to document
-* @return NodeList
+* @param {string} selector
+* @param {HTMLElement} [context=document]
+* @return {NodeList}
 */
-function qsa(selector, context) {
-	return (context || document).querySelectorAll(selector);
+function qsa(selector, context = document) {
+	return context.querySelectorAll(selector);
 }
 
 /** Return a function calling fn with the next arguments
-* @param function
-* @param ...
-* @return function with preserved this
+* @param {function} fn
+* @param {...*} args
+* @return {function} with preserved this
 */
-function partial(fn) {
-	const args = Array.apply(null, arguments).slice(1);
+function partial(fn, ...args) {
 	return function () {
 		return fn.apply(this, args);
 	};
 }
 
-/** Return a function calling fn with the first parameter and then the next arguments
-* @param function
-* @param ...
-* @return function with preserved this
-*/
-function partialArg(fn) {
-	const args = Array.apply(null, arguments);
-	return function (arg) {
-		args[0] = arg;
-		return fn.apply(this, args);
-	};
-}
-
 /** Assign values from source to target
-* @param Object
-* @param Object
+* @param {Object} target
+* @param {Object} source
 */
 function mixin(target, source) {
-	for (const key in source) {
-		target[key] = source[key];
-	}
+	// a shortcut for Object.assign() saving bytes in the inline scripts, used also by external plugins
+	Object.assign(target, source);
 }
 
 /** Add or remove CSS class
-* @param HTMLElement
-* @param string
-* @param [boolean]
+* @param {?HTMLElement} el
+* @param {string} className
+* @param {boolean} [enable]
 */
 function alterClass(el, className, enable) {
 	if (el) {
-		el.classList[enable ? 'add' : 'remove'](className);
+		el.classList.toggle(className, !!enable); // !! - undefined would toggle
 	}
 }
 
 /** Toggle visibility
-* @param string
-* @return boolean false
+* @param {string} id
+* @return {boolean} false
 */
 function toggle(id) {
 	const el = qs('#' + id);
@@ -84,32 +69,85 @@ function toggle(id) {
 	return false;
 }
 
+/** Escape string to use in a query string; counterpart of PHP url_escape()
+* @param {string} string
+* @return {string}
+*/
+function urlEscape(string) {
+  // unlike encodeURIComponent(), escapes only the characters misinterpreted by PHP or by the URL syntax and those rewritten by the browser
+	return encodeURIComponent(string)
+		.replace(/'/g, '%27') // encodeURIComponent() keeps it but the browser escapes it anyway
+		.replace(/%20/g, '+')
+		// $,/:;@[\]^`{|} - the browser keeps them verbatim; urlSeparators are set by arg_separator.input
+		.replace(/%(24|2C|2F|3A|3B|40|5[BCDE]|60|7[BCD])/g, (all, hex) => {
+			const char = String.fromCharCode(parseInt(hex, 16));
+			return (urlSeparators.indexOf(char) < 0 ? char : all);
+		})
+	;
+}
+
+/** Get value from a query string; counterpart of PHP urldecode()
+* @param {string} string
+* @return {string}
+*/
+function urlUnescape(string) {
+	return decodeURIComponent(string.replace(/\+/g, ' '));
+}
+
+/** Serialize form fields to a query string
+* @param {HTMLFormElement} form
+* @param {HTMLElement} [submitter] the button which sent the form
+* @param {boolean} [defaults] skip the fields holding the value from their data-default
+* @return {?string} null if the form contains a file
+*/
+function formData(form, submitter, defaults) {
+	const data = [];
+	for (const el of form.elements) {
+		if (el.name && !el.disabled) {
+			if (/^file$/i.test(el.type) && el.value) {
+				return null;
+			}
+			if (!/^(checkbox|radio|submit|file)$/i.test(el.type) || el.checked || el == submitter) {
+				const value = selectValue(el);
+				if (!defaults || el.getAttribute('data-default') !== value) { // getAttribute() returns null for a field which must be always sent
+					data.push(urlEscape(el.name) + '=' + urlEscape(value));
+				}
+			}
+		}
+	}
+	return data.join('&');
+}
+
 /** Set permanent cookie
-* @param string
-* @param number
+* @param {string} assign
+* @param {number} days
 */
 function cookie(assign, days) {
 	const date = new Date();
 	date.setDate(date.getDate() + days);
-	document.cookie = assign + '; expires=' + date;
+	document.cookie = assign
+		+ '; expires=' + date
+		+ '; path=' + location.pathname.replace(/[;,]/g, encodeURIComponent) // default path is without the trailing slash
+		+ (location.protocol == 'https:' ? '; secure' : '') // the same attributes as in the server-side cookie(), HttpOnly can't be used because this cookie is read by JavaScript
+		+ '; SameSite=lax'
+	;
 }
 
 /** Verify current Adminer version
-* @param string
+* @param {string} current
 */
 function verifyVersion(current) {
 	cookie('adminer_version=0', 1);
-	// do not send X-Requested-With to avoid preflight
-	fetch('https://www.adminer.org/version/?current=' + current).then(async response => {
-		const json = await response.json();
+	ajax('https://www.adminer.org/version/?current=' + current, request => {
+		const json = JSON.parse(request.responseText);
 		cookie('adminer_version=' + (json.version || current), 7); // empty if there's no newer version
 		qs('#version').textContent = json.version;
-	});
+	}, '', null); // null - a failed check must not report being offline
 }
 
 /** Get value of select
-* @param HTMLElement <select> or <input>
-* @return string
+* @param {HTMLElement} select <select> or <input>
+* @return {string}
 */
 function selectValue(select) {
 	if (!select.selectedIndex) {
@@ -119,79 +157,66 @@ function selectValue(select) {
 	return ((selected.attributes.value || {}).specified ? selected.value : selected.text);
 }
 
-/** Verify if element has a specified tag name
-* @param HTMLElement
-* @param string regular expression
-* @return boolean
-*/
-function isTag(el, tag) {
-	const re = new RegExp('^(' + tag + ')$', 'i');
-	return el && re.test(el.tagName);
-}
-
-/** Get parent node with specified tag name
-* @param HTMLElement
-* @param string regular expression
-* @return HTMLElement
-*/
-function parentTag(el, tag) {
-	while (el && !isTag(el, tag)) {
-		el = el.parentNode;
-	}
-	return el;
-}
-
 /** Set checked class
-* @param HTMLInputElement
+* @param {HTMLInputElement} el
 */
 function trCheck(el) {
-	const tr = parentTag(el, 'tr');
+	const tr = el.closest('tr');
 	alterClass(tr, 'checked', el.checked);
-	if (el.form && el.form['all'] && el.form['all'].onclick) { // Opera treats form.all as document.all
-		el.form['all'].onclick();
-	}
+	fire(el.form && el.form['all'], 'click'); // the element named all counts the selected items, its handler is registered by a data attribute
+}
+
+/** Group digits in a number
+* @param {string|number} number
+* @return {string}
+* @uses numberFormat
+* @uses numberDigits
+*/
+function formatNumber(number) {
+	const match = /^#+([^#0]+)(?:(#+)\1)?(#*0)$/.exec(numberFormat); // CLDR pattern: separator, group repeated to the left, rightmost group
+	const size = match[3].length;
+	// \B doesn't match after the sign
+	return (number + '').replace(RegExp('\\B(?=(\\d{' + ((match[2] || '').length || size) + '})*\\d{' + size + '}$)', 'g'), match[1])
+		.replace(/\d/g, digit => numberDigits[digit]);
 }
 
 /** Fill number of selected items
-* @param string
-* @param string
-* @uses thousandsSeparator
+* @param {string} id
+* @param {string|number} count
 */
 function selectCount(id, count) {
-	setHtml(id, (count === '' ? '' : '(' + (count + '').replace(/\B(?=(\d{3})+$)/g, thousandsSeparator) + ')'));
+	setHtml(id, (count === '' ? '' : '(' + formatNumber(count) + ')'));
 	const el = qs('#' + id);
 	if (el) {
-		for (const input of qsa('input', el.parentNode.parentNode)) {
-			if (input.type == 'submit') {
-				input.disabled = (count == '0');
-			}
+		for (const input of qsa('input[type=submit]', el.parentNode.parentNode)) {
+			input.disabled = (count == '0');
 		}
+		fire(document.activeElement, 'focus'); // the default submit button changes with the disabled buttons
 	}
 }
 
 /** Check all elements matching given name
-* @param RegExp
+* @param {string} name regular expression
 * @this HTMLInputElement
 */
 function formCheck(name) {
+	const re = new RegExp(name); // string - a regular expression can't be passed in a data attribute
 	for (const elem of this.form.elements) {
-		if (name.test(elem.name)) {
+		if (re.test(elem.name)) {
 			elem.checked = this.checked;
 			trCheck(elem);
 		}
 	}
 }
 
-/** Check all rows in <table class="checkable">
-*/
+/** Check all rows in <table class="checkable">  */
 function tableCheck() {
-	for (const input of qsa('table.checkable td:first-child input')) {
-		trCheck(input);
-	}
+	qsa('table.checkable td:first-child input').forEach(trCheck);
+	onpageshow = tableCheck; // once the browser restores the checkboxes while browsing history
 }
 
 /** Uncheck single element
-* @param string
+* @param {string} id
 */
 function formUncheck(id) {
 	const el = qs('#' + id);
@@ -200,51 +225,83 @@ function formUncheck(id) {
 }
 
 /** Get number of checked elements matching given name
-* @param HTMLInputElement
-* @param RegExp
-* @return number
+* @param {HTMLInputElement} input
+* @param {RegExp} name
+* @return {number}
 */
 function formChecked(input, name) {
-	let checked = 0;
-	for (const el of input.form.elements) {
-		if (name.test(el.name) && el.checked) {
-			checked++;
-		}
-	}
-	return checked;
+	return [...input.form.elements].filter(el => name.test(el.name) && el.checked).length;
+}
+
+/** Fill number of selected databases
+* @this HTMLInputElement
+*/
+function countDbs() {
+	selectCount('selected', formChecked(this, /^db/));
+}
+
+/** Fill numbers of selected tables
+* @param {number} tables number of tables in the database
+* @this HTMLInputElement
+*/
+function countTables(tables) {
+	const checked = formChecked(this, /^(tables|views)\[/);
+	selectCount('selected', checked);
+	selectCount('selected2', formChecked(this, /^tables\[/) || tables); // search is performed in all tables if none is selected
+	selectCount('selected3', checked);
+}
+
+/** Fill numbers of selected rows
+* @param {string} rows number of rows in the whole result
+* @this HTMLInputElement
+*/
+function countRows(rows) {
+	const checked = formChecked(this, /^check/);
+	selectCount('selected', this.checked ? rows : checked);
+	selectCount('selected2', this.checked || !checked ? rows : checked); // the command is performed on the whole result if no row is selected
+}
+
+/** Ask for confirmation before submit
+* @param {string} message
+* @return {boolean} false to cancel the submit
+*/
+function confirmClick(message) {
+	// window.confirm can't be registered as the handler itself - it throws Illegal invocation when apply() passes the element as this
+	return confirm(message);
 }
 
 /** Select clicked row
-* @param MouseEvent
-* @param [boolean] force click
+* @param {MouseEvent} event
 */
-function tableClick(event, click) {
-	const td = parentTag(event.target, 'td');
+function tableClick(event) {
+	const td = event.target.closest('td');
 	let text;
 	if (td && (text = td.dataset.text)) {
 		if (selectClick.call(td, event, +text, td.dataset.warning)) {
 			return;
 		}
 	}
-	click = (click || !window.getSelection || getSelection().isCollapsed);
-	let el = event.target;
-	while (!isTag(el, 'tr')) {
-		if (isTag(el, 'table|a|input|textarea')) {
-			if (el.type != 'checkbox') {
-				return;
-			}
-			checkboxClick.call(el, event);
-			click = false;
-		}
-		el = el.parentNode;
-		if (!el) { // Ctrl+click on text fields hides the element
+	// dblclick undoes the check by the first click of the double click - the user is only selecting a word
+	let click = (event.type == 'dblclick' || getSelection().isCollapsed);
+	let el = event.target.closest('tr, table, a, input, textarea'); // the other elements handle the click themselves
+	if (el && !el.matches('tr')) {
+		if (el.type != 'checkbox') {
 			return;
 		}
+		checkboxClick.call(el, event);
+		click = false;
+		el = el.closest('tr');
 	}
-	el = el.firstChild.firstChild;
+	if (!el) { // Ctrl+click on text fields hides the element
+		return;
+	}
+	el = qs('input[type=checkbox]', el.firstChild); // not firstChild - the first cell of select also contains the edit link
+	if (!el) { // the header row of the process list and of the database list has an empty first cell
+		return;
+	}
 	if (click) {
 		el.checked = !el.checked;
-		el.onclick && el.onclick();
+		fire(el, 'click'); // the handler can be registered by a data attribute
 	}
 	if (el.name == 'check[]') {
 		el.form['all'].checked = false;
@@ -259,7 +316,7 @@ function tableClick(event, click) {
 let lastChecked;
 
 /** Shift-click on checkbox for multiple selection.
-* @param MouseEvent
+* @param {MouseEvent} event
 * @this HTMLInputElement
 */
 function checkboxClick(event) {
@@ -269,7 +326,7 @@ function checkboxClick(event) {
 	if (event.shiftKey && (!lastChecked || lastChecked.name == this.name)) {
 		const checked = (lastChecked ? lastChecked.checked : true);
 		let checking = !lastChecked;
-		for (const input of qsa('input', parentTag(this, 'table'))) {
+		for (const input of qsa('input', this.closest('table'))) {
 			if (input.name === this.name) {
 				if (checking) {
 					input.checked = checked;
@@ -289,8 +346,8 @@ function checkboxClick(event) {
 }
 
 /** Set HTML code of an element
-* @param string
-* @param string undefined to set parentNode to empty string
+* @param {string} id
+* @param {?string} html undefined to set parentNode to empty string
 */
 function setHtml(id, html) {
 	const el = qs('[id="' + id.replace(/[\\"]/g, '\\$&') + '"]'); // database name is used as ID
@@ -303,37 +360,15 @@ function setHtml(id, html) {
 	}
 }
 
-/** Find node position
-* @param Node
-* @return number
-*/
-function nodePosition(el) {
-	let pos = 0;
-	while ((el = el.previousSibling)) {
-		pos++;
-	}
-	return pos;
-}
-
-/** Go to the specified page
-* @param string
-* @param string
-*/
-function pageClick(href, page) {
-	if (!isNaN(page) && page) {
-		location.href = href + (page != 1 ? '&page=' + (page - 1) : '');
-	}
-}
-
 
 
 /** Display items in menu
-* @param MouseEvent
+* @param {MouseEvent} event
 * @this HTMLElement
 */
 function menuOver(event) {
 	const a = event.target;
-	if (isTag(a, 'a|span') && a.offsetLeft + a.offsetWidth > a.parentNode.offsetWidth - 15) { // 15 - ellipsis
+	if (a.matches('a, span') && a.offsetLeft + a.offsetWidth > a.parentNode.offsetWidth) {
 		this.style.overflow = 'visible';
 	}
 }
@@ -345,16 +380,59 @@ function menuOut() {
 	this.style.overflow = 'hidden';
 }
 
+/** Toggle the menu on small screens */
+function menuToggle() {
+	const foot = qs('#foot');
+	const opened = !foot.classList.toggle('foot');
+	qs('#menuopen button').setAttribute('aria-expanded', opened);
+	if (opened) {
+		foot.tabIndex = -1; // to make it focusable
+		foot.focus(); // to continue tabbing in the menu
+	}
+}
 
+/** Close the menu on small screens */
+function menuClose() {
+	const foot = qs('#foot');
+	if (foot && !foot.classList.contains('foot')) {
+		foot.classList.add('foot');
+		const button = qs('#menuopen button');
+		button.setAttribute('aria-expanded', false);
+		if (foot.contains(document.activeElement)) { // the focused element is hidden now
+			button.focus();
+		}
+	}
+}
+
+
+
+/** Submit the form of the changed field
+* @this HTMLElement
+*/
+function formSubmit() {
+	this.form.submit();
+}
+
+/** Disable Save and continue editing after changing a value identifying the row
+* @param {Event} event
+* @this HTMLTableRowElement
+*/
+function whereChange(event) {
+	// isTrusted - fire() dispatches change to apply the initially selected function, which is not a change by the user
+	if (event.isTrusted !== false) {
+		// the WHERE condition in the URL is not updated by the AJAX save so the next save would not match the row
+		qs('#form [name=insert]').disabled = true;
+	}
+}
 
 /** Add row in select fieldset
 * @this HTMLSelectElement
 */
 function selectAddRow() {
 	const field = this;
-	const row = cloneNode(field.parentNode);
-	field.onchange = selectFieldChange;
-	field.onchange();
+	const row = cloneNode(field.parentNode); // the clone keeps the attribute so that it adds the next row
+	field.setAttribute('data-onchange', 'selectFieldChange()');
+	fire(field, 'change');
 	for (const select of qsa('select', row)) {
 		select.name = select.name.replace(/[a-z]\[\d+/, '$&1');
 		select.selectedIndex = 0;
@@ -368,16 +446,27 @@ function selectAddRow() {
 			input.value = '';
 		}
 	}
-	field.parentNode.parentNode.appendChild(row);
+	field.parentNode.parentNode.append(row);
 }
 
-/** Prevent onsearch handler on Enter
-* @param KeyboardEvent
+/** Rerun the handler of the first field in the row, it checks whether an index will be used
+* @this HTMLElement
+*/
+function selectFirstChange() {
+	fire(this.parentNode.firstChild, 'change');
+}
+
+/** Prevent the search handler on Enter, clear the field by Esc
+* @param {KeyboardEvent} event
 * @this HTMLInputElement
 */
 function selectSearchKeydown(event) {
-	if (event.keyCode == 13 || event.keyCode == 10) {
-		this.onsearch = () => { };
+	if (event.key == 'Enter') {
+		this.removeAttribute('data-onsearch');
+	} else if (isEscape(event)) {
+		// the same as clicking the cancel button; Firefox displays none and dispatches no search event, WebKit does both and repeats this
+		this.value = '';
+		selectSearchSearch.call(this);
 	}
 }
 
@@ -386,45 +475,28 @@ function selectSearchKeydown(event) {
 */
 function selectSearchSearch() {
 	if (!this.value) {
-		this.parentNode.firstChild.selectedIndex = 0;
-	}
-}
-
-
-
-/** Toggle column context menu
-* @param [string] extra class name
-* @this HTMLElement
-*/
-function columnMouse(className) {
-	for (const span of qsa('span', this)) {
-		if (/column/.test(span.className)) {
-			span.className = 'column' + (className || '');
-		}
+		this.parentNode.firstChild.value = ''; // also an input typed by a plugin
 	}
 }
 
 
 
 /** Fill column in search field
-* @param string
-* @return boolean false
+* @param {string} name
+* @return {boolean} false
 */
 function selectSearch(name) {
-	let el = qs('#fieldset-search');
-	el.className = '';
-	const divs = qsa('div', el);
-	let i, div;
-	for (i=0; i < divs.length; i++) {
-		div = divs[i];
-		el = qs('[name$="[col]"]', div);
-		if (el && selectValue(el) == name) {
-			break;
-		}
-	}
-	if (i == divs.length) {
+	const fieldset = qs('#fieldset-search');
+	fieldset.className = '';
+	const divs = qsa('div', fieldset);
+	let div = [...divs].find(row => {
+		const col = qs('[name$="[col]"]', row);
+		return col && selectValue(col) == name;
+	});
+	if (!div) { // use the last empty row
+		div = divs[divs.length - 1];
 		div.firstChild.value = name;
-		div.firstChild.onchange();
+		fire(div.firstChild, 'change');
 	}
 	qs('[name$="[val]"]', div).focus();
 	return false;
@@ -432,102 +504,232 @@ function selectSearch(name) {
 
 
 /** Check if Ctrl key (Command key on Mac) was pressed
-* @param KeyboardEvent|MouseEvent
-* @return boolean
+* @param {KeyboardEvent|MouseEvent} event
+* @return {boolean}
 */
 function isCtrl(event) {
 	return (event.ctrlKey || event.metaKey) && !event.altKey; // shiftKey allowed
 }
 
-
-
-/** Send form by Ctrl+Enter on <select> and <textarea>
-* @param KeyboardEvent
-* @param [string]
-* @return boolean
+/** Check if Esc was pressed alone
+* @param {KeyboardEvent} event
+* @return {boolean}
 */
-function bodyKeydown(event, button) {
-	eventStop(event);
+function isEscape(event) {
+	return event.key == 'Escape' && !event.shiftKey && !event.altKey && !isCtrl(event);
+}
+
+
+
+/** Send form by Ctrl+Enter on <select>, <textarea> and <input>
+* @param {string} button name of the submit button to click, empty for the implicit one
+* @param {KeyboardEvent} event
+* @return {boolean} false if the form was sent
+*/
+function submitKeydown(button, event) {
 	let target = event.target;
 	if (target.jushTextarea) {
 		target = target.jushTextarea;
 	}
-	if (isCtrl(event) && (event.keyCode == 13 || event.keyCode == 10) && isTag(target, 'select|textarea|input')) { // 13|10 - Enter
+	if (isCtrl(event) && event.key == 'Enter' && target.matches('select, textarea, input')) {
 		target.blur();
-		if (target.form[button]) {
-			target.form[button].click();
-		} else {
-			target.form.dispatchEvent(new Event('submit', {bubbles: true}));
+		// click the button highlighted as the default one to send its name and to run its onclick handler
+		const submit = (button ? target.form[button] : findDefaultSubmit(target));
+		if (submit) {
+			submit.click();
+		} else if (fire(target.form, 'submit')) { // submit() doesn't dispatch the event
 			target.form.submit();
 		}
 		target.focus();
 		return false;
 	}
-	return true;
 }
 
-/** Open form to a new window on Ctrl+click or Shift+click
-* @param MouseEvent
+/** Close the menu by Esc, send form by Ctrl+Enter
+* @param {KeyboardEvent} event
+* @return {boolean}
+*/
+function bodyKeydown(event) {
+	if (isEscape(event)) {
+		menuClose();
+	}
+	if (!delegateEvent(event)) { // a delegated handler sends the form by its own button
+		return submitKeydown('', event);
+	}
+}
+
+/** Toggle visibility by .toggle links, keep the AJAX message on the screen, close the menu, open form to a new window on Ctrl+click or Shift+click
+* @param {MouseEvent} event
 */
 function bodyClick(event) {
+	delegateEvent(event);
 	const target = event.target;
-	if ((isCtrl(event) || event.shiftKey) && target.type == 'submit' && isTag(target, 'input')) {
+	const toggler = target.closest && target.closest('.toggle'); // closest && - the target can be a text node, e.g. from fire()
+	if (toggler) {
+		toggle(toggler.getAttribute('href').slice(1));
+		event.preventDefault();
+	}
+	if (target.closest && target.closest('#ajaxstatus')) { // the user works with the message, keep it on the screen
+		clearTimeout(stickyTimeout);
+	}
+	if ((isCtrl(event) || event.shiftKey) && target.type == 'submit' && target.matches('input')) { // type - the target can be a text node without matches()
 		target.form.target = '_blank';
 		setTimeout(() => {
 			// if (isCtrl(event)) { focus(); } doesn't work
 			target.form.target = '';
 		}, 0);
 	}
+	const foot = qs('#foot'); // null if fire() dispatches a click before the menu is printed at the end of the page
+	if (foot && !foot.contains(target) && !qs('#menuopen').contains(target)) { // menuopen - delegateEvent() has toggled the menu by it already
+		menuClose();
+	}
+}
+
+/** Highlight the value exceeding the maximum length
+* @param {HTMLInputElement} el
+*/
+function maxlengthCheck(el) {
+	const maxLength = el.dataset.maxlength;
+	alterClass(el, 'maxlength', el.value && maxLength != null && el.value.length > maxLength); // maxLength could be 0
+}
+
+/** Send GET forms with minimal URL escaping
+* @param {SubmitEvent} event
+* @return {boolean} false if the form was sent by JS
+*/
+function bodySubmit(event) {
+	if (delegateEvent(event)) { // a data-onsubmit handler has handled the event
+		return true;
+	}
+	const form = event.target;
+	if (/^get$/i.test(form.method)) { // the browser would serialize the form with full escaping
+		const data = formData(form, event.submitter, true); // submitter is undefined in Chrome < 81, no GET form uses a named submit button
+		if (data !== null) {
+			const url = form.action.replace(/\?.*/, '') + '?' + data;
+			if (form.target) { // set by Ctrl+click or Shift+click; open() is not blocked, the click activation is still valid
+				open(url, form.target);
+			} else {
+				location.href = url;
+			}
+			return false;
+		}
+	}
+}
+
+/** Highlight too long values
+* @param {InputEvent} event
+*/
+function bodyInput(event) {
+	delegateEvent(event);
+	maxlengthCheck(event.target);
+}
+
+/** Call handlers registered by data-on<event> attributes between the event target and the <html> element
+* @param {Event} event
+* @return {boolean} true if a handler has handled the event, never false - it is registered by a property, which would preventDefault()
+*/
+function delegateEvent(event) {
+	const attr = 'data-on' + event.type;
+	const selector = '[' + attr + ']';
+	// closest() - much faster than getAttribute() on every ancestor, target.closest - the target can be a text node
+	let el = event.target.closest && event.target.closest(selector);
+	while (el) {
+		const value = el.getAttribute(attr);
+		const match = /^(\w+)\((.*)\)$/.exec(value); // e.g. confirmClick("Are you sure?")
+		// only a function declared by Adminer or by a plugin - it creates a non-configurable property of window, built-ins are configurable or not own properties at all, so window['eval'] or window['setTimeout'] is never used
+		const desc = (match ? Object.getOwnPropertyDescriptor(window, match[1]) : null);
+		const handler = (desc && !desc.configurable && typeof desc.value == 'function' ? desc.value : null);
+		let args;
+		try {
+			args = (handler ? JSON.parse('[' + match[2] + ']') : null); // JSON.parse() - the arguments must never be evaluated as code
+		} catch (e) { // empty - an invalid value is reported below together with an unknown handler
+		}
+		if (args) {
+			const result = handler.apply(el, args.concat(event));
+			if (result === false) {
+				event.preventDefault();
+			}
+			if (result !== undefined) {
+				return true; // the handler handled the event, don't call the handlers on ancestor elements
+			}
+		} else {
+			console.error('Invalid handler in ' + attr + "='" + value + "'", el); // not lang() - it reports a bug in Adminer or in a plugin, the element would do nothing at all otherwise
+		}
+		el = el.parentElement && el.parentElement.closest(selector); // parentElement - closest() starts at the element itself
+	}
 }
 
 
 
 /** Change focus by Ctrl+Shift+Up or Ctrl+Shift+Down
-* @param KeyboardEvent
-* @return boolean
+* @param {KeyboardEvent} event
+* @return {boolean}
 */
 function editingKeydown(event) {
-	if ((event.keyCode == 40 || event.keyCode == 38) && isCtrl(event)) { // 40 - Down, 38 - Up
+	if (/^Arrow(Down|Up)$/.test(event.key) && isCtrl(event)) {
 		const target = event.target;
-		const sibling = (event.keyCode == 40 ? 'nextSibling' : 'previousSibling');
-		let el = target.parentNode.parentNode[sibling];
-		if (el && (isTag(el, 'tr') || (el = el[sibling])) && isTag(el, 'tr') && (el = el.childNodes[nodePosition(target.parentNode)]) && (el = el.childNodes[nodePosition(target)])) {
-			el.focus();
+		const cell = target.closest('td, th'); // not parentNode - the NULL checkbox is wrapped in a <label>
+		const cells = [...cell.parentNode.children];
+		const sibling = (event.key == 'ArrowUp' ? 'previousElementSibling' : 'nextElementSibling');
+		let row = cell.parentNode;
+		do {
+			row = row[sibling];
+		} while (row && row.hidden); // skip removed columns
+		const cell2 = (row ? row.children[cells.indexOf(cell)] : null);
+		if (cell2) {
+			// the element at the same position can be hidden, the cell displays e.g. collation or ON DELETE by the column type
+			const name = target.name.replace(/.*(\[[^[]+])$/, '$1');
+			const el = [qs('[name$="' + name + '"]', cell2), ...qsa('input, select, textarea, button', cell2)].find(el2 => el2 && el2.offsetParent);
+			if (el) {
+				el.focus();
+			}
 		}
 		return false;
 	}
-	if (event.shiftKey && !bodyKeydown(event, 'insert')) {
-		return false;
+	if (event.shiftKey) {
+		return submitKeydown('insert', event);
 	}
-	return true;
 }
 
-/** Disable maxlength for functions
+/** Change the value field to a plain <input> for the SQL function and disable maxlength for functions
 * @this HTMLSelectElement
 */
 function functionChange() {
-	const input = this.form[this.name.replace(/^function/, 'fields')];
+	let input = this.form[this.name.replace(/^function/, 'fields')];
 	if (input) { // undefined with the set data type
-		if (selectValue(this)) {
-			if (input.origType === undefined) {
-				input.origType = input.type;
+		const func = selectValue(this);
+		if (func == 'SQL') { // raw expression - use a plain <input>, e.g. instead of <select> from the edit-foreign plugin
+			if (!input.origElement) {
+				const text = document.createElement('input');
+				text.name = input.name;
+				text.value = selectValue(input);
+				text.size = 40;
+				text.origElement = input;
+				input.replaceWith(text);
+				setupSubmitHighlightInput(text);
+				input = text;
+			}
+		} else if (input.origElement) { // revive the original element (keeps its type, e.g. number for +)
+			input.replaceWith(input.origElement);
+			input = input.origElement;
+		}
+		if (func) { // the length is not limited when a function is applied
+			if (input.origMaxLength === undefined) {
 				input.origMaxLength = input.dataset.maxlength;
 			}
 			delete input.dataset.maxlength;
-			input.type = 'text';
-		} else if (input.origType) {
-			input.type = input.origType;
-			if (input.origMaxLength >= 0) {
-				input.dataset.maxlength = input.origMaxLength;
-			}
+		} else if (input.origMaxLength >= 0) {
+			input.dataset.maxlength = input.origMaxLength;
+			delete input.origMaxLength;
 		}
-		oninput({target: input});
+		alterClass(input, 'hidden', /^(now|getdate|current_date|current_timestamp|uuid)$/.test(func)); // these functions take no argument
+		maxlengthCheck(input); // not fire() - the input event would also run skipOriginal() on the parent <td>
 	}
 	helpClose();
 }
 
 /** Skip 'original' when typing
-* @param number
+* @param {number} first
 * @this HTMLTableCellElement
 */
 function skipOriginal(first) {
@@ -541,120 +743,128 @@ function skipOriginal(first) {
 * @this HTMLInputElement
 */
 function fieldChange() {
-	const row = cloneNode(parentTag(this, 'tr'));
+	const tr = this.closest('tr');
+	const row = cloneNode(tr);
 	for (const input of qsa('input', row)) {
 		input.value = '';
 	}
 	// keep value in <select> (function)
-	parentTag(this, 'table').appendChild(row);
-	this.oninput = () => { };
+	tr.parentNode.append(row);
+	this.removeAttribute('data-oninput'); // the appended row adds the next one
 }
 
 
 
 /** Create AJAX request
-* @param string
-* @param function (XMLHttpRequest)
-* @param [string]
-* @param [string]
-* @return XMLHttpRequest or false in case of an error
+* @param {string} url
+* @param {function(XMLHttpRequest)} callback
+* @param {?string} [data]
+* @param {?string} [message] null to not report errors
+* @return {XMLHttpRequest}
 * @uses offlineMessage
 */
 function ajax(url, callback, data, message) {
 	const request = new XMLHttpRequest();
-	if (request) {
-		const ajaxStatus = qs('#ajaxstatus');
-		if (message) {
-			ajaxStatus.innerHTML = '<div class="message">' + message + '</div>';
-		}
-		alterClass(ajaxStatus, 'hidden', !message);
-		request.open((data ? 'POST' : 'GET'), url);
-		if (data) {
-			request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-		}
-		request.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-		request.onreadystatechange = () => {
-			if (request.readyState == 4) {
-				if (/^2/.test(request.status)) {
-					callback(request);
-				} else if (message !== null) {
-					ajaxStatus.innerHTML = (request.status ? request.responseText : '<div class="error">' + offlineMessage + '</div>');
-					alterClass(ajaxStatus, 'hidden');
-				}
-			}
-		};
-		request.send(data);
+	// empty the live region instead of hiding it, display: none would remove it from the accessibility tree
+	ajaxStatus(message ? '<div class="message">' + message + '</div>' : '');
+	request.open((data ? 'POST' : 'GET'), url);
+	if (data) {
+		request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 	}
+	if (new URL(url, location).origin == location.origin) { // cross-origin would be preflighted and is_ajax() is only ours
+		request.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+	}
+	request.onreadystatechange = () => {
+		if (request.readyState == 4) {
+			if (/^2/.test(request.status)) {
+				callback(request);
+			} else if (message !== null) {
+				ajaxStatus(request.status ? request.responseText : '<div class="error">' + offlineMessage + '</div>');
+			}
+		}
+	};
+	request.send(data);
 	return request;
 }
 
 /** Use setHtml(key, value) for JSON response
-* @param string
-* @return boolean false for success
+* @param {string} url
+* @return {boolean} false
 */
 function ajaxSetHtml(url) {
-	return !ajax(url, request => {
+	ajax(url, request => {
 		const data = JSON.parse(request.responseText);
 		for (const key in data) {
 			setHtml(key, data[key]);
 		}
 	});
+	return false;
 }
 
 let editChanged; // used by plugins
-let adminerHighlighter = els => {}; // overwritten by syntax highlighters
+let adminerHighlighter = () => {}; // overwritten by syntax highlighters
 
 /** Save form contents through AJAX
-* @param HTMLFormElement
-* @param string
-* @param [HTMLInputElement]
-* @return boolean
+* @param {string} message
+* @return {boolean} false when sent by AJAX
+* @this HTMLInputElement submit button
 */
-function ajaxForm(form, message, button) {
-	let data = [];
-	for (const el of form.elements) {
-		if (el.name && !el.disabled) {
-			if (/^file$/i.test(el.type) && el.value) {
-				return false;
-			}
-			if (!/^(checkbox|radio|submit|file)$/i.test(el.type) || el.checked || el == button) {
-				data.push(encodeURIComponent(el.name) + '=' + encodeURIComponent(isTag(el, 'select') ? selectValue(el) : el.value));
-			}
-		}
+function ajaxForm(message) {
+	const button = this;
+	const form = button.form;
+	let data = formData(form, button);
+	if (data === null) {
+		return true; // files can't be sent by AJAX, submit the form
 	}
-	data = data.join('&');
 
 	let url = form.action;
 	if (!/post/i.test(form.method)) {
 		url = url.replace(/\?.*/, '') + '?' + data;
 		data = '';
 	}
-	return ajax(url, request => {
-		const ajaxstatus = qs('#ajaxstatus');
-		setHtml('ajaxstatus', request.responseText);
-		if (qs('.message', ajaxstatus)) { // success
+	ajax(url, request => {
+		if (qs('.message', ajaxStatus(request.responseText))) { // success
 			editChanged = null;
 		}
-		adminerHighlighter(qsa('code', ajaxstatus));
-		messagesPrint(ajaxstatus);
 	}, data, message);
+	return false;
+}
+
+let stickyTimeout;
+
+/** Display the response of an AJAX request in the status area
+* @param {string} html
+* @return {HTMLElement} the status area
+*/
+function ajaxStatus(html) {
+	const ajaxstatus = qs('#ajaxstatus');
+	setHtml('ajaxstatus', html);
+	adminerHighlighter(qsa('code', ajaxstatus));
+	messagesPrint(ajaxstatus);
+	alterClass(ajaxstatus, 'sticky', html); // display the message also in a scrolled page but release it soon to not cover the content
+	clearTimeout(stickyTimeout);
+	stickyTimeout = setTimeout(() => alterClass(ajaxstatus, 'sticky'), 5000);
+	return ajaxstatus;
 }
 
 
 
 /** Display edit field
-* @param MouseEvent
-* @param number display textarea instead of input, 2 - load long text
-* @param [string] warning to display
-* @return boolean
+* @param {MouseEvent} event
+* @param {number} text display textarea instead of input, 2 - load long text
+* @param {string} [warning] warning to display
+* @return {boolean}
 * @this HTMLElement
 */
 function selectClick(event, text, warning) {
 	const td = this;
 	const target = event.target;
-	if (!isCtrl(event) || isTag(td.firstChild, 'input|textarea') || isTag(target, 'a')) {
+	if (!isCtrl(event) || (td.firstElementChild && td.firstElementChild.matches('input, textarea')) || target.matches('a')) {
 		return;
 	}
+	const form = td.closest('form');
+	// the same row can be displayed more than once in the result of the SQL command so the cells have no unique ID there
+	const name = td.dataset.name || td.id;
 	if (warning) {
 		alert(warning);
 		return true;
@@ -663,42 +873,42 @@ function selectClick(event, text, warning) {
 	text = text || /\n/.test(original);
 	const input = document.createElement(text ? 'textarea' : 'input');
 	input.onkeydown = event => {
-		if (event.keyCode == 27 && !event.shiftKey && !event.altKey && !isCtrl(event)) { // 27 - Esc
-			inputBlur.apply(input);
+		if (isEscape(event)) {
+			inputBlur();
 			td.innerHTML = original;
 		}
 	};
 
 	const pos = getSelection().anchorOffset;
-	let value = (td.firstChild && td.firstChild.alt) || td.textContent;
+	let value = td.dataset.value;
+	if (value === undefined) {
+		value = (td.firstChild && td.firstChild.alt) || td.textContent;
+	}
 	const tdStyle = window.getComputedStyle(td, null);
 
 	input.style.width = Math.max(td.clientWidth - parseFloat(tdStyle.paddingLeft) - parseFloat(tdStyle.paddingRight), (text ? 200 : 20)) + 'px';
 
 	if (text) {
-		let rows = 1;
-		value.replace(/\n/g, () => {
-			rows++;
-		});
-		input.rows = rows;
-	}
-	if (qsa('i', td).length) { // <i> - NULL
-		value = '';
+		input.rows = value.split('\n').length;
 	}
 	td.innerHTML = '';
-	td.appendChild(input);
+	td.append(input);
+	const save = (form && form['save']) || qs('#save'); // each result of the SQL command has its own button
+	if (save) { // missing if a plugin returns false from selectCommandPrint()
+		save.disabled = false;
+	}
 	setupSubmitHighlight(td);
 	input.focus();
 	if (text == 2) { // long text
-		return ajax(location.href + '&' + encodeURIComponent(td.id) + '=', request => {
+		return ajax(location.href + '&' + urlEscape(name) + '=', request => {
 			if (request.responseText) {
 				input.value = request.responseText;
-				input.name = td.id;
+				input.name = name;
 			}
 		});
 	}
 	input.value = value;
-	input.name = td.id;
+	input.name = name;
 	input.selectionStart = pos;
 	input.selectionEnd = pos;
 	return true;
@@ -707,60 +917,53 @@ function selectClick(event, text, warning) {
 
 
 /** Load and display next page in select
-* @param number
-* @param string
-* @return boolean false for success
+* @param {string} loading
+* @return {boolean} false
 * @this HTMLLinkElement
 */
-function selectLoadMore(limit, loading) {
+function selectLoadMore(loading) {
 	const a = this;
 	const title = a.innerHTML;
 	const href = a.href;
-	a.innerHTML = loading;
 	if (href) {
-		a.removeAttribute('href');
-		return !ajax(href, request => {
+		ajax(href, request => {
 			const tbody = document.createElement('tbody');
 			tbody.innerHTML = request.responseText;
 			adminerHighlighter(qsa('code', tbody));
-			qs('#table').appendChild(tbody);
-			if (tbody.children.length < limit) {
-				a.remove();
-			} else {
-				a.href = href.replace(/\d+$/, page => +page + 1);
+			qs('#table').tBodies[0].append(...tbody.children); // keep the rows in the original TBODY to continue the .odds highlighting
+			const next = request.getResponseHeader('X-Next-Page'); // the response contains only the rows so the URL of the following page is sent in a header
+			if (next) {
+				a.href = next;
 				a.innerHTML = title;
+			} else {
+				a.remove();
 			}
 		});
+		a.innerHTML = loading;
+		a.removeAttribute('href');
+		return false;
 	}
-}
-
-
-
-/** Stop event propagation
-* @param Event
-*/
-function eventStop(event) {
-	event.stopPropagation();
 }
 
 
 
 /** Setup highlighting of default submit button on form field focus
-* @param HTMLElement
+* @param {HTMLElement} parent
 */
 function setupSubmitHighlight(parent) {
-	for (const input of qsa('input, select, textarea', parent)) {
-		setupSubmitHighlightInput(input);
-	}
+	qsa('input, select, textarea', parent).forEach(setupSubmitHighlightInput);
 }
 
 /** Setup submit highlighting for single element
-* @param HTMLElement
+* @param {HTMLElement} input
 */
 function setupSubmitHighlightInput(input) {
 	if (!/submit|button|image|file/.test(input.type)) {
 		addEvent(input, 'focus', inputFocus);
 		addEvent(input, 'blur', inputBlur);
+		if (document.activeElement === input) {
+			fire(input, 'focus'); // focus event was missed, e.g. jush.textarea() focuses the <pre> before this
+		}
 	}
 }
 
@@ -768,56 +971,57 @@ function setupSubmitHighlightInput(input) {
 * @this HTMLInputElement
 */
 function inputFocus() {
+	inputBlur();
 	alterClass(findDefaultSubmit(this), 'default', true);
 }
 
-/** Unhighlight default submit button
-* @this HTMLInputElement
-*/
+/** Unhighlight default submit button */
 function inputBlur() {
-	alterClass(findDefaultSubmit(this), 'default');
+	alterClass(qs('input.default'), 'default'); // not findDefaultSubmit() - some buttons could get disabled since the highlighting
 }
 
 /** Find submit button used by Enter
-* @param HTMLElement
-* @return HTMLInputElement
+* @param {HTMLElement} el
+* @return {?HTMLInputElement}
 */
 function findDefaultSubmit(el) {
 	if (el.jushTextarea) {
 		el = el.jushTextarea;
 	}
-	if (!el.form) {
-		return null;
-	}
-	for (const input of qsa('input', el.form)) {
-		if (input.type == 'submit' && !input.style.zIndex) {
-			return input;
-		}
-	}
+	return (el.form ? qs('input[type=submit]:not([hidden]):enabled', el.form) : null); // the browser also skips disabled buttons in the implicit submission
 }
 
 
 
 /** Add event listener
-* @param HTMLElement
-* @param string without 'on'
-* @param function
+* @param {HTMLElement} el
+* @param {string} action without 'on'
+* @param {function} handler
 */
 function addEvent(el, action, handler) {
-	el.addEventListener(action, handler, false);
+	el.addEventListener(action, handler);
+}
+
+/** Dispatch an event to run the handlers registered by the data attributes
+* @param {?HTMLElement} el
+* @param {string} type event name without 'on'
+* @return {boolean} false if a handler has canceled the event
+*/
+function fire(el, type) {
+	// bubbles - the handlers are delegated from the document; cancelable - the caller can skip the default action
+	return (el ? el.dispatchEvent(new Event(type, {bubbles: true, cancelable: true})) : true);
 }
 
 /** Clone node and setup submit highlighting
-* @param HTMLElement
-* @return HTMLElement
+* @param {HTMLElement} el
+* @return {HTMLElement}
 */
 function cloneNode(el) {
 	const el2 = el.cloneNode(true);
-	const selector = 'input, select';
+	const selector = 'input, select, button';
 	const origEls = qsa(selector, el);
 	const cloneEls = qsa(selector, el2);
-	for (let i=0; i < origEls.length; i++) {
-		const origEl = origEls[i];
+	for (const [i, origEl] of origEls.entries()) {
 		for (const key in origEl) {
 			if (/^on/.test(key) && origEl[key]) {
 				cloneEls[i][key] = origEl[key];
@@ -828,14 +1032,20 @@ function cloneNode(el) {
 	return el2;
 }
 
-oninput = event => {
-	const target = event.target;
-	const maxLength = target.dataset.maxlength;
-	alterClass(target, 'maxlength', target.value && maxLength != null && target.value.length > maxLength); // maxLength could be 0
-};
+// documentElement - this file is loaded in <head> where document.body doesn't exist yet
+alterClass(document.documentElement, 'js', true);
+alterClass(document.documentElement, 'nojs'); // two calls, not classList.replace() - unsupported in Chrome < 61
+alterClass(document.documentElement, 'insecure', !navigator.clipboard); // clipboard is undefined also in an insecure context
 
-addEvent(document, 'click', event => {
-	if (!qs('#foot').contains(event.target)) {
-		alterClass(qs('#foot'), 'foot', true);
-	}
+mixin(document, {
+	onchange: delegateEvent,
+	onclick: bodyClick, // calls delegateEvent() itself
+	ondblclick: delegateEvent,
+	oninput: bodyInput, // calls delegateEvent() itself
+	onkeydown: bodyKeydown, // calls delegateEvent() itself
+	onmousedown: delegateEvent,
+	onmouseout: delegateEvent,
+	onmouseover: delegateEvent,
+	onsearch: delegateEvent, // WebKit only, it bubbles
+	onsubmit: bodySubmit, // calls delegateEvent() itself
 });

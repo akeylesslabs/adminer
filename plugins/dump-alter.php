@@ -1,6 +1,6 @@
 <?php
 
-/** Export one database (e.g. development) so that it can be synced with other database (e.g. production)
+/** Export one database (e.g. development) so that it can be synced with another database (e.g. production)
 * @link https://www.adminer.org/plugins/#use
 * @author Jakub Vrana, https://www.vrana.cz/
 * @license https://www.apache.org/licenses/LICENSE-2.0 Apache License, Version 2.0
@@ -93,7 +93,7 @@ CREATE PROCEDURE adminer_alter (INOUT alter_command text) BEGIN
 					$default = $row["COLUMN_DEFAULT"];
 					$row["default"] = ($default !== null ? Adminer\q($default) : "NULL");
 					$row["after"] = Adminer\q($after); //! rgt AFTER lft, lft AFTER id doesn't work
-					$row["alter"] = Adminer\escape_string(
+					$row["alter"] = substr(Adminer\q(
 						Adminer\idf_escape($row["COLUMN_NAME"])
 						. " $row[COLUMN_TYPE]"
 						. ($row["COLLATION_NAME"] ? " COLLATE $row[COLLATION_NAME]" : "")
@@ -102,7 +102,7 @@ CREATE PROCEDURE adminer_alter (INOUT alter_command text) BEGIN
 						. ($row["EXTRA"] ? " $row[EXTRA]" : "")
 						. ($row["COLUMN_COMMENT"] ? " COMMENT " . Adminer\q($row["COLUMN_COMMENT"]) : "")
 						. ($after ? " AFTER " . Adminer\idf_escape($after) : " FIRST")
-					);
+					), 1, -1);
 					echo ", ADD $row[alter]";
 					$fields[] = $row;
 					$after = $row["COLUMN_NAME"];
@@ -171,8 +171,11 @@ DROP PROCEDURE adminer_alter;
 	protected $translations = array(
 		'cs' => array('' => 'Exportuje jednu databázi (např. vývojovou) tak, že může být synchronizována s jinou databází (např. produkční)'),
 		'de' => array('' => 'Exportiert eine Datenbank (z. B. Entwicklung), damit sie mit einer anderen Datenbank (z. B. Produktion) synchronisiert werden kann'),
+		'hr' => array('' => 'Izvozi bazu podataka (npr. razvojnu) tako da se može sinkronizirati s drugom bazom (npr. produkcijskom)'),
+		'ja' => array('' => 'データベース (開発用など) をエクスポートし、別のデータベース (本番用など) と同期'),
 		'pl' => array('' => 'Eksportuje jedną bazę danych (np. programistyczną), aby można ją było zsynchronizować z inną bazą danych (np. produkcyjną)'),
 		'ro' => array('' => 'Exportați o bază de date (de exemplu, development) astfel încât să poată fi sincronizată cu o altă bază de date (de exemplu, de producție)'),
-		'ja' => array('' => 'データベース (開発用など) をエクスポートし、別のデータベース (本番用など) と同期'),
+		'sk' => array('' => 'Exportuje jednu databázu (napr. vývojovú) tak, aby mohla byť synchronizovaná s inou databázou (napr. produkčnou)'), // Claude Opus 5
+		'zh' => array('' => '导出一个数据库（例如开发环境），以便与另一个数据库（例如生产环境）同步'), // Claude Opus 5
 	);
 }

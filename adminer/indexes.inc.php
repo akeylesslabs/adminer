@@ -11,6 +11,9 @@ if (preg_match('~MyISAM|M?aria' . (min_version(5.6, '10.0.5') ? '|InnoDB' : '') 
 if (preg_match('~MyISAM|M?aria' . (min_version(5.7, '10.2.2') ? '|InnoDB' : '') . '~i', $table_status["Engine"])) {
 	$index_types[] = "SPATIAL";
 }
+if (min_version('', 11.7) && preg_match('~MyISAM|InnoDB~i', $table_status["Engine"])) {
+	$index_types[] = "VECTOR";
+}
 $indexes = indexes($TABLE);
 $fields = fields($TABLE);
 $primary = array();
@@ -31,6 +34,7 @@ if ($_POST && !$error && !$_POST["add"] && !$_POST["drop_col"]) {
 			$columns = array();
 			$lengths = array();
 			$descs = array();
+			$opclasses = array();
 			$index_condition = (support("partial_indexes") ? $index["partial"] : "");
 			$index_algorithm = (in_array($index["algorithm"], $index_algorithms) ? $index["algorithm"] : "");
 			$set = array();
@@ -39,10 +43,12 @@ if ($_POST && !$error && !$_POST["add"] && !$_POST["drop_col"]) {
 				if ($column != "") {
 					$length = idx($index["lengths"], $key);
 					$desc = idx($index["descs"], $key);
-					$set[] = ($fields[$column] ? idf_escape($column) : $column) . ($length ? "(" . (+$length) . ")" : "") . ($desc ? " DESC" : "");
+					$opclass = idx($index["opclasses"], $key);
+					$set[] = ($fields[$column] ? idf_escape($column) : $column) . ($length ? "(" . (+$length) . ")" : "") . ($opclass != "" ? " " . idf_escape($opclass) : "") . ($desc ? " DESC" : "");
 					$columns[] = $column;
 					$lengths[] = ($length ?: null);
 					$descs[] = $desc;
+					$opclasses[] = "$opclass";
 				}
 			}
 
@@ -56,6 +62,7 @@ if ($_POST && !$error && !$_POST["add"] && !$_POST["drop_col"]) {
 					&& array_values($existing["columns"]) === $columns
 					&& (!$existing["lengths"] || array_values($existing["lengths"]) === $lengths)
 					&& array_values($existing["descs"]) === $descs
+					&& (!$existing["opclasses"] || array_values($existing["opclasses"]) === $opclasses)
 					&& $existing["partial"] == $index_condition
 					&& (!$index_algorithms || $existing["algorithm"] == $index_algorithm)
 				) {
@@ -75,12 +82,19 @@ if ($_POST && !$error && !$_POST["add"] && !$_POST["drop_col"]) {
 		$alter[] = array($existing["type"], $name, "DROP");
 	}
 	if (!$alter) {
-		redirect(ME . "table=" . urlencode($TABLE));
+		redirect(ME . "table=" . url_escape($TABLE));
 	}
-	queries_redirect(ME . "table=" . urlencode($TABLE), lang('Indexes have been altered.'), alter_indexes($TABLE, $alter));
+	queries_redirect(ME . "table=" . url_escape($TABLE), lang('Indexes have been altered.'), alter_indexes($TABLE, $alter));
 }
 
-page_header(lang('Indexes'), $error, array("table" => $TABLE), h($TABLE));
+page_header(lang('Indexes'), $error, array("table" => $TABLE), h($TABLE), false, doc_link(array(
+	'sql' => "create-index.html",
+	'pgsql' => "sql-createindex.html",
+	'cockroach' => "create-index",
+	'mssql' => "t-sql/statements/create-index-transact-sql",
+	'sqlite' => "lang_createindex.html",
+	'oracle' => "sqlrf/CREATE-INDEX.html",
+)));
 
 $fields_keys = array_keys($fields);
 if ($_POST["add"]) {
@@ -103,12 +117,17 @@ if (!$row) {
 	$row["indexes"] = $indexes;
 }
 $lengths = (JUSH == "sql" || JUSH == "mssql");
+$opclasses = driver()->indexOpclasses();
 $show_options = ($_POST ? $_POST["options"] : get_setting("index_options"));
+$name_patterns = array();
+foreach ($index_types as $type) {
+	$name_patterns[$type] = str_replace("{table}", $TABLE, adminer()->namePattern($type));
+}
 ?>
 
 <form action="" method="post">
 <div class="scrollable">
-<table class="nowrap">
+<table class="nowrap odds">
 <thead><tr>
 <th id="label-type"><?php echo lang('Index Type'); ?>
 <?php
@@ -118,13 +137,14 @@ if ($index_algorithms) {
 		'sql' => 'create-index.html#create-index-storage-engine-index-types',
 		'mariadb' => 'storage-engine-index-types/',
 		'pgsql' => 'indexes-types.html',
+		'cockroach' => 'create-index#parameters',
 	));
 }
 ?>
-<th><input type="submit" class="wayoff"><?php
+<th><input type="submit" hidden><?php
 echo lang('Columns') . ($lengths ? "<span$idxopts> (" . lang('length') . ")</span>" : "");
 if ($lengths || support("descidx")) {
-	echo checkbox("options", 1, $show_options, lang('Options'), "indexOptionsShow(this.checked)", "jsonly") . "\n";
+	echo checkbox("options", 1, $show_options, lang('Options'), on('click', 'indexOptionsShow'), "jsonly") . "\n";
 }
 ?>
 <th id="label-name"><?php echo lang('Name'); ?>
@@ -133,13 +153,13 @@ if (support("partial_indexes")) {
 	echo "<th id='label-condition'$idxopts>" . lang('Condition');
 }
 ?>
-<th><noscript><?php echo icon("plus", "add[0]", "+", lang('Add next')); ?></noscript>
-</thead>
+<td><noscript><?php echo icon("plus", "add[0]", "+", lang('Add next')); ?></noscript>
+<tbody>
 <?php
 if ($primary) {
 	echo "<tr><td>PRIMARY<td>";
 	foreach ($primary["columns"] as $key => $column) {
-		echo select_input(" disabled", $fields_keys, $column);
+		echo select_input(" disabled", array_combine($fields_keys, $fields_keys), $column);
 		echo "<label><input disabled type='checkbox'>" . lang('descending') . "</label> ";
 	}
 	echo "<td><td>\n";
@@ -147,10 +167,10 @@ if ($primary) {
 $j = 1;
 foreach ($row["indexes"] as $index) {
 	if (!$_POST["drop_col"] || $j != key($_POST["drop_col"])) {
-		echo "<tr><td>" . html_select("indexes[$j][type]", array(-1 => "") + $index_types, $index["type"], ($j == count($row["indexes"]) ? "indexesAddRow.call(this);" : ""), "label-type");
+		echo "<tr><td>" . html_select("indexes[$j][type]", array(-1 => "") + $index_types, $index["type"], on('change', 'indexesChangeType', $name_patterns), "label-type");
 
 		if ($index_algorithms) {
-			echo "<td$idxopts>" . html_select("indexes[$j][algorithm]", array_merge(array(""), $index_algorithms), $index['algorithm'], "label-algorithm");
+			echo "<td$idxopts>" . html_select("indexes[$j][algorithm]", array_merge(array(""), $index_algorithms), $index['algorithm'], "", "label-algorithm");
 		}
 
 		echo "<td>";
@@ -158,15 +178,25 @@ foreach ($row["indexes"] as $index) {
 		$i = 1;
 		foreach ($index["columns"] as $key => $column) {
 			echo "<span>" . select_input(
-				" name='indexes[$j][columns][$i]' title='" . lang('Column') . "'",
+				" name='indexes[$j][columns][$i]' title='" . lang('Column') . "'"
+					. on('change', 'indexesChangeColumn', $name_patterns),
 				($fields && ($column == "" || $fields[$column]) ? array_combine($fields_keys, $fields_keys) : array()),
-				$column,
-				"partial(" . ($i == count($index["columns"]) ? "indexesAddColumn" : "indexesChangeColumn") . ", '" . js_escape(JUSH == "sql" ? "" : $_GET["indexes"] . "_") . "')"
+				$column
 			);
-			echo "<span$idxopts>";
+			echo " <span$idxopts>";
 			echo ($lengths ? "<input type='number' name='indexes[$j][lengths][$i]' class='size' value='" . h(idx($index["lengths"], $key)) . "' title='" . lang('Length') . "'>" : "");
+			if ($opclasses) {
+				$opclass = idx($index["opclasses"], $key);
+				echo html_select(
+					"indexes[$j][opclasses][$i]",
+					array("" => "(" . lang('operator class') . ")") + array_combine($opclasses, $opclasses) + ($opclass != "" ? array($opclass => $opclass) : array()),
+					$opclass
+				);
+				echo doc_link(array('pgsql' => 'indexes-opclass.html'));
+			}
 			echo (support("descidx") ? checkbox("indexes[$j][descs][$i]", 1, idx($index["descs"], $key), lang('descending')) : "");
-			echo "</span> </span>";
+			echo "<br>";
+			echo "</span></span>";
 			$i++;
 		}
 
@@ -174,7 +204,7 @@ foreach ($row["indexes"] as $index) {
 		if (support("partial_indexes")) {
 			echo "<td$idxopts><input name='indexes[$j][partial]' value='" . h($index["partial"]) . "' autocapitalize='off' aria-labelledby='label-condition'>\n";
 		}
-		echo "<td>" . icon("cross", "drop_col[$j]", "x", lang('Remove')) . script("qsl('button').onclick = partial(editingRemoveRow, 'indexes\$1[type]');");
+		echo "<td>" . icon("cross", "drop_col[$j]", "x", lang('Remove'), on('click', 'editingRemoveRow', 'indexes$1[type]'));
 	}
 	$j++;
 }
@@ -182,6 +212,6 @@ foreach ($row["indexes"] as $index) {
 </table>
 </div>
 <p>
-<input type="submit" value="<?php echo lang('Save'); ?>">
+<input type='submit' value='<?php echo lang('Save'); ?>'>
 <?php echo input_token(); ?>
 </form>

@@ -11,48 +11,64 @@ body { color: var(--fg); background: var(--bg); font: 90%/1.25 Verdana, Arial, H
 a { color: blue; text-decoration: none; }
 a:visited { color: navy; }
 a:link:hover, a:visited:hover { color: red; text-decoration: underline; }
-a.text:hover { text-decoration: none; }
+a.text:hover, a.icon-copy:hover { text-decoration: none; }
 a.jush-help:hover { color: inherit; }
+button.link { font: inherit; padding: 0; border: 0; background: none; color: blue; cursor: pointer; }
+button.link:hover { color: red; text-decoration: underline; }
 h1 { font-size: 150%; margin: 0; padding: .8em .667em; border-bottom: 1px solid #999; font-weight: normal; color: #777; background: var(--dim); }
-h2 { font-size: 150%; margin: 0 0 20px -18px; padding: .8em 1em; border-bottom: 1px solid var(--fg); font-weight: normal; background: var(--lit); }
+h2 { font-size: 150%; margin: 0 0 20px; margin-inline-start: -18px; padding: .8em 1em; border-bottom: 1px solid var(--fg); font-weight: normal; background: var(--lit); }
+h2 .doc { float: right; position: sticky; right: 20px; }
 h3 { font-weight: normal; font-size: 130%; margin: 1em 0 0; }
 form { margin: 0; }
+table { margin: 1em 0 0; margin-inline-end: 20px; font-size: 90%; border-spacing: 0; border: 0; } /* collapsing paints the borders on the table, so on a sticky thead, Chrome loses top border and Firefox all borders: https://bugzilla.mozilla.org/show_bug.cgi?id=1727594 */
+table, td, th, .column { border-color: #999; border-style: solid; }
+td, th { border-width: 0; border-block-end-width: 1px; border-inline-end-width: 1px; padding: .2em .3em; margin: 0; } /* logical so that the borders mirror in right-to-left languages */
+td:first-child, th:first-child { border-inline-start-width: 1px; }
+table > :first-child > :first-child > td, table > :first-child > :first-child > th { border-top-width: 1px; }
 td table { width: 100%; margin: 0; }
-table { margin: 1em 20px 0 0; font-size: 90%; border-spacing: 0; border-width: 1px 0 0 1px; }
-table, td, th, .js .column { border-color: #999; border-style: solid; }
-td, th { border-width: 0 1px 1px 0; padding: .2em .3em; margin: 0; }
-th { background: var(--dim); text-align: left; }
-thead { position: sticky; top: 0; }
+fieldset table:first-child { margin: 0; } /* the fieldset has its own padding */
+th { background: var(--dim); text-align: start; }
+th .doc { font-weight: normal; }
+thead { position: sticky; top: 0; z-index: 1; } /* z-index to cover the sticky cells of tbody which come later */
 thead th { text-align: center; padding: .2em .5em; }
 thead td, thead th { background: var(--lit); }
-fieldset { display: inline; vertical-align: top; padding: .5em .8em; margin: .8em .5em 0 0; border: 1px solid #999; border-radius: 5px; }
-p { margin: .8em 20px 0 0; }
+tbody tr:hover td, tbody tr:hover th { background: var(--dim); }
+td.hover, tr:hover td.hover, .js .checkable .checked td.hover { background-color: var(--bg); border-bottom-width: 0; }
+td.hover:first-child { border-inline-start-width: 0; }
+td.hover:last-child { border-inline-end-width: 0; }
+table > :first-child > :first-child > td.hover { border-top-width: 0; }
+fieldset { display: inline; vertical-align: top; padding: .5em .8em; margin: .8em 0 0; margin-inline-end: .5em; border: 1px solid #999; border-radius: 5px; }
+p { margin: .8em 0 0; margin-inline-end: 20px; }
 img { vertical-align: middle; border: 0; }
 td img { max-width: 200px; max-height: 200px; }
-tbody tr:hover td, tbody tr:hover th { background: var(--dim); }
 code { font-size: 110%; padding: 1px 2px; background: var(--dim); }
-pre { margin: 1em 0 0; }
+mark { color: inherit; background: #ff9; }
+pre { margin: 1em 0 0; tab-size: 4; }
 td pre { margin: 0; }
-pre, textarea { font: 110%/1.25 monospace; }
+textarea { font-family: inherit; line-height: inherit; } /* browsers use monospace and line-height: normal by default */
+pre, .sqlarea, textarea[class*="jush-"] { font: 110%/1.25 monospace; } /* .sqlarea also without jush- for the highlight-prism plugin */
 pre.jush { background: var(--bg); }
 pre code { display: block; font-size: 100%; }
 input, textarea { box-sizing: border-box; }
 input, select { vertical-align: middle; }
 input[type="radio"] { vertical-align: text-bottom; }
 input.default { box-shadow: 1px 1px 1px #777; }
-input.required, input.maxlength { box-shadow: 1px 1px 1px red; }
-input.wayoff { left: -1000px; position: absolute; }
+input.required, input.maxlength, textarea.maxlength { box-shadow: 1px 1px 1px red; }
+[draggable] { cursor: grab; }
 .block { display: block; }
 .version { color: #777; font-size: 62%; }
-.js .hidden, .nojs .jsonly { display: none; }
-.js .column { position: absolute; background: var(--lit); padding: .27em 1ex .33em 0; margin-top: -.37em; border-width: 1px 1px 1px 0; border-radius: 0 8px 8px 0; }
+.js .hidden, .nojs .jsonly, .insecure .icon-copy { display: none; }
+[hidden] { display: none !important; } /* the browser hides [hidden] only by a UA rule which any skin setting display would beat */
+.column { position: absolute; background: var(--lit); padding: .27em 0 .33em; padding-inline-end: 1ex; margin-top: -.37em; border-width: 1px; border-inline-start-width: 0; border-radius: 0 8px 8px 0; }
+th:not(:hover) .column { display: none; }
 .nowrap td, .nowrap th, td.nowrap, p.nowrap { white-space: pre; }
-.wrap td { white-space: normal; }
 .error { color: red; background: #fee; }
 .error b { background: var(--bg); font-weight: normal; }
+.error pre code { background: var(--bg); }
 .message { color: green; background: #efe; }
 .message table { color: var(--fg); background: var(--bg); }
-.error, .message { padding: .5em .8em; margin: 1em 20px 0 0; }
+.error, .message { padding: .5em .8em; margin: 1em 0 0; margin-inline-end: 20px; }
+td .error { padding: 1px; margin: 0; }
 .char { color: #007F00; }
 .date { color: #7F007F; }
 .enum { color: #007F7F; }
@@ -60,8 +76,8 @@ input.wayoff { left: -1000px; position: absolute; }
 .odds tbody tr { background: var(--bg); }
 .odds tbody tr:nth-child(2n) { background: #F5F5F5; }
 .js .checkable .checked td, .js .checkable .checked th { background: var(--lit); }
-.time { color: silver; font-size: 70%; }
-.function, .number, .datetime { text-align: right; }
+.time { color: #666; font-size: 70%; }
+.function, .number, .datetime { text-align: right; } /* right even in RTL */
 .type { width: 15ex; }
 .options select, .options input { width: 20ex; }
 .view { font-style: italic; }
@@ -70,77 +86,88 @@ input.wayoff { left: -1000px; position: absolute; }
 .sql-footer { margin-bottom: 2.5em; }
 .explain table { white-space: pre; }
 .icon { width: 18px; height: 18px; background: navy center no-repeat; border: 0; padding: 0; vertical-align: middle; }
-.icon span { display: none; }
+.icon span, .icon-copy span { display: none; }
 .icon:hover { background-color: red; }
+.dragging tr:not(.dragged) .icon-move { pointer-events: none; }
+#edit-fields .icon-move { touch-action: none; } /* to not scroll the page when dragging on a touch screen */
 .size { width: 7ex; }
 .help { cursor: help; }
-.footer { position: sticky; bottom: 0; margin: 23px -20px .5em 0; box-shadow: 0 -5px 10px 10px var(--bg); }
+.footer { position: sticky; bottom: 0; margin: 23px 0 .5em; margin-inline-end: -20px; box-shadow: 0 -5px 10px 10px var(--bg); }
 .footer > div { background: var(--bg); padding: 0 0 .5em; }
 .footer fieldset { margin-top: 0; }
-.links a { white-space: nowrap; margin-right: 20px; }
+.links a { white-space: nowrap; margin-inline-end: 20px; }
 .logout { margin-top: .5em; position: absolute; top: 0; right: 0; background-color: var(--bg); box-shadow: 0 0 5px 5px var(--bg); }
-.loadmore { margin-left: 1ex; }
+.loadmore { margin-inline-start: 1ex; display: inline-block; position: sticky; left: 10px; } /* sticky to stay on the screen when the page is scrolled horizontally by a wide table */
+td.check { text-align: end; } /* to display the checkboxes next to the data */
 /* .edit used in designs */
-#menu { position: absolute; margin: 10px 0 0; top: 2em; left: 0; width: 19em; }
+#foot:focus { outline: none; } /* focused by JS after opening the menu, never by the user */
+#menu { margin: 10px 0 0; }
 #menu p, #logins, #tables { padding: .8em 1em; margin: 0; border-bottom: 1px solid #ccc; }
 #logins li, #tables li { list-style: none; }
 #dbs { overflow: hidden; }
 #logins, #tables { white-space: nowrap; overflow: hidden; }
 #logins a, #tables a, #tables span { background: var(--bg); }
-#content { margin: 2em 0 0 21em; padding: 10px 20px 20px 0; }
-#lang { position: absolute; top: -2.6em; left: 0; padding: .3em 1em; }
+#content { margin: 2em 0 0; margin-inline-start: 21em; padding: 10px 0 20px; padding-inline-end: 20px; }
+#lang { padding: .3em 1em; }
 #menuopen { display: none; }
-#breadcrumb { white-space: nowrap; position: absolute; top: 0; left: 21em; background: var(--dim); height: 2em; line-height: 1.8em; padding: 0 1em; margin: 0 0 0 -18px; }
+#breadcrumb { white-space: nowrap; position: absolute; top: 0; left: 21em; background: var(--dim); height: 2em; line-height: 1.8em; padding: 0 1em; margin: 0; margin-inline-start: -18px; }
+#ajaxstatus { width: fit-content; } /* shrink-to-fit so that the sticky message can move when the page is scrolled horizontally */
+#ajaxstatus > :first-child { margin-top: 0; } /* the margin would be a transparent gap above the sticky message */
+#ajaxstatus.sticky { position: sticky; top: 0; left: 0; z-index: 2; max-height: 40vh; overflow: auto; } /* z-index to cover the sticky thead, max-height to not cover the whole screen by a long error */
 #logo { vertical-align: baseline; margin-bottom: -3px; }
 #h1 { color: #777; text-decoration: none; font-style: italic; }
-#version { color: red; }
-#schema { margin-left: 60px; position: relative; user-select: none; -webkit-user-select: none; }
-#schema .table { border: 1px solid silver; padding: 0 2px; cursor: move; position: absolute; }
+#version, .plugins .update { color: red; }
+#version iframe { pointer-events: none; border: 0; width: 7ex; height: 1.25em; vertical-align: text-bottom; }
+#schema { margin-inline-start: 60px; position: relative; user-select: none; -webkit-user-select: none; }
+#schema .table { border: 1px solid silver; padding: 0 2px; cursor: move; position: absolute; box-sizing: border-box; }
 #schema .references { position: absolute; }
-#help { position: absolute; border: 1px solid #999; background: var(--dim); padding: 5px; font-family: monospace; z-index: 1; }
+#help { position: absolute; border: 1px solid #999; background: var(--dim); padding: 5px; font-family: monospace; z-index: 2; }
 :target { background: var(--lit); }
 
 /* inlined here and not in compile.php because otherwise the development version flickers a little bit when loading the images */
-.icon-up { background-image: url(data:image/gif;base64,R0lGODlhEgASAIEAMe7u7gAAgJmZmQAAACH5BAEAAAEALAAAAAASABIAAQIghI+py+0PTQhRTgrvfRP0nmEVOIoReZphxbauAMfyHBcAOw==); }
-.icon-down { background-image: url(data:image/gif;base64,R0lGODlhEgASAIEAMe7u7gAAgJmZmQAAACH5BAEAAAEALAAAAAASABIAAQIghI+py+0PTQjxzCopvltX/lyix0wm2ZwdxraVAMfyHBcAOw==); }
 .icon-plus { background-image: url(data:image/gif;base64,R0lGODlhEgASAIEAMe7u7gAAgJmZmQAAACH5BAEAAAEALAAAAAASABIAAQIhhI+py+0PTQjxzCopvm/6rykgCHGVGaFliLXuI8TyTMsFADs=); }
 .icon-cross { background-image: url(data:image/gif;base64,R0lGODlhEgASAIEAMe7u7gAAgJmZmQAAACH5BAEAAAEALAAAAAASABIAAQIjhI+py+0PIwph1kZvfnnDLoFfd2GU4THnsUruC0fCTNc2XQAAOw==); }
 .icon-move { background-image: url(data:image/gif;base64,R0lGODlhEgASAJEAAO7u7gAAAJmZmQAAACH5BAEAAAEALAAAAAASABIAAAIfhI+py+3vgpyU0Rug3gnX5U3cqIWSZZLqigjuC8dvAQA7); }
+/* masked so that the icon uses the link color, also on hover */
+.icon-copy { --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M1 1h10v1H1zM1 1h1v10H1zM10 1h1v4h-1zM1 10h4v1H1z'/%3E%3Cpath fill-rule='evenodd' d='M5 5h10v10H5zm1 1v8h8V6z'/%3E%3C/svg%3E"); display: inline-block; width: 1em; height: 1em; vertical-align: middle; background: currentColor; -webkit-mask: var(--icon) center/contain no-repeat; mask: var(--icon) center/contain no-repeat; }
+.icon-copy.copied { --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8l3.5 3.5L13 5' fill='none' stroke='%23000' stroke-width='2'/%3E%3C/svg%3E"); }
 #schema .arrow { height: 1.25em; background: url(data:image/gif;base64,R0lGODlhCAAKAIAAAICAgP///yH5BAEAAAEALAAAAAAIAAoAAAIPBIJplrGLnpQRqtOy3rsAADs=) no-repeat right center; }
 
-.rtl h2 { margin: 0 -18px 20px 0; }
-.rtl p, .rtl table, .rtl .error, .rtl .message { margin: 1em 0 0 20px; }
+/* the margins and paddings above are logical, only the offsets of the positioned elements have to be mirrored here */
+.rtl .column { border-radius: 8px 0 0 8px; } /* border-start-end-radius is much newer than the other logical properties */
 .rtl .logout { left: 0; right: auto; }
-.rtl #content { margin: 2em 21em 0 0; padding: 10px 0 20px 20px; }
-.rtl #breadcrumb { left: auto; right: 21em; margin: 0 -18px 0 0; }
-.rtl .pages { left: auto; right: 21em; }
-.rtl input.wayoff { left: auto; right: -1000px; }
-.rtl #lang, .rtl #menu { left: auto; right: 0; }
+.rtl .loadmore { left: auto; right: 10px; }
+.rtl #ajaxstatus.sticky { left: auto; right: 0; }
+.rtl #breadcrumb { left: auto; right: 21em; }
+.rtl h2 .doc { float: left; left: 20px; right: auto; }
 .rtl pre, .rtl code { direction: ltr; }
 
+@media not all and (max-width: 800px) {
+	#menu { position: absolute; top: 2em; left: 0; width: 19em; }
+	#lang { position: absolute; top: -2.6em; left: 0; }
+	th.sticky, td.sticky { position: sticky; left: 0; } /* a sticky column would cover most of a narrow screen */
+	.rtl #lang, .rtl #menu { left: auto; right: 0; }
+	.rtl th.sticky, .rtl td.sticky { left: auto; right: 0; }
+}
+
 @media all and (max-width: 800px) {
-	.pages { left: auto; }
 	.js .logout { top: 1.667em; background-color: var(--dim); box-shadow: 0 0 5px 5px var(--dim); }
-	#menu { position: static; width: auto; min-width: 23em; background: var(--bg); border: 1px solid var(--fg); margin-top: 9px; box-shadow: 0 0 20px -3px var(--fg); }
-	#content { margin-left: 10px !important; }
-	#lang { position: static; }
+	#menu { min-width: 23em; background: var(--bg); border: 1px solid var(--fg); margin-top: 9px; box-shadow: 0 0 20px -3px var(--fg); }
+	#content { margin-inline-start: 10px !important; }
 	#breadcrumb { left: 48px !important; }
-	.js #foot { position: absolute; top: 2em; left: 0; }
+	.js #foot { position: absolute; top: 2em; left: 0; z-index: 2; } /* z-index to cover the sticky thead */
 	.js .foot { display: none; }
 	.js #menuopen { display: block; position: absolute; top: 3px; left: 6px; }
 	.nojs #menu { position: static; }
 	.rtl.js #foot { left: auto; right: 0; }
-	.rtl .pages { right: auto; }
 	.rtl.js #menuopen { left: auto; right: 6px; }
-	.rtl #content { margin-left: 0 !important; margin-right: 10px; }
 	.rtl #breadcrumb { left: auto !important; right: 48px; }
 }
 
 @media print {
 	#lang, #menu, .logout { display: none; }
-	#content { margin-left: 1em; }
+	#content { margin-inline-start: 1em; }
 	#breadcrumb { left: 1em; }
-	.rtl #content { margin-left: auto; margin-right: 1em; }
 	.rtl #breadcrumb { left: auto; right: 1em; }
 	.nowrap td, .nowrap th, td.nowrap { white-space: normal; }
 }

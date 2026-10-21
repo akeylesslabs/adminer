@@ -2,30 +2,38 @@
 namespace Adminer;
 
 class Plugins {
-	/** @var true[] */ private static array $append = array('dumpFormat' => true, 'dumpOutput' => true, 'editRowPrint' => true, 'editFunctions' => true, 'config' => true); // these hooks expect the value to be appended to the result
+	// these hooks expect the value to be appended to the result
+	/** @var true[] */ private static array $append = array('dumpFormat' => true, 'dumpOutput' => true, 'editRowPrint' => true, 'editFunctions' => true, 'config' => true);
 
 	/** @var list<object> @visibility protected(set) */ public array $plugins;
+	/** @var string[] @visibility protected(set) */ public array $drivers = array(); // [id => name] of drivers registered by plugins
+	/** @var string[] @visibility protected(set) */ public array $driverFiles = array(); // [id => filename] of files which registered a driver
 	/** @visibility protected(set) */ public string $error = ''; // HTML
 	/** @var list<object>[] */ private array $hooks = array();
 
 	/** Register plugins
-	* @param ?list<object> $plugins object instances or null to autoload plugins from adminer-plugins/
+	* @param ?mixed[] $plugins object instances or null to autoload plugins from adminer-plugins/, non-objects are reported and skipped
 	*/
 	function __construct(?array $plugins) {
+		$drivers = SqlDriver::$drivers; // bundled drivers, plugin drivers are registered below
+		$help = " href='https://www.adminer.org/plugins/#use'" . target_blank();
 		if ($plugins === null) {
 			$plugins = array();
 			$basename = "adminer-plugins";
 			if (is_dir($basename)) {
 				foreach (glob("$basename/*.php") as $filename) {
+					$file_drivers = SqlDriver::$drivers;
 					$this->includeOnce($filename);
+					foreach (array_diff_key(SqlDriver::$drivers, $file_drivers) as $id => $name) {
+						$this->driverFiles[$id] = $filename;
+					}
 				}
 			}
-			$help = " href='https://www.adminer.org/plugins/#use'" . target_blank();
 			if (file_exists("$basename.php")) {
 				$include = $this->includeOnce("$basename.php"); // example: return array(new AdminerLoginOtp($secret));
 				if (is_array($include)) {
-					foreach ($include as $plugin) {
-						$plugins[get_class($plugin)] = $plugin;
+					foreach ($include as $key => $plugin) {
+						$plugins[is_object($plugin) ? get_class($plugin) : $key] = $plugin;
 					}
 				} else {
 					$this->error .= lang('%s must <a%s>return an array</a>.', "<b>$basename.php</b>", $help) . "<br>";
@@ -44,6 +52,15 @@ class Plugins {
 				}
 			}
 		}
+		$invalid = array_filter($plugins, function ($plugin) {
+			return !is_object($plugin); // e.g. include of a file without return statement evaluates to 1
+		});
+		if ($invalid) {
+			$this->error .= lang('Every plugin must <a%s>be an object</a>.', $help) . "<br>";
+			$plugins = array_diff_key($plugins, $invalid);
+		}
+
+		$this->drivers = array_diff_key(SqlDriver::$drivers, $drivers);
 		$this->plugins = $plugins;
 
 		$adminer = new Adminer;
@@ -60,10 +77,49 @@ class Plugins {
 	}
 
 	/** Separate function to not overwrite local variables
-	* @return array<object>|true
+	* @return mixed whatever the included file returns, 1 if it doesn't return anything
 	*/
 	function includeOnce(string $filename) {
 		return include_once "./$filename";
+	}
+
+	/** Get checksum of a plugin or design file, ignoring line ends and translations
+	* @return string hex crc32
+	*/
+	static function checksum(string $filename): string {
+		$file = str_replace("\r", "", file_get_contents($filename));
+		$file = preg_replace('~\n\tprotected \$translations = array\(.*?\n\t\);~s', '', $file);
+		return dechex(crc32($file));
+	}
+
+	/** Get checksums of files with loaded plugins
+	* @return string[] plugin name in key, hex crc32 in value
+	*/
+	function checksums(): array {
+		$filenames = array_values($this->driverFiles);
+		foreach ($this->plugins as $plugin) {
+			$reflection = new \ReflectionObject($plugin);
+			$filenames[] = $reflection->getFileName();
+		}
+		$return = array();
+		foreach ($filenames as $filename) {
+			$return[basename($filename, '.php')] = self::checksum($filename);
+		}
+		return $return;
+	}
+
+	/** Get checksums of official plugins shipped with this Adminer version
+	* @return string[] plugin name in key, hex crc32
+	*/
+	static function officialChecksums(): array {
+		// inlined by compile.php
+		$return = array();
+		foreach (array("../plugins", "../plugins/drivers") as $dir) {
+			foreach (glob("$dir/*.php") as $filename) {
+				$return[basename($filename, '.php')] = self::checksum($filename);
+			}
+		}
+		return $return;
 	}
 
 	/**

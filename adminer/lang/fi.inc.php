@@ -2,31 +2,31 @@
 namespace Adminer;
 
 Lang::$translations = array(
-	// label for database system selection (MySQL, SQLite, ...)
-	'System' => 'Järjestelmä',
+	'System' => 'Järjestelmä', // label for database system selection (MySQL, SQLite, ...)
 	'Server' => 'Palvelin',
 	'Username' => 'Käyttäjänimi',
 	'Password' => 'Salasana',
 	'Permanent login' => 'Haluan pysyä kirjautuneena',
 	'Login' => 'Kirjaudu',
 	'Logout' => 'Kirjaudu ulos',
-	'Logged as: %s' => 'Olet kirjautunut käyttäjänä: %s',
+	'Logged in as: %s' => 'Olet kirjautunut käyttäjänä: %s',
 	'Logout successful.' => 'Uloskirjautuminen onnistui.',
 	'Invalid credentials.' => 'Virheelliset kirjautumistiedot.',
-	'Too many unsuccessful logins, try again in %d minute(s).' => array('Liian monta epäonnistunutta sisäänkirjautumisyritystä, kokeile uudestaan %d minuutin kuluttua.', 'Liian monta epäonnistunutta sisäänkirjautumisyritystä, kokeile uudestaan %d minuutin kuluttua.'),
-	'Master password expired. <a href="https://www.adminer.org/en/extension/"%s>Implement</a> %s method to make it permanent.' => 'Master-salasana ei ole enää voimassa. <a href="https://www.adminer.org/en/extension/"%s>Toteuta</a> %s-metodi sen tekemiseksi pysyväksi.',
+	'Too many unsuccessful logins, try again in %d minute(s).' => 'Liian monta epäonnistunutta sisäänkirjautumisyritystä, kokeile uudestaan %d minuutin kuluttua.',
+	'Use the %s <a%s>plugin</a> if Adminer runs behind a reverse proxy.' => 'Käytä %s-<a%s>lisäosaa</a>, jos Adminer toimii käänteisen välityspalvelimen takana.',
+	'Master password expired. <a href="https://www.adminer.org/en/extension/"%s>Implement</a> the %s method to make it permanent.' => 'Master-salasana ei ole enää voimassa. <a href="https://www.adminer.org/en/extension/"%s>Toteuta</a> %s-metodi sen tekemiseksi pysyväksi.',
 	'Language' => 'Kieli',
-	'Invalid CSRF token. Send the form again.' => 'Virheellinen CSRF-vastamerkki. Lähetä lomake uudelleen.',
-	'If you did not send this request from Adminer then close this page.' => 'Jollet lähettänyt tämä pyyntö Adminerista, sulje tämä sivu.',
+	'Invalid CSRF token. Submit the form again.' => 'Virheellinen CSRF-vastamerkki. Lähetä lomake uudelleen.',
+	'If you did not send this request from Adminer, close this page.' => 'Jollet lähettänyt tämä pyyntö Adminerista, sulje tämä sivu.',
+	'Not found.' => 'Ei löytynyt.', // Claude Opus 5
 	'No extension' => 'Ei laajennusta',
 	'None of the supported PHP extensions (%s) are available.' => 'Mitään tuetuista PHP-laajennuksista (%s) ei ole käytettävissä.',
 	'Session support must be enabled.' => 'Istuntotuki on oltava päällä.',
-	'Session expired, please login again.' => 'Istunto vanhentunut, kirjaudu uudelleen.',
+	'Session expired. Please log in again.' => 'Istunto vanhentunut, kirjaudu uudelleen.',
 	'%s version: %s through PHP extension %s' => '%s versio: %s PHP-laajennuksella %s',
 	'Refresh' => 'Virkistä',
 
-	// text direction - 'ltr' or 'rtl'
-	'ltr' => 'ltr',
+	'ltr' => 'ltr', // text direction - 'ltr' or 'rtl'
 
 	'Privileges' => 'Oikeudet',
 	'Create user' => 'Luo käyttäjä',
@@ -47,15 +47,14 @@ Lang::$translations = array(
 	'Status' => 'Tila',
 
 	'SQL command' => 'SQL-komento',
-	'%d query(s) executed OK.' => array('%d kysely onnistui.', '%d kyselyä onnistui.'),
-	'Query executed OK, %d row(s) affected.' => array('Kysely onnistui, kohdistui %d riviin.', 'Kysely onnistui, kohdistui %d riviin.'),
+	'%d query(ies) executed OK.' => array('%d kysely onnistui.', '%d kyselyä onnistui.'),
+	'Query executed OK, %d row(s) affected.' => 'Kysely onnistui, kohdistui %d riviin.',
 	'No commands to execute.' => 'Ei komentoja suoritettavana.',
 	'Error in query' => 'Virhe kyselyssä',
 	'Execute' => 'Suorita',
 	'Stop on error' => 'Pysähdy virheeseen',
 	'Show only errors' => 'Näytä vain virheet',
-	// sprintf() format for time of the command
-	'%.3f s' => '%.3f s',
+	'%.3f s' => '%.3f s', // sprintf() format for time of the command
 	'History' => 'Historia',
 	'Clear' => 'Tyhjennä',
 	'Edit all' => 'Muokkaa kaikkia',
@@ -68,22 +67,24 @@ Lang::$translations = array(
 	'File uploads are disabled.' => 'Tiedostojen lataaminen palvelimelle on estetty.',
 	'Unable to upload a file.' => 'Tiedostoa ei voida ladata palvelimelle.',
 	'Maximum allowed file size is %sB.' => 'Suurin sallittu tiedostokoko on %sB.',
-	'Too big POST data. Reduce the data or increase the %s configuration directive.' => 'Liian suuri POST-datamäärä. Pienennä dataa tai kasvata arvoa %s konfigurointitiedostossa.',
-	'You can upload a big SQL file via FTP and import it from server.' => 'Voit ladata suuren SQL-tiedoston FTP:n kautta ja tuoda sen sitten palvelimelta.',
+	'The POST data is too large. Reduce the data or increase the %s configuration directive.' => 'Liian suuri POST-datamäärä. Pienennä dataa tai kasvata arvoa %s konfigurointitiedostossa.',
+	'You can upload a large SQL file via FTP and import it from the server.' => 'Voit ladata suuren SQL-tiedoston FTP:n kautta ja tuoda sen sitten palvelimelta.',
 	'You are offline.' => 'Olet offline-tilassa.',
+	'Menu' => 'Valikko',
+	'Documentation' => 'Dokumentaatio', // Claude Opus 5
+	'Database management in a single PHP file' => 'Hallitse tietokantoja yhden PHP-tiedoston avulla',
 
 	'Export' => 'Vienti',
 	'Output' => 'Tulos',
 	'open' => 'avaa',
 	'save' => 'tallenna',
-	'Saving' => 'Tallennetaan',
+	'Saving…' => 'Tallennetaan…',
 	'Format' => 'Muoto',
 	'Data' => 'Data',
 
 	'Database' => 'Tietokanta',
 	'Use' => 'Käytä',
 	'Select database' => 'Valitse tietokanta',
-	'Invalid database.' => 'Tietokanta ei kelpaa.',
 	'Database has been dropped.' => 'Tietokanta on poistettu.',
 	'Databases have been dropped.' => 'Tietokannat on poistettu.',
 	'Database has been created.' => 'Tietokanta on luotu.',
@@ -93,11 +94,9 @@ Lang::$translations = array(
 	'Create database' => 'Luo tietokanta',
 	'Database schema' => 'Tietokantakaava',
 
-	// link to current database schema layout
-	'Permanent link' => 'Pysyvä linkki',
+	'Permanent link' => 'Pysyvä linkki', // link to current database schema layout
 
-	// thousands separator - must contain single byte
-	',' => ',',
+	'#,##0' => '# ##0',
 	'0123456789' => '0123456789',
 	'Engine' => 'Moottori',
 	'Collation' => 'Kollaatio',
@@ -113,14 +112,14 @@ Lang::$translations = array(
 	'Repair' => 'Korjaa',
 	'Truncate' => 'Tyhjennä',
 	'Tables have been truncated.' => 'Taulujen sisältö on tyhjennetty.',
-	'Move to other database' => 'Siirrä toiseen tietokantaan',
+	'Move to another database' => 'Siirrä toiseen tietokantaan',
 	'Move' => 'Siirrä',
 	'Tables have been moved.' => 'Taulut on siirretty.',
 	'Copy' => 'Kopioi',
 	'Tables have been copied.' => 'Taulut on kopioitu.',
 
 	'Routines' => 'Rutiinit',
-	'Routine has been called, %d row(s) affected.' => array('Rutiini kutsuttu, kohdistui %d riviin.', 'Rutiini kutsuttu, kohdistui %d riviin.'),
+	'Routine has been called, %d row(s) affected.' => 'Rutiini kutsuttu, kohdistui %d riviin.',
 	'Call' => 'Kutsua',
 	'Parameter name' => 'Parametrin nimi',
 	'Create procedure' => 'Luo proseduuri',
@@ -147,6 +146,7 @@ Lang::$translations = array(
 
 	'Tables' => 'Taulut',
 	'Tables and views' => 'Taulut ja näkymät',
+	'All' => 'Kaikki',
 	'Table' => 'Taulu',
 	'No tables.' => 'Ei tauluja.',
 	'Alter table' => 'Muuta taulua',
@@ -172,8 +172,6 @@ Lang::$translations = array(
 	'Are you sure?' => 'Oletko varma?',
 	'Size' => 'Koko',
 	'Compute' => 'Laske',
-	'Move up' => 'Siirrä ylös',
-	'Move down' => 'Siirrä alas',
 	'Remove' => 'Poista',
 	'Maximum number of allowed fields exceeded. Please increase %s.' => 'Kenttien sallittu enimmäismäärä ylitetty. Kasvata arvoa %s.',
 
@@ -196,9 +194,9 @@ Lang::$translations = array(
 	'Add next' => 'Lisää seuraava',
 	'Index Type' => 'Indeksityyppi',
 	'length' => 'pituus',
+	'operator class' => 'operaattoriluokka', // Claude Fable 5
 
 	'Foreign keys' => 'Vieraat avaimet',
-	'Foreign key' => 'Vieras avain',
 	'Foreign key has been dropped.' => 'Vieras avain on poistettu.',
 	'Foreign key has been altered.' => 'Vierasta avainta on muutettu.',
 	'Foreign key has been created.' => 'Vieras avain on luotu.',
@@ -208,13 +206,13 @@ Lang::$translations = array(
 	'Target' => 'Kohde',
 	'Add column' => 'Lisää sarake',
 	'Alter' => 'Muuta',
-	'Add foreign key' => 'Lisää vieras avain',
+	'Alter foreign key' => 'Muuta vierasta avainta',
+	'Create foreign key' => 'Luo vieras avain',
 	'ON DELETE' => 'ON DELETE',
 	'ON UPDATE' => 'ON UPDATE',
-	'Source and target columns must have the same data type, there must be an index on the target columns and referenced data must exist.' => 'Lähde- ja kohdesarakkeiden tulee olla samaa tietotyyppiä, kohdesarakkeisiin tulee olla indeksi ja dataa, johon viitataan, täytyy olla.',
+	'Source and target columns must have the same data type, there must be an index on the target columns and the referenced data must exist.' => 'Lähde- ja kohdesarakkeiden tulee olla samaa tietotyyppiä, kohdesarakkeisiin tulee olla indeksi ja dataa, johon viitataan, täytyy olla.',
 
 	'Triggers' => 'Liipaisimet',
-	'Add trigger' => 'Lisää liipaisin',
 	'Trigger has been dropped.' => 'Liipaisin on poistettu.',
 	'Trigger has been altered.' => 'Liipaisinta on muutettu.',
 	'Trigger has been created.' => 'Liipaisin on luotu.',
@@ -239,14 +237,14 @@ Lang::$translations = array(
 	'Text length' => 'Tekstin pituus',
 	'Action' => 'Toimenpide',
 	'Full table scan' => 'Koko taulun läpikäynti',
-	'Unable to select the table' => 'Taulua ei voitu valita',
+	'Unable to select the table.' => 'Taulua ei voitu valita.',
 	'No rows.' => 'Ei rivejä.',
 	'%d / ' => '%d / ',
 	'%d row(s)' => array('%d rivi', '%d riviä'),
 	'Page' => 'Sivu',
 	'last' => 'viimeinen',
 	'Load more data' => 'Lataa lisää dataa',
-	'Loading' => 'Ladataan',
+	'Loading…' => 'Ladataan…',
 	'Whole result' => 'Koko tulos',
 	'%d byte(s)' => array('%d tavu', '%d tavua'),
 
@@ -254,25 +252,23 @@ Lang::$translations = array(
 	'%d row(s) have been imported.' => array('%d rivi tuotiin.', '%d riviä tuotiin.'),
 	'File must be in UTF-8 encoding.' => 'Tiedoston täytyy olla UTF-8-muodossa.',
 
-	// in-place editing in select
-	'Modify' => 'Muuta',
+	'All rows on this page' => 'Kaikki rivit tällä sivulla',
+	'Modify' => 'Muuta', // in-place editing in select
 	'Ctrl+click on a value to modify it.' => 'Ctrl+napsauta arvoa muuttaaksesi.',
-	'Use edit link to modify this value.' => 'Käytä muokkaa-linkkiä muuttaaksesi tätä arvoa.',
+	'Use the edit link to modify this value.' => 'Käytä muokkaa-linkkiä muuttaaksesi tätä arvoa.',
 
-	// %s can contain auto-increment value
-	'Item%s has been inserted.' => 'Tietue%s lisättiin.',
+	'Item%s has been inserted.' => 'Tietue%s lisättiin.', // %s can contain auto-increment value
 	'Item has been deleted.' => 'Tietue poistettiin.',
 	'Item has been updated.' => 'Tietue päivitettiin.',
-	'%d item(s) have been affected.' => array('Kohdistui %d tietueeseen.', 'Kohdistui %d tietueeseen.'),
+	'%d item(s) have been affected.' => 'Kohdistui %d tietueeseen.',
 	'New item' => 'Uusi tietue',
 	'original' => 'alkuperäinen',
-	// label for value '' in enum data type
-	'empty' => 'tyhjä',
+	'empty' => 'tyhjä', // label for value '' in enum data type
 	'edit' => 'muokkaa',
 	'Edit' => 'Muokkaa',
 	'Insert' => 'Lisää',
 	'Save' => 'Tallenna',
-	'Save and continue edit' => 'Tallenna ja jatka muokkaamista',
+	'Save and continue editing' => 'Tallenna ja jatka muokkaamista',
 	'Save and insert next' => 'Tallenna ja lisää seuraava',
 	'Selected' => 'Valitut',
 	'Clone' => 'Kloonaa',
@@ -287,22 +283,20 @@ Lang::$translations = array(
 	'Lists' => 'Luettelot',
 	'Network' => 'Verkko',
 	'Geometry' => 'Geometria',
+	'Ranges' => 'Välit',
 	'Relations' => 'Suhteet',
 
 	'Editor' => 'Editori',
-	// date format in Editor: $1 yyyy, $2 yy, $3 mm, $4 m, $5 dd, $6 d
-	'$1-$3-$5' => '$5.$3.$1',
-	// hint for date format - use language equivalents for day, month and year shortcuts
-	'[yyyy]-mm-dd' => 'pp.kk.[vvvv]',
-	// hint for time format - use language equivalents for hour, minute and second shortcuts
-	'HH:MM:SS' => 'HH:MM:SS',
+	'Data editing in a single PHP file' => 'Muokkaa tietoja yhden PHP-tiedoston avulla',
+	'$1-$3-$5' => '$5.$3.$1', // date format in Editor: $1 yyyy, $2 yy, $3 mm, $4 m, $5 dd, $6 d
+	'[yyyy]-mm-dd' => 'pp.kk.[vvvv]', // hint for date format - use language equivalents for day, month and year shortcuts
+	'HH:MM:SS' => 'HH:MM:SS', // hint for time format - use language equivalents for hour, minute and second shortcuts
 	'now' => 'nyt',
 	'yes' => 'kyllä',
 	'no' => 'ei',
 
-	// general SQLite error in create, drop or rename database
-	'File exists.' => 'Tiedosto on olemassa.',
-	'Please use one of the extensions %s.' => 'Käytä jotain %s-laajennuksista.',
+	'File exists.' => 'Tiedosto on olemassa.', // general SQLite error in create, drop or rename database
+	'Please use one of these file extensions: %s.' => 'Käytä jotain %s-laajennuksista.',
 
 	// PostgreSQL and MS SQL schema support
 	'Alter schema' => 'Muuta kaavaa',
@@ -311,7 +305,6 @@ Lang::$translations = array(
 	'Schema has been created.' => 'Kaava luotiin.',
 	'Schema has been altered.' => 'Kaavaa muutettiin.',
 	'Schema' => 'Kaava',
-	'Invalid schema.' => 'Kaava ei kelpaa.',
 
 	// PostgreSQL sequences support
 	'Sequences' => 'Sekvenssit',
@@ -321,26 +314,58 @@ Lang::$translations = array(
 	'Sequence has been altered.' => 'Sekvenssiä on muutettu.',
 	'Alter sequence' => 'Muuta sekvenssiä',
 
-	// PostgreSQL user types support
+	// PostgreSQL user-defined types support
 	'User types' => 'Käyttäjän tyypit',
 	'Create type' => 'Luo tyyppi',
 	'Type has been dropped.' => 'Tyyppi poistettiin.',
 	'Type has been created.' => 'Tyyppi luotiin.',
+	'Type has been altered.' => 'Tyyppi muutettiin.',
 	'Alter type' => 'Muuta tyyppiä',
+	'Extensions' => 'Laajennukset', // Claude Opus 5
+	'Version' => 'Versio', // Claude Opus 5
 
-	'Thanks for using Adminer, consider <a href="https://www.adminer.org/en/donation/">donating</a>.' => 'Kiitos, kun käytät Admineriä, voit <a href="https://www.adminer.org/en/donation/">tehdä lahjoituksen tästä</a>.',
+	'Thanks for using Adminer. Consider <a href="https://www.adminer.org/en/donation/">donating</a>.' => 'Kiitos, kun käytät Admineriä, voit <a href="https://www.adminer.org/en/donation/">tehdä lahjoituksen tästä</a>.',
 	'Drop %s?' => 'Poistetaanko %s?',
 	'overwrite' => 'kirjoittaen päälle',
 	'DB' => 'TK',
-	'ATTACH queries are not supported.' => 'ATTACH-komennolla tehtyjä kyselyjä ei tueta.',
+	'System%s' => 'Järjestelmä%s', // Claude Opus 5
+	'%s queries are not supported.' => '%s-komennolla tehtyjä kyselyjä ei tueta.',
 	'Warnings' => 'Varoitukset',
-	'Adminer does not support accessing a database without a password, <a href="https://www.adminer.org/en/password/"%s>more information</a>.' => 'Adminer ei tue pääsyä tietokantaan ilman salasanaa, katso tarkemmin <a href="https://www.adminer.org/en/password/"%s>täältä</a>.',
+	'Adminer does not support accessing a database without a password.' => 'Adminer ei tue pääsyä tietokantaan ilman salasanaa.',
 	'The action will be performed after successful login with the same credentials.' => 'Toiminto suoritetaan sen jälkeen, kun on onnistuttu kirjautumaan samoilla käyttäjätunnuksilla uudestaan.',
 	'Connecting to privileged ports is not allowed.' => 'Yhteydet etuoikeutettuihin portteihin eivät ole sallittuja.',
-	'There is a space in the input password which might be the cause.' => 'Syynä voi olla syötetyssä salasanassa oleva välilyönti.',
+	'There is a space in the entered password, which might be the cause.' => 'Syynä voi olla syötetyssä salasanassa oleva välilyönti.',
 	'Unknown error.' => 'Tuntematon virhe.',
-	'Database does not support password.' => 'Tietokanta ei tue salasanaa.',
-	'Disable %s or enable %s or %s extensions.' => 'Poista käytöstä %s tai ota käyttöön laajennus %s tai %s.',
+	'The database does not support passwords.' => 'Tietokanta ei tue salasanaa.',
+	'The server accepts any password, so filling it in protects nothing.' => 'Palvelin hyväksyy minkä tahansa salasanan, joten salasanan käyttäminen ei suojaa mitään.',
+	'Require a password.' => 'Vaadi salasana.',
+	'Save %s next to Adminer to require the entered password:' => 'Tallenna %s samaan paikkaan kuin Adminer syötetyn salasanan vaatimiseksi:',
+	'Save %s next to Adminer to require the password %s:' => 'Tallenna %s samaan paikkaan kuin Adminer salasanan %s vaatimiseksi:',
+	'Add this line to %s to require the entered password:' => 'Lisää tämä rivi tiedostoon %s syötetyn salasanan vaatimiseksi:',
+	'Add this line to %s to require the password %s:' => 'Lisää tämä rivi tiedostoon %s syötetyn salasanan %s vaatimiseksi:',
+	'More options' => 'Lisäasetukset',
+	'Require a password verified by Adminer' => 'Edellytä, että salasana on Adminerin tarkistama',
+	'Disable %s or enable the %s or %s extension.' => 'Poista käytöstä %s tai ota käyttöön laajennus %s tai %s.',
+	'Check has been dropped.' => 'Tarkistus on poistettu.',
+	'Check has been altered.' => 'Tarkistusta on muutettu.',
+	'Check has been created.' => 'Tarkistus on luotu.',
+	'Alter check' => 'Muuta tarkistusta',
+	'Create check' => 'Luo tarkistus',
+	'Algorithm' => 'Algoritmi',
+	'Columns' => 'Sarakkeet',
+	'Condition' => 'Ehto',
+	'Inherits from' => 'Perii tauluista',
+	'Checks' => 'Tarkistukset',
+	'Inherited by' => 'Periytyy tauluihin',
+	'Shadow tables' => 'Varjotaulut',
+	'hostname[:port] or :socket' => 'isäntäkone[:portti] tai :socket',
+	'Invalid server.' => 'Ei kelvollinen palvelin.',
+	'Loaded plugins' => 'Ladatut lisäosat',
+	'%s must <a%s>return an array</a>.' => '%s:n <a%s>tuloksena tulee olla taulukko</a>.',
+	'screenshot' => 'kuvakaappaus',
+	'Increase %s.' => 'Kasvata %s.',
+	'<a%s>Configure</a> %s in %s.' => '<a%s>Määritä</a> %s tiedostossa %s.',
+	'Every plugin must <a%s>be an object</a>.' => 'Jokaisen lisäosan täytyy <a%s>olla objekti</a>.',
 );
 
 // run `php ../../lang.php fi` to update this file

@@ -2,38 +2,46 @@
 namespace Adminer;
 
 Lang::$translations = array(
-	// label for database system selection (MySQL, SQLite, ...)
-	'System' => '資料庫系統',
+	'System' => '資料庫系統', // label for database system selection (MySQL, SQLite, ...)
 	'Server' => '伺服器',
 	'Username' => '帳號',
 	'Password' => '密碼',
 	'Permanent login' => '永久登入',
 	'Login' => '登入',
 	'Logout' => '登出',
-	'Logged as: %s' => '登錄為： %s',
+	'Logged in as: %s' => '登錄為： %s',
 	'Logout successful.' => '成功登出。',
-	'Thanks for using Adminer, consider <a href="https://www.adminer.org/en/donation/">donating</a>.' => '感謝使用Adminer，請考慮為我們<a href="https://www.adminer.org/en/donation/">捐款（英文網頁）</a>。',
+	'Thanks for using Adminer. Consider <a href="https://www.adminer.org/en/donation/">donating</a>.' => '感謝使用Adminer，請考慮為我們<a href="https://www.adminer.org/en/donation/">捐款（英文網頁）</a>。',
 	'Invalid credentials.' => '無效的憑證。',
-	'There is a space in the input password which might be the cause.' => '您輸入的密碼中有一個空格，這可能是導致問題的原因。',
-	'Adminer does not support accessing a database without a password, <a href="https://www.adminer.org/en/password/"%s>more information</a>.' => 'Adminer預設不支援訪問沒有密碼的資料庫，<a href="https://www.adminer.org/en/password/"%s>詳情見這裡</a>。',
-	'Database does not support password.' => '資料庫不支援密碼。',
+	'There is a space in the entered password, which might be the cause.' => '您輸入的密碼中有一個空格，這可能是導致問題的原因。',
+	'Adminer does not support accessing a database without a password.' => 'Adminer預設不支援訪問沒有密碼的資料庫。',
+	'The database does not support passwords.' => '資料庫不支援密碼。',
+	'The server accepts any password, so filling it in protects nothing.' => '伺服器接受任何密碼，因此填寫密碼無法提供任何保護。',
+	'Require a password.' => '要求密碼。',
+	'Save %s next to Adminer to require the entered password:' => '將 %s 儲存在 Adminer 旁邊，即可要求輸入的密碼：',
+	'Save %s next to Adminer to require the password %s:' => '將 %1$s 儲存在 Adminer 旁邊，即可要求密碼 %2$s：',
+	'Add this line to %s to require the entered password:' => '將此行加入 %s，即可要求輸入的密碼：',
+	'Add this line to %s to require the password %s:' => '將此行加入 %1$s，即可要求密碼 %2$s：',
+	'More options' => '更多選項',
+	'Require a password verified by Adminer' => '要求由 Adminer 驗證的密碼',
 	'Too many unsuccessful logins, try again in %d minute(s).' => '登錄失敗次數過多，請 %d 分鐘後重試。',
-	'Master password expired. <a href="https://www.adminer.org/en/extension/"%s>Implement</a> %s method to make it permanent.' => '主密碼已過期。<a href="https://www.adminer.org/en/extension/"%s>請擴展</a> %s 方法讓它永久化。',
+	'Use the %s <a%s>plugin</a> if Adminer runs behind a reverse proxy.' => '如果 Adminer 執行在反向代理之後，請使用 %1$s <a%2$s>外掛</a>。',
+	'Master password expired. <a href="https://www.adminer.org/en/extension/"%s>Implement</a> the %s method to make it permanent.' => '主密碼已過期。<a href="https://www.adminer.org/en/extension/"%s>請擴展</a> %s 方法讓它永久化。',
 	'Language' => '語言',
-	'Invalid CSRF token. Send the form again.' => '無效的 CSRF token。請重新發送表單。',
-	'If you did not send this request from Adminer then close this page.' => '如果您並沒有從Adminer發送請求，請關閉此頁面。',
+	'Invalid CSRF token. Submit the form again.' => '無效的 CSRF token。請重新發送表單。',
+	'If you did not send this request from Adminer, close this page.' => '如果您並沒有從Adminer發送請求，請關閉此頁面。',
+	'Not found.' => '找不到。', // Claude Opus 5
 	'No extension' => '無擴充模組',
 	'None of the supported PHP extensions (%s) are available.' => '沒有任何支援的 PHP 擴充模組（%s）。',
 	'Connecting to privileged ports is not allowed.' => '不允許連接到特權埠。',
-	'Disable %s or enable %s or %s extensions.' => '禁用 %s 或啟用 %s 或 %s 擴充模組。',
+	'Disable %s or enable the %s or %s extension.' => '禁用 %s 或啟用 %s 或 %s 擴充模組。',
 	'Session support must be enabled.' => 'Session 必須被啟用。',
-	'Session expired, please login again.' => 'Session 已過期，請重新登入。',
+	'Session expired. Please log in again.' => 'Session 已過期，請重新登入。',
 	'The action will be performed after successful login with the same credentials.' => '此操作將在成功使用相同的憑據登錄後執行。',
 	'%s version: %s through PHP extension %s' => '%s 版本：%s 透過 PHP 擴充模組 %s',
 	'Refresh' => '重新載入',
 
-	// text direction - 'ltr' or 'rtl'
-	'ltr' => 'ltr',
+	'ltr' => 'ltr', // text direction - 'ltr' or 'rtl'
 
 	'Privileges' => '權限',
 	'Create user' => '建立使用者',
@@ -54,18 +62,17 @@ Lang::$translations = array(
 	'Status' => '狀態',
 
 	'SQL command' => 'SQL 命令',
-	'%d query(s) executed OK.' => '已順利執行 %d 個查詢。',
+	'%d query(ies) executed OK.' => '已順利執行 %d 個查詢。',
 	'Query executed OK, %d row(s) affected.' => '執行查詢 OK，%d 行受影響。',
 	'No commands to execute.' => '沒有命令可執行。',
 	'Error in query' => '查詢發生錯誤',
 	'Unknown error.' => '未知錯誤。',
 	'Warnings' => '警告',
-	'ATTACH queries are not supported.' => '不支援ATTACH查詢。',
+	'%s queries are not supported.' => '不支援%s查詢。',
 	'Execute' => '執行',
 	'Stop on error' => '出錯時停止',
 	'Show only errors' => '僅顯示錯誤訊息',
-	// sprintf() format for time of the command
-	'%.3f s' => '%.3f 秒',
+	'%.3f s' => '%.3f 秒', // sprintf() format for time of the command
 	'History' => '紀錄',
 	'Clear' => '清除',
 	'Edit all' => '編輯全部',
@@ -78,23 +85,26 @@ Lang::$translations = array(
 	'File uploads are disabled.' => '檔案上傳已經被停用。',
 	'Unable to upload a file.' => '無法上傳檔案。',
 	'Maximum allowed file size is %sB.' => '允許的檔案上限大小為 %sB。',
-	'Too big POST data. Reduce the data or increase the %s configuration directive.' => 'POST 資料太大。減少資料或者增加 %s 的設定值。',
-	'You can upload a big SQL file via FTP and import it from server.' => '您可以通過FTP上傳大型SQL檔並從伺服器導入。',
+	'The POST data is too large. Reduce the data or increase the %s configuration directive.' => 'POST 資料太大。減少資料或者增加 %s 的設定值。',
+	'You can upload a large SQL file via FTP and import it from the server.' => '您可以通過FTP上傳大型SQL檔並從伺服器導入。',
 	'You are offline.' => '您離線了。',
+	'Menu' => '選單',
+	'Documentation' => '說明文件', // Claude Opus 5
+	'Database management in a single PHP file' => '單一 PHP 檔案中的資料庫管理',
 
 	'Export' => '匯出',
 	'Output' => '輸出',
 	'open' => '打開',
 	'save' => '儲存',
-	'Saving' => '保存中',
+	'Saving…' => '保存中…',
 	'Format' => '格式',
 	'Data' => '資料',
 
 	'Database' => '資料庫',
 	'DB' => '資料庫',
+	'System%s' => '系統%s', // Claude Opus 5
 	'Use' => '使用',
 	'Select database' => '選擇資料庫',
-	'Invalid database.' => '無效的資料庫。',
 	'Database has been dropped.' => '資料庫已刪除。',
 	'Databases have been dropped.' => '資料庫已刪除。',
 	'Database has been created.' => '已建立資料庫。',
@@ -104,11 +114,9 @@ Lang::$translations = array(
 	'Create database' => '建立資料庫',
 	'Database schema' => '資料庫結構',
 
-	// link to current database schema layout
-	'Permanent link' => '永久連結',
+	'Permanent link' => '永久連結', // link to current database schema layout
 
-	// thousands separator - must contain single byte
-	',' => ',',
+	'#,##0' => '#,##0',
 	'0123456789' => '0123456789',
 	'Engine' => '引擎',
 	'Collation' => '校對',
@@ -124,7 +132,7 @@ Lang::$translations = array(
 	'Repair' => '修復',
 	'Truncate' => '清空',
 	'Tables have been truncated.' => '已清空資料表。',
-	'Move to other database' => '轉移到其它資料庫',
+	'Move to another database' => '轉移到其它資料庫',
 	'Move' => '轉移',
 	'Tables have been moved.' => '已轉移資料表。',
 	'Copy' => '複製',
@@ -159,6 +167,7 @@ Lang::$translations = array(
 
 	'Tables' => '資料表',
 	'Tables and views' => '資料表和檢視表',
+	'All' => '全部',
 	'Table' => '資料表',
 	'No tables.' => '沒有資料表。',
 	'Alter table' => '修改資料表',
@@ -185,8 +194,6 @@ Lang::$translations = array(
 	'Are you sure?' => '你確定嗎？',
 	'Size' => '大小',
 	'Compute' => '計算',
-	'Move up' => '上移',
-	'Move down' => '下移',
 	'Remove' => '移除',
 	'Maximum number of allowed fields exceeded. Please increase %s.' => '超過允許的字段數量的最大值。請增加 %s。',
 
@@ -209,9 +216,9 @@ Lang::$translations = array(
 	'Add next' => '新增下一筆',
 	'Index Type' => '索引類型',
 	'length' => '長度',
+	'operator class' => '運算子類別',
 
 	'Foreign keys' => '外來鍵',
-	'Foreign key' => '外來鍵',
 	'Foreign key has been dropped.' => '已刪除外來鍵。',
 	'Foreign key has been altered.' => '已修改外來鍵。',
 	'Foreign key has been created.' => '已建立外來鍵。',
@@ -221,13 +228,13 @@ Lang::$translations = array(
 	'Target' => '目標',
 	'Add column' => '新增欄位',
 	'Alter' => '修改',
-	'Add foreign key' => '新增外來鍵',
+	'Alter foreign key' => '修改外來鍵',
+	'Create foreign key' => '建立外來鍵',
 	'ON DELETE' => 'ON DELETE',
 	'ON UPDATE' => 'ON UPDATE',
-	'Source and target columns must have the same data type, there must be an index on the target columns and referenced data must exist.' => '來源列和目標列必須具有相同的資料類型，在目標列上必須有一個索引並且引用的資料必須存在。',
+	'Source and target columns must have the same data type, there must be an index on the target columns and the referenced data must exist.' => '來源列和目標列必須具有相同的資料類型，在目標列上必須有一個索引並且引用的資料必須存在。',
 
 	'Triggers' => '觸發器',
-	'Add trigger' => '建立觸發器',
 	'Trigger has been dropped.' => '已刪除觸發器。',
 	'Trigger has been altered.' => '已修改觸發器。',
 	'Trigger has been created.' => '已建立觸發器。',
@@ -252,14 +259,14 @@ Lang::$translations = array(
 	'Text length' => 'Text 長度',
 	'Action' => '動作',
 	'Full table scan' => '全資料表掃描',
-	'Unable to select the table' => '無法選擇該資料表',
+	'Unable to select the table.' => '無法選擇該資料表。',
 	'No rows.' => '沒有資料行。',
 	'%d / ' => '%d / ',
 	'%d row(s)' => '%d 行',
 	'Page' => '頁',
 	'last' => '最後一頁',
 	'Load more data' => '載入更多資料',
-	'Loading' => '載入中',
+	'Loading…' => '載入中…',
 	'Whole result' => '所有結果',
 	'%d byte(s)' => '%d byte(s)',
 
@@ -267,25 +274,23 @@ Lang::$translations = array(
 	'%d row(s) have been imported.' => '已匯入 %d 行。',
 	'File must be in UTF-8 encoding.' => '檔必須使用UTF-8編碼。',
 
-	// in-place editing in select
-	'Modify' => '修改',
+	'All rows on this page' => '本頁所有行',
+	'Modify' => '修改', // in-place editing in select
 	'Ctrl+click on a value to modify it.' => '按住Ctrl並按一下某個值進行修改。',
-	'Use edit link to modify this value.' => '使用編輯連結來修改。',
+	'Use the edit link to modify this value.' => '使用編輯連結來修改。',
 
-	// %s can contain auto-increment value
-	'Item%s has been inserted.' => '已新增項目 %s。',
+	'Item%s has been inserted.' => '已新增項目 %s。', // %s can contain auto-increment value
 	'Item has been deleted.' => '該項目已被刪除。',
 	'Item has been updated.' => '已更新項目。',
 	'%d item(s) have been affected.' => '%d 個項目受到影響。',
 	'New item' => '新增項目',
 	'original' => '原始',
-	// label for value '' in enum data type
-	'empty' => '空值',
+	'empty' => '空值', // label for value '' in enum data type
 	'edit' => '編輯',
 	'Edit' => '編輯',
 	'Insert' => '新增',
 	'Save' => '儲存',
-	'Save and continue edit' => '儲存並繼續編輯',
+	'Save and continue editing' => '儲存並繼續編輯',
 	'Save and insert next' => '儲存並新增下一筆',
 	'Selected' => '已選中',
 	'Clone' => '複製',
@@ -300,22 +305,20 @@ Lang::$translations = array(
 	'Lists' => '列表',
 	'Network' => '網路',
 	'Geometry' => '幾何',
+	'Ranges' => '範圍',
 	'Relations' => '關聯',
 
 	'Editor' => '編輯器',
-	// date format in Editor: $1 yyyy, $2 yy, $3 mm, $4 m, $5 dd, $6 d
-	'$1-$3-$5' => '$1.$3.$5',
-	// hint for date format - use language equivalents for day, month and year shortcuts
-	'[yyyy]-mm-dd' => '[yyyy].mm.dd',
-	// hint for time format - use language equivalents for hour, minute and second shortcuts
-	'HH:MM:SS' => 'HH:MM:SS',
+	'Data editing in a single PHP file' => '單一 PHP 檔案中的資料編輯',
+	'$1-$3-$5' => '$1.$3.$5', // date format in Editor: $1 yyyy, $2 yy, $3 mm, $4 m, $5 dd, $6 d
+	'[yyyy]-mm-dd' => '[yyyy].mm.dd', // hint for date format - use language equivalents for day, month and year shortcuts
+	'HH:MM:SS' => 'HH:MM:SS', // hint for time format - use language equivalents for hour, minute and second shortcuts
 	'now' => '現在',
 	'yes' => '是',
 	'no' => '否',
 
-	// general SQLite error in create, drop or rename database
-	'File exists.' => '檔案已存在。',
-	'Please use one of the extensions %s.' => '請使用下列其中一個擴充模組 %s。',
+	'File exists.' => '檔案已存在。', // general SQLite error in create, drop or rename database
+	'Please use one of these file extensions: %s.' => '請使用下列其中一個擴充模組 %s。',
 
 	// PostgreSQL and MS SQL schema support
 	'Alter schema' => '修改資料表結構',
@@ -324,7 +327,6 @@ Lang::$translations = array(
 	'Schema has been created.' => '已建立資料表結構。',
 	'Schema has been altered.' => '已修改資料表結構。',
 	'Schema' => '資料表結構',
-	'Invalid schema.' => '無效的資料表結構。',
 
 	// PostgreSQL sequences support
 	'Sequences' => '序列',
@@ -334,12 +336,35 @@ Lang::$translations = array(
 	'Sequence has been altered.' => '已修改序列。',
 	'Alter sequence' => '修改序列',
 
-	// PostgreSQL user types support
-	'User types' => '使用者類型',
+	// PostgreSQL user-defined types support
+	'User types' => '使用者定義類型',
 	'Create type' => '建立類型',
 	'Type has been dropped.' => '已刪除類型。',
 	'Type has been created.' => '已建立類型。',
+	'Type has been altered.' => '已修改類型。',
 	'Alter type' => '修改類型',
+	'Extensions' => '擴充功能', // Claude Opus 5
+	'Version' => '版本', // Claude Opus 5
+	'Check has been dropped.' => '已刪除檢查約束。',
+	'Check has been altered.' => '已修改檢查約束。',
+	'Check has been created.' => '已建立檢查約束。',
+	'Alter check' => '修改檢查約束',
+	'Create check' => '建立檢查約束',
+	'Algorithm' => '演算法',
+	'Columns' => '欄位',
+	'Condition' => '條件',
+	'Inherits from' => '繼承自',
+	'Checks' => '檢查約束',
+	'Inherited by' => '被繼承',
+	'Shadow tables' => '影子資料表',
+	'hostname[:port] or :socket' => 'hostname[:port] 或 :socket',
+	'Invalid server.' => '無效的伺服器。',
+	'Loaded plugins' => '已載入的外掛',
+	'screenshot' => '螢幕截圖',
+	'Increase %s.' => '請增加 %s。',
+	'%s must <a%s>return an array</a>.' => '%s 必須<a%s>回傳陣列</a>。',
+	'<a%s>Configure</a> %s in %s.' => '在 %3$s 中<a%1$s>設定</a> %2$s。',
+	'Every plugin must <a%s>be an object</a>.' => '每個外掛必須<a%s>是一個物件</a>。',
 );
 
 // run `php ../../lang.php zh-tw` to update this file

@@ -36,8 +36,8 @@ if (saved) {
 	}
 
 	function navigation($missing) {
-		echo "<big style='position: fixed; bottom: .5em; right: .5em; cursor: pointer;'>☀</big>"
-			. Adminer\script("adminerDarkSet(); qsl('big').onclick = adminerDarkSwitch;") . "\n"
+		echo "<big style='position: fixed; bottom: .5em; right: .5em; cursor: pointer;'" . Adminer\on('click', 'adminerDarkSwitch') . ">☀</big>"
+			. Adminer\script("adminerDarkSet();") . "\n"
 		;
 	}
 
@@ -48,7 +48,11 @@ if (saved) {
 	protected $translations = array(
 		'cs' => array('' => 'Dovoluje přepínání světlého a tmavého vzhledu'),
 		'de' => array('' => 'Umschalten zwischen hellem und dunklem Design erlauben'),
+		'hr' => array('' => 'Omogućuje prebacivanje između svijetlog i tamnog izgleda'),
 		'ja' => array('' => 'ダークモードへの切替え'),
 		'pl' => array('' => 'Zezwalaj na przełączanie trybu jasnego i ciemnego'),
+		'ro' => array('' => 'Permite comutarea între modul luminos și cel întunecat'), // Claude Opus 5
+		'sk' => array('' => 'Dovoľuje prepínanie svetlého a tmavého režimu'), // Claude Opus 5
+		'zh' => array('' => '允许切换明亮和暗黑模式'), // Claude Opus 5
 	);
 }

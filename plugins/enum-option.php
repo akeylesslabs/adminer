@@ -1,6 +1,6 @@
 <?php
 
-/** Use <select><option> for enum edit instead of <input type="radio">
+/** Use <select><option> instead of <input type="radio"> for editing enum
 * @link https://www.adminer.org/plugins/#use
 * @author Jakub Vrana, https://www.vrana.cz/
 * @license https://www.apache.org/licenses/LICENSE-2.0 Apache License, Version 2.0
@@ -11,18 +11,16 @@ class AdminerEnumOption extends Adminer\Plugin {
 	function editInput($table, $field, $attrs, $value) {
 		if ($field["type"] == "enum") {
 			$options = array();
-			$selected = "val-$value";
+			// the value is an array when re-printing the form after a failed save, false means the original value
+			$selected = (is_array($value)
+				? reset($value)
+				: ($value === false ? "orig" : ($value === null ? "null" : "val-$value"))
+			);
 			if (isset($_GET["select"])) {
-				$options["orig"] = Adminer\lang('original');
-				if ($value === null) {
-					$selected = "orig";
-				}
+				$options["orig"] = $this->lang('original');
 			}
 			if ($field["null"]) {
 				$options["null"] = "NULL";
-				if ($value === null) {
-					$selected = "null";
-				}
 			}
 			preg_match_all("~'((?:[^']|'')*)'~", $field["length"], $matches);
 			foreach ($matches[1] as $val) {
@@ -34,10 +32,36 @@ class AdminerEnumOption extends Adminer\Plugin {
 	}
 
 	protected $translations = array(
-		'cs' => array('' => 'Editace políčka enum pomocí <select><option> místo <input type="radio">'),
-		'de' => array('' => 'Verwenden Sie <select><option> für die enum-Bearbeitung anstelle von <input type="radio">'),
-		'pl' => array('' => 'Użyj <select><option> do edycji enum zamiast <input type="radio">'),
-		'ro' => array('' => 'Utilizați <select><option> pentru editarea enum în loc de <input type="radio">'),
-		'ja' => array('' => '列挙型の編集に <input type="radio"> ではなく <select><option> を使用'),
+		'cs' => array(
+			'' => 'Editace políčka enum pomocí <select><option> místo <input type="radio">',
+			'original' => 'původní',
+		),
+		'de' => array(
+			'' => 'Verwenden Sie <select><option> für die enum-Bearbeitung anstelle von <input type="radio">',
+			'original' => 'Original',
+		),
+		'hr' => array(
+			'' => 'Koristi <select><option> za uređivanje enum polja umjesto <input type="radio">',
+			'original' => 'original',
+		),
+		'ja' => array(
+			'' => 'enum の編集に <input type="radio"> ではなく <select><option> を使用', // Claude Opus 5
+			'original' => '元',
+		),
+		'pl' => array(
+			'' => 'Użyj <select><option> do edycji enum zamiast <input type="radio">',
+			'original' => 'bez zmian',
+		),
+		'ro' => array(
+			'' => 'Utilizați <select><option> pentru editarea enum în loc de <input type="radio">',
+			'original' => 'original',
+		),
+		'sk' => array(
+			'' => 'Použije <select><option> na editáciu enum namiesto <input type="radio">', // Claude Opus 5
+		),
+		'zh' => array(
+			'' => '编辑 enum 时使用 <select><option> 而不是 <input type="radio">', // Claude Opus 5
+			'original' => '原始', // Claude Opus 5
+		),
 	);
 }

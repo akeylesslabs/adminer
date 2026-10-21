@@ -16,6 +16,24 @@ function nonce(): string {
 	return ' nonce="' . get_nonce() . '"';
 }
 
+/** Get an attribute registering a JS event handler
+* @param string $event event name without "on"
+* @param string $handler name of a JavaScript function defined by Adminer or by a plugin
+* @param mixed $arg argument passed to the handler before the event object
+* @return string HTML attribute including the leading space
+*/
+function on(string $event, string $handler, $arg = null): string {
+	$args = array();
+	foreach (array_slice(func_get_args(), 2) as $val) { // not ...$args - variadics are available since PHP 5.6
+		$args[] = json_encode($val, 256); // 256 - JSON_UNESCAPED_UNICODE available since PHP 5.4
+	}
+	return " data-on$event='" . str_replace( // h() would escape " to &quot; but the value is printed in a single-quoted attribute so only ' matters
+		array('&', '<', "'"),
+		array('&amp;', '&lt;', '&#039;'),
+		"$handler(" . implode(", ", $args) . ")"
+	) . "'";
+}
+
 /** Get <input type="hidden">
 * @param string|int $value
 * @return string HTML
@@ -38,7 +56,11 @@ function target_blank(): string {
 
 /** Escape for HTML */
 function h(?string $string): string {
-	return str_replace("\0", "&#0;", htmlspecialchars($string, ENT_QUOTES, 'utf-8'));
+	return str_replace( // this is 50× faster than htmlspecialchars()
+		array('&', '<', '"', "'", "\0"),
+		array('&amp;', '&lt;', '&quot;', '&#039;', '&#0;'),
+		$string
+	);
 }
 
 /** Convert \n to <br> */
@@ -48,15 +70,18 @@ function nl_br(string $string): string {
 
 /** Generate HTML checkbox
 * @param string|int $value
+* @param string $attrs additional attributes, e.g. an event handler from on()
+* @param string $class class of the label, of the input if there's no label
 */
-function checkbox(string $name, $value, ?bool $checked, string $label = "", string $onclick = "", string $class = "", string $labelled_by = ""): string {
+function checkbox(string $name, $value, ?bool $checked, string $label = "", string $attrs = "", string $class = "", string $labelled_by = ""): string {
 	$return = "<input type='checkbox' name='$name' value='" . h($value) . "'"
 		. ($checked ? " checked" : "")
+		. ($label == "" && $class ? " class='$class'" : "")
 		. ($labelled_by ? " aria-labelledby='$labelled_by'" : "")
+		. $attrs
 		. ">"
-		. ($onclick ? script("qsl('input').onclick = function () { $onclick };", "") : "")
 	;
-	return ($label != "" || $class ? "<label" . ($class ? " class='$class'" : "") . ">$return" . h($label) . "</label>" : $return);
+	return ($label != "" ? "<label" . ($class ? " class='$class'" : "") . ">$return" . h($label) . "</label>" : $return);
 }
 
 /** Generate list of HTML options
@@ -86,10 +111,30 @@ function optionlist($options, $selected = null, bool $use_keys = false): string 
 	return $return;
 }
 
-/** Generate HTML <select>
-* @param string[] $options
+/** Move system databases or schemas to an optgroup
+* @param list<string> $names
+* @return array<string|list<string>>
 */
-function html_select(string $name, array $options, ?string $value = "", string $onchange = "", string $labelled_by = ""): string {
+function group_system(array $names, bool $schemas = false): array {
+	$return = array();
+	$system = array();
+	foreach ($names as $name) {
+		if ($schemas ? driver()->isSystem(DB, $name) : driver()->isSystem($name)) {
+			$system[] = $name;
+		} else {
+			$return[] = $name;
+		}
+	}
+	if ($system) {
+		$return[lang('System%s', '')] = $system; // %s only distinguishes the key from 'System' in the login form
+	}
+	return $return;
+}
+
+/** Generate HTML <select>
+* @param string[]|string[][] $options
+*/
+function html_select(string $name, array $options, ?string $value = "", string $attrs = "", string $labelled_by = ""): string {
 	static $label = 0;
 	$label_option = "";
 	if (!$labelled_by && substr($options[""], 0, 1) == "(") {
@@ -100,8 +145,7 @@ function html_select(string $name, array $options, ?string $value = "", string $
 	}
 	return "<select name='" . h($name) . "'"
 		. ($labelled_by ? " aria-labelledby='$labelled_by'" : "")
-		. ">" . $label_option . optionlist($options, $value) . "</select>"
-		. ($onchange ? script("qsl('select').onchange = function () { $onchange };", "") : "")
+		. "$attrs>" . $label_option . optionlist($options, $value) . "</select>"
 	;
 }
 
@@ -116,9 +160,9 @@ function html_radios(string $name, array $options, ?string $value = "", string $
 	return $return;
 }
 
-/** Get onclick confirmation */
-function confirm(string $message = "", string $selector = "qsl('input')"): string {
-	return script("$selector.onclick = () => confirm('" . ($message ? js_escape($message) : lang('Are you sure?')) . "');", "");
+/** Get an attribute asking for confirmation before submit */
+function confirm(string $message = ""): string {
+	return on('click', 'confirmClick', $message ?: lang('Are you sure?'));
 }
 
 /** Print header for hidden fieldset (close by </div></fieldset>)
@@ -126,8 +170,7 @@ function confirm(string $message = "", string $selector = "qsl('input')"): strin
 */
 function print_fieldset(string $id, string $legend, $visible = false): void {
 	echo "<fieldset><legend>";
-	echo "<a href='#fieldset-$id'>$legend</a>";
-	echo script("qsl('a').onclick = partial(toggle, 'fieldset-$id');", "");
+	echo "<a href='#fieldset-$id' class='toggle'>$legend</a>";
 	echo "</legend>";
 	echo "<div id='fieldset-$id'" . ($visible ? "" : " class='hidden'") . ">\n";
 }
@@ -139,14 +182,31 @@ function bold(bool $bold, string $class = ""): string {
 
 /** Escape string for JavaScript apostrophes */
 function js_escape(string $string): string {
-	return addcslashes($string, "\r\n'\\/"); // slash for <script>
+	// the HTML parser doesn't understand JS escaping so < must not stay in the string at all,
+	// otherwise <!-- would start the script data escaped state and the following </script> wouldn't end the element
+	return str_replace("<", "\\x3C", addcslashes($string, "\r\n'\\"));
+}
+
+/** Escape string to use inside a JavaScript regular expression literal
+*/
+function js_escape_re(string $string): string {
+	return addcslashes(preg_quote($string, "/"), "\r\n"); // preg_quote() escapes also < ! - so the HTML parser doesn't see <!-- or </script>
+}
+
+/** Get URL of a page in select
+* @param int $page 0-based page number
+* @uses $_GET["next"] cursor of the following page in drivers with support("cursor")
+*/
+function pagination_href(int $page): string {
+	// the first page restarts the iteration so it doesn't use the cursor
+	return remove_from_uri("page|next") . ($page ? "&page=$page" . ($_GET["next"] != "" ? "&next=" . url_escape($_GET["next"]) : "") : "");
 }
 
 /** Generate page number for pagination */
 function pagination(int $page, ?int $current): string {
 	return " " . ($page == $current
-		? $page + 1
-		: '<a href="' . h(remove_from_uri("page") . ($page ? "&page=$page" . ($_GET["next"] ? "&next=" . urlencode($_GET["next"]) : "") : "")) . '">' . ($page + 1) . "</a>"
+		? ($page ? "<b>" . ($page + 1) . "</b>" : $page + 1) // the first page is not highlighted
+		: '<a href="' . h(pagination_href($page)) . '">' . ($page + 1) . "</a>"
 	);
 }
 
@@ -172,20 +232,45 @@ function hidden_fields(array $process, array $ignore = array(), string $prefix =
 /** Print hidden fields for GET forms */
 function hidden_fields_get(): void {
 	echo (sid() ? input_hidden(session_name(), session_id()) : '');
-	echo (SERVER !== null ? input_hidden(DRIVER, SERVER) : "");
+	echo ($_GET["ext"] ? input_hidden("ext", $_GET["ext"]) : "");
+	echo (isset($_GET[DRIVER]) ? input_hidden(DRIVER, SERVER) : ""); // no parameter means the default driver at the default server
 	echo input_hidden("username", $_GET["username"]);
 }
 
-/** Get <input type='file'> */
-function file_input(string $input): string {
+/** Get an attribute displaying the progress of the file upload
+* @param string $upload_progress set to the key which the form must send in a field named by session.upload_progress.name before the file field, "" if the progress is not available
+*/
+function on_upload_progress(&$upload_progress): string {
+	$upload_progress = (ini_bool("session.upload_progress.enabled") && ini_get("session.upload_progress.name") ? rand_string() : "");
+	// PHP stores the progress in a session named by php.ini so uploadProgress() creates its cookie
+	return ($upload_progress ? on('submit', 'uploadProgress', ME . "upload=$upload_progress", SESSION_NAME . "=$upload_progress") : "");
+}
+
+/** Get <input type='file'>
+* @param string $attrs attributes including the leading space
+* @param string $rest HTML printed after the input, dropped together with it if the uploads are disabled
+*/
+function file_input(string $attrs, string $rest = ""): string {
 	$max_file_uploads = "max_file_uploads";
 	$max_file_uploads_value = ini_get($max_file_uploads);
-	$upload_max_filesize = "upload_max_filesize";
-	$upload_max_filesize_value = ini_get($upload_max_filesize);
+	$max_size = "upload_max_filesize";
+	$max_size_bytes = ini_bytes($max_size);
+	// post_max_size is for all form fields together but the file is usually by far the biggest one
+	$post_max_size = ini_bytes("post_max_size");
+	if ($post_max_size && $post_max_size < $max_size_bytes) { // 0 means unlimited
+		$max_size = "post_max_size";
+		$max_size_bytes = $post_max_size;
+	}
+	$max_size_value = ini_get($max_size);
 	return (ini_bool("file_uploads")
-		? $input . script("qsl('input[type=\"file\"]').onchange = partialArg(fileChange, "
-				. "$max_file_uploads_value, '" . lang('Increase %s.', "$max_file_uploads = $max_file_uploads_value") . "', " // ignore post_max_size because it is for all form fields together and bytes computing would be necessary
-				. ini_bytes("upload_max_filesize") . ", '" . lang('Increase %s.', "$upload_max_filesize = $upload_max_filesize_value") . "')")
+		? "<input type='file'$attrs" . on(
+			'change',
+			'fileChange',
+			(int) $max_file_uploads_value,
+			lang('Increase %s.', "$max_file_uploads = $max_file_uploads_value"),
+			$max_size_bytes,
+			lang('Increase %s.', "$max_size = $max_size_value")
+		) . ">$rest"
 		: lang('File uploads are disabled.')
 	);
 }
@@ -196,12 +281,12 @@ function file_input(string $input): string {
 * @param string|string[]|false|null $value false means original value
 */
 function enum_input(string $type, string $attrs, array $field, $value, string $empty = ""): string {
-	preg_match_all("~'((?:[^']|'')*)'~", $field["length"], $matches);
+	preg_match_all("~" . driver()->enumLength . "~", $field["length"], $matches);
 	$prefix = ($field["type"] == "enum" ? "val-" : "");
 	$checked = (is_array($value) ? in_array("null", $value) : $value === null);
 	$return = ($field["null"] && $prefix ? "<label><input type='$type'$attrs value='null'" . ($checked ? " checked" : "") . "><i>$empty</i></label>" : "");
-	foreach ($matches[1] as $val) {
-		$val = stripcslashes(str_replace("''", "'", $val));
+	foreach ($matches[0] as $val) {
+		$val = stripcslashes(idf_unescape($val));
 		$checked = (is_array($value) ? in_array($prefix . $val, $value) : $value === $val);
 		$return .= " <label><input type='$type'$attrs value='" . h($prefix . $val) . "'" . ($checked ? ' checked' : '') . '>' . h(adminer()->editVal($val, $field)) . '</label>';
 	}
@@ -212,51 +297,62 @@ function enum_input(string $type, string $attrs, array $field, $value, string $e
 * @param Field|RoutineField $field
 * @param mixed $value
 */
-function input(array $field, $value, ?string $function, ?bool $autofocus = false): void {
+function input(array $field, $value, ?string $function, ?bool $autofocus = false, ?bool $update = false): void {
 	$name = h(bracket_escape($field["field"]));
 	echo "<td class='function'>";
-	if (is_array($value) && !$function) {
-		$function = "json";
-	}
-	$json = ($function == "json" || preg_match('~^jsonb?$~', $field["type"]));
-	if ($json && $value != '' && (JUSH != "pgsql" || $field["type"] != "json")) {
-		$value = json_encode(is_array($value) ? $value : json_decode($value), 128 | 64 | 256); // 128 - JSON_PRETTY_PRINT, 64 - JSON_UNESCAPED_SLASHES, 256 - JSON_UNESCAPED_UNICODE available since PHP 5.4
-	}
-	$reset = (JUSH == "mssql" && $field["auto_increment"]);
-	if ($reset && !$_POST["save"]) {
-		$function = null;
-	}
-	$functions = (isset($_GET["select"]) || $reset ? array("orig" => lang('original')) : array()) + adminer()->editFunctions($field);
 	$enums = driver()->enumLength($field);
 	if ($enums) {
 		$field["type"] = "enum";
 		$field["length"] = $enums;
 	}
-	$attrs = " name='fields[$name]" . ($field["type"] == "enum" || $field["type"] == "set" ? "[]" : "") . "'" . ($autofocus ? " autofocus" : "");
+	$options = ($field["type"] == "enum" || $field["type"] == "set"); // the value is an array of the selected options
+	if (is_array($value) && !$function && !$options) {
+		$function = "json";
+	}
+	$json = ($function == "json" || preg_match('~^jsonb?$~', $field["full_type"]));
+	// don't re-format the string sent by the user, it would discard the invalid value when re-printing the form after an error
+	if ($json && $value != '' && (JUSH != "pgsql" || $field["type"] != "json") && (is_array($value) || !$_POST["save"])) {
+		// 128 - JSON_PRETTY_PRINT, 64 - JSON_UNESCAPED_SLASHES, 256 - JSON_UNESCAPED_UNICODE available since PHP 5.4
+		$value = (is_array($value) ? json_encode($value, 128 | 64 | 256) : json_encode_exact(json_decode_exact($value), 128 | 64 | 256)); // json_decode() would round e.g. big integers
+	}
+	$reset = ($update && is_identity_always($field));
+	if ($reset && !$_POST["save"]) {
+		$function = null;
+	}
+	// the form from Select can affect more rows so it must be possible to keep the original value of each of them
+	$functions = (isset($_GET["select"]) || $reset ? array("orig" => lang('original')) : array()) + adminer()->editFunctions($field);
+	$attrs = " name='fields[$name]" . ($options ? "[]" : "") . "'" . ($autofocus ? " autofocus" : "");
 	echo driver()->unconvertFunction($field) . " ";
-	$table = $_GET["edit"] ?: $_GET["select"];
+	$table = $_GET["edit"] ?: $_GET["select"]; // $_GET["edit"] is not set when re-printing the form after a failed save from Select
 	if ($field["type"] == "enum") {
 		echo h($functions[""]) . "<td>" . adminer()->editInput($table, $field, $attrs, $value);
 	} else {
 		$has_function = (in_array($function, $functions) || isset($functions[$function]));
+		// skip 'original'
+		$first = 0;
+		foreach ($functions as $key => $val) {
+			if ($key === "" || !$val) {
+				break;
+			}
+			$first++;
+		}
 		echo (count($functions) > 1
-			? "<select name='function[$name]'>" . optionlist($functions, $function === null || $has_function ? $function : "") . "</select>"
-				. on_help("event.target.value.replace(/^SQL\$/, '')", 1)
-				. script("qsl('select').onchange = functionChange;", "")
+			? "<select name='function[$name]'" . on('change', 'functionChange') . on_help_value('^SQL$') . ">"
+				. optionlist($functions, $function === null || $has_function ? $function : "") . "</select>"
 			: h(reset($functions))
-		) . '<td>';
+		) . "<td" . ($first && count($functions) > 1 ? on('input', 'skipOriginal', $first) : "") . ">";
 		$input = adminer()->editInput($table, $field, $attrs, $value); // usage in call is without a table
 		if ($input != "") {
 			echo $input;
 		} elseif (preg_match('~bool~', $field["type"])) {
 			echo "<input type='hidden'$attrs value='0'>"
-				. "<input type='checkbox'" . (preg_match('~^(1|t|true|y|yes|on)$~i', $value) ? " checked='checked'" : "") . "$attrs value='1'>";
+				. "<input type='checkbox'" . (preg_match('~^(1|t|true|y|yes|on)$~i', $value) ? " checked" : "") . "$attrs value='1'>";
 		} elseif ($field["type"] == "set") {
 			echo enum_input("checkbox", $attrs, $field, (is_string($value) ? explode(",", $value) : $value));
 		} elseif (is_blob($field) && ini_bool("file_uploads")) {
 			echo "<input type='file' name='fields-$name'>";
 		} elseif ($json) {
-			echo "<textarea$attrs cols='50' rows='12' class='jush-js'>" . h($value) . '</textarea>';
+			echo "<textarea$attrs cols='50' rows='12' class='jush-json'>" . h($value) . '</textarea>';
 		} elseif (($text = preg_match('~text|lob|memo~i', $field["type"])) || preg_match("~\n~", $value)) {
 			if ($text && JUSH != "sqlite") {
 				$attrs .= " cols='50' rows='12'";
@@ -266,35 +362,31 @@ function input(array $field, $value, ?string $function, ?bool $autofocus = false
 			}
 			echo "<textarea$attrs>" . h($value) . '</textarea>';
 		} else {
-			// int(3) is only a display hint
 			$types = driver()->types();
-			$maxlength = (!preg_match('~int~', $field["type"]) && preg_match('~^(\d+)(,(\d+))?$~', $field["length"], $match)
-				? ((preg_match("~binary~", $field["type"]) ? 2 : 1) * $match[1] + ($match[3] ? 1 : 0) + ($match[2] && !$field["unsigned"] ? 1 : 0))
-				: ($types[$field["type"]] ? $types[$field["type"]] + ($field["unsigned"] ? 0 : 1) : 0)
-			);
-			if (JUSH == 'sql' && min_version(5.6) && preg_match('~time~', $field["type"])) {
-				$maxlength += 7; // microtime
+			$type_length = $types[$field["type"]];
+			$array = preg_match('~\[]~', $field["full_type"]);
+			if ($array) {
+				$maxlength = 0; // an array value is not limited by the length of its elements
+			} elseif (preg_match('~date|time|year~', $field["type"])) {
+				// the length of a temporal type is the number of fractional seconds digits, not of characters
+				$precision = ($field["length"] == "" && JUSH == "pgsql" ? 6 : $field["length"]); // PostgreSQL stores microseconds by default
+				$fraction = (preg_match('~time~', $field["type"]) && preg_match('~^[1-9]\d*$~', $precision) ? $precision + 1 : 0); // 1 - decimal point
+				$maxlength = ($type_length ? $type_length + $fraction : 0);
+			} elseif (!preg_match('~int|vector~', $field["type"]) && preg_match('~^(\d+)(,(\d+))?$~', $field["length"], $match)) { // int(3) and vector(3) don't limit the length of the value
+				$maxlength = (preg_match("~binary~", $field["type"]) ? 2 : 1) * $match[1] + ($match[3] ? 1 : 0) + ($match[2] && !$field["unsigned"] ? 1 : 0);
+			} else {
+				$maxlength = ($type_length ? $type_length + ($field["unsigned"] ? 0 : 1) : 0); // 1 - minus sign
 			}
 			// type='date' and type='time' display localized value which may be confusing, type='datetime' uses 'T' as date and time separator
 			echo "<input"
-				. ((!$has_function || $function === "") && preg_match('~(?<!o)int(?!er)~', $field["type"]) && !preg_match('~\[\]~', $field["full_type"]) ? " type='number'" : "")
+				. ((!$has_function || $function === "") && preg_match('~^' . int_type() . '$~', $field["type"]) && !$array ? " type='number'" : "")
 				. " value='" . h($value) . "'" . ($maxlength ? " data-maxlength='$maxlength'" : "")
 				. (preg_match('~char|binary~', $field["type"]) && $maxlength > 20 ? " size='" . ($maxlength > 99 ? 60 : 40) . "'" : "")
 				. "$attrs>"
 			;
 		}
 		echo adminer()->editHint($table, $field, $value);
-		// skip 'original'
-		$first = 0;
-		foreach ($functions as $key => $val) {
-			if ($key === "" || !$val) {
-				break;
-			}
-			$first++;
-		}
-		if ($first && count($functions) > 1) {
-			echo script("qsl('td').oninput = partial(skipOriginal, $first);");
-		}
+		echo (count($functions) > 1 ? script("fire(qs('select', qsl('td').previousSibling), 'change');", "") : ""); // apply the initially selected function (e.g. hide the input for now())
 	}
 }
 
@@ -305,6 +397,19 @@ function input(array $field, $value, ?string $function, ?bool $autofocus = false
 function process_input(array $field) {
 	$idf = bracket_escape($field["field"]);
 	$function = idx($_POST["function"], $idf);
+	if ($function == "orig") {
+		return (preg_match('~^CURRENT_TIMESTAMP~i', $field["on_update"]) ? idf_escape($field["field"]) : false);
+	}
+	if ($function == "NULL") {
+		return "NULL";
+	}
+	if (is_blob($field) && ini_bool("file_uploads")) {
+		$file = get_file("fields-$idf");
+		if (!is_string($file)) {
+			return false; //! report errors
+		}
+		return driver()->quoteBinary($file);
+	}
 	$value = idx($_POST["fields"], $idf);
 	if ($value === null) {
 		return false;
@@ -322,29 +427,15 @@ function process_input(array $field) {
 	if ($field["auto_increment"] && $value == "") {
 		return null;
 	}
-	if ($function == "orig") {
-		return (preg_match('~^CURRENT_TIMESTAMP~i', $field["on_update"]) ? idf_escape($field["field"]) : false);
-	}
-	if ($function == "NULL") {
-		return "NULL";
-	}
 	if ($field["type"] == "set") {
 		$value = implode(",", (array) $value);
 	}
 	if ($function == "json") {
-		$function = "";
 		$value = json_decode($value, true);
 		if (!is_array($value)) {
 			return false; //! report errors
 		}
 		return $value;
-	}
-	if (is_blob($field) && ini_bool("file_uploads")) {
-		$file = get_file("fields-$idf");
-		if (!is_string($file)) {
-			return false; //! report errors
-		}
-		return driver()->quoteBinary($file);
 	}
 	return adminer()->processInput($field, $value, $function);
 }
@@ -359,10 +450,12 @@ function search_tables(): void {
 	foreach (table_status('', true) as $table => $table_status) {
 		$name = adminer()->tableName($table_status);
 		if (isset($table_status["Engine"]) && $name != "" && (!$_POST["tables"] || in_array($table, $_POST["tables"]))) {
-			$result = connection()->query("SELECT" . limit("1 FROM " . table($table), " WHERE " . implode(" AND ", adminer()->selectSearchProcess(fields($table), array())), 1));
+			$result = connection()->query("SELECT" . limit("1 FROM " . table($table), " WHERE " . implode(" AND ", adminer()->selectSearchProcess(fields($table), array(), $table_status)), 1));
 			if (!$result || $result->fetch_row()) {
-				$print = "<a href='" . h(ME . "select=" . urlencode($table) . "&where[0][op]=" . urlencode($_GET["where"][0]["op"]) . "&where[0][val]=" . urlencode($_GET["where"][0]["val"])) . "'>$name</a>";
-				echo "$sep<li>" . ($result ? $print : "<p class='error'>$print: " . error()) . "\n";
+				$print = "<a href='" . h(ME . "select=" . url_escape($table)
+					. "&where[0][op]=" . url_escape($_GET["where"][0]["op"])
+					. "&where[0][val]=" . url_escape($_GET["where"][0]["val"])) . "'>$name</a>";
+				echo "$sep<li>" . ($result ? $print : "<p class='error'>$print: " . adminer()->error()) . "\n";
 				$sep = "";
 			}
 		}
@@ -370,19 +463,31 @@ function search_tables(): void {
 	echo ($sep ? "<p class='message'>" . lang('No tables.') : "</ul>") . "\n";
 }
 
-/** Return events to display help on mouse over
-* @param string $command JS expression
+/** Get attributes to display help on mouse over
+* @param string $text SQL command
 * @param int $side 0 top, 1 left
+* @return string HTML attributes including the leading space
 */
-function on_help(string $command, int $side = 0): string {
-	return script("mixin(qsl('select, input'), {onmouseover: function (event) { helpMouseover.call(this, event, $command, $side) }, onmouseout: helpMouseout});", "");
+function on_help(string $text, int $side = 0): string {
+	return on('mouseover', 'helpMouseover', $text, $side) . on('mouseout', 'helpMouseout');
+}
+
+/** Get attributes to display help with the hovered value on mouse over
+* @param string $regexp regular expression transforming the value, empty to display the value itself
+* @param string $replacement can use $& and $1
+* @return string HTML attributes including the leading space
+*/
+function on_help_value(string $regexp = "", string $replacement = ""): string {
+	return on('mouseover', 'helpValueMouseover', $regexp, $replacement) . on('mouseout', 'helpMouseout');
 }
 
 /** Print edit data form
 * @param Field[] $fields
 * @param mixed $row
+* @param string $query query which got the row
+* @param string $time output of format_time()
 */
-function edit_form(string $table, array $fields, $row, ?bool $update, string $error = ''): void {
+function edit_form(string $table, array $fields, $row, ?bool $update, string $error = '', string $query = '', string $time = ''): void {
 	$table_name = adminer()->tableName(table_status1($table, true));
 	page_header(
 		($update ? lang('Edit') : lang('Insert')),
@@ -390,20 +495,26 @@ function edit_form(string $table, array $fields, $row, ?bool $update, string $er
 		array("select" => array($table, $table_name)),
 		$table_name
 	);
-	adminer()->editRowPrint($table, $fields, $row, $update);
+	adminer()->editRowPrint($table, $fields, $row, $update, $query, $time);
 	if ($row === false) {
 		echo "<p class='error'>" . lang('No rows.') . "\n";
 		return;
 	}
 	echo "<form action='' method='post' enctype='multipart/form-data' id='form'>\n";
 	$editable = false;
+	// the WHERE condition in the URL is not updated after saving so changing these values would break Save and continue editing
+	$where_columns = ($update && !isset($_GET["select"]) ? where_columns($fields) : array());
+	$continue_edit = (count($where_columns) != count($fields)); // without a unique key the condition uses all columns so the button would be always disabled
+	if (!$continue_edit) {
+		$where_columns = array();
+	}
 	if (!$fields) {
 		echo "<p class='error'>" . lang('You have no privileges to update this table.') . "\n";
 	} else {
-		echo "<table class='layout'>" . script("qsl('table').onkeydown = editingKeydown;");
+		echo "<table class='layout nowrap'" . on('keydown', 'editingKeydown') . ">\n";
 		$autofocus = !$_POST;
 		foreach ($fields as $name => $field) {
-			echo "<tr><th>" . adminer()->fieldName($field);
+			echo "<tr" . ($where_columns[$name] ? on('change', 'whereChange') : "") . "><th>" . adminer()->fieldName($field);
 			$default = idx($_GET["set"], bracket_escape($name));
 			if ($default === null) {
 				$default = $field["default"];
@@ -414,8 +525,9 @@ function edit_form(string $table, array $fields, $row, ?bool $update, string $er
 					$default = bin2hex($default); // same as UNHEX
 				}
 			}
+			// $row is null in Insert and in the form from Select if it affects other than exactly one row, false then keeps the original value of each of them
 			$value = ($row !== null
-				? ($row[$name] != "" && JUSH == "sql" && preg_match("~enum|set~", $field["type"]) && is_array($row[$name])
+				? ($field["type"] == "set" && is_array($row[$name]) // enum keeps the array, its values are prefixed by "val-"
 					? implode(",", $row[$name])
 					: (is_bool($row[$name]) ? +$row[$name] : $row[$name])
 				)
@@ -432,7 +544,7 @@ function edit_form(string $table, array $fields, $row, ?bool $update, string $er
 			} else {
 				$editable = true;
 				$function = ($_POST["save"]
-					? idx($_POST["function"], $name, "")
+					? idx($_POST["function"], bracket_escape($name), "")
 					: ($update && preg_match('~^CURRENT_TIMESTAMP~i', $field["on_update"])
 						? "now"
 						: ($value === false ? null : ($value !== null ? '' : 'NULL'))
@@ -452,20 +564,17 @@ function edit_form(string $table, array $fields, $row, ?bool $update, string $er
 				if ($autofocus !== false) {
 					$autofocus = ($field["auto_increment"] || $function == "now" || $function == "uuid" ? null : true); // null - don't autofocus this input but check the next one
 				}
-				input($field, $value, $function, $autofocus);
+				input($field, $value, $function, $autofocus, $update);
 				if ($autofocus) {
 					$autofocus = false;
 				}
 			}
-			echo "\n";
 		}
-		if (!support("table") && !fields($table)) {
+		if (!fields($table) && driver()->primary != "") {
 			echo "<tr>"
-				. "<th><input name='field_keys[]'>"
-				. script("qsl('input').oninput = fieldChange;")
+				. "<th><input name='field_keys[]'" . on('input', 'fieldChange') . ">"
 				. "<td class='function'>" . html_select("field_funs[]", adminer()->editFunctions(array("null" => isset($_GET["select"]))))
 				. "<td><input name='field_vals[]'>"
-				. "\n"
 			;
 		}
 		echo "</table>\n";
@@ -473,15 +582,16 @@ function edit_form(string $table, array $fields, $row, ?bool $update, string $er
 	echo "<p>\n";
 	if ($editable) {
 		echo "<input type='submit' value='" . lang('Save') . "'>\n";
-		if (!isset($_GET["select"])) {
+		if (!isset($_GET["select"]) && $continue_edit) {
+			// the printed values were not saved so they can differ from the WHERE condition in the URL and no change event fires for them
+			$disabled = ($where_columns && ($error != "" || adminer()->error != "") ? " disabled" : "");
 			echo "<input type='submit' name='insert' value='" . ($update
-				? lang('Save and continue edit')
+				? lang('Save and continue editing')
 				: lang('Save and insert next')
-			) . "' title='Ctrl+Shift+Enter'>\n";
-			echo ($update ? script("qsl('input').onclick = function () { return !ajaxForm(this.form, '" . lang('Saving') . "…', this); };") : "");
+			) . "' title='Ctrl+Shift+Enter'$disabled" . ($update ? on('click', 'ajaxForm', lang('Saving…')) : "") . ">\n";
 		}
 	}
-	echo ($update ? "<input type='submit' name='delete' value='" . lang('Delete') . "'>" . confirm() . "\n" : "");
+	echo ($update ? "<input type='submit' name='delete' value='" . lang('Delete') . "'" . confirm() . ">\n" : "");
 	if (isset($_GET["select"])) {
 		hidden_fields(array("check" => (array) $_POST["check"], "clone" => $_POST["clone"], "all" => $_POST["all"]));
 	}
@@ -491,17 +601,58 @@ function edit_form(string $table, array $fields, $row, ?bool $update, string $er
 	echo "</form>\n";
 }
 
+/** Create repeat pattern for preg */
+function repeat_pattern(string $pattern, int $length): string {
+	// fix for Compilation failed: number too big in {} quantifier
+	return str_repeat("$pattern{0,65535}", $length / 65535) . "$pattern{0," . ($length % 65535) . "}"; // can create {0,0} which is OK
+}
+
 /** Shorten UTF-8 string
+* @param list<string> $patterns regular expressions to highlight in the shortened string
 * @return string escaped string with appended ...
 */
-function shorten_utf8(string $string, int $length = 80, string $suffix = ""): string {
+function shorten_utf8(string $string, int $length = 80, string $suffix = "", array $patterns = array()): string {
 	if (!preg_match("(^(" . repeat_pattern("[\t\r\n -\x{10FFFF}]", $length) . ")($)?)u", $string, $match)) { // ~s causes trash in $match[2] under some PHP versions, (.|\n) is slow
 		preg_match("(^(" . repeat_pattern("[\t\r\n -~]", $length) . ")($)?)", $string, $match);
 	}
-	return h($match[1]) . $suffix . (isset($match[2]) ? "" : "<i>…</i>");
+	$length = strlen(isset($match[2]) ? $match[1] : preg_replace('~\n[^\n]*\z~', "\n", $match[1])); // in a multi-line text, the ellipsis stands for the whole last line
+	return highlight_matches($string, $patterns, $length) . $suffix . (isset($match[2]) ? "" : "<i>…</i>");
+}
+
+/** Escape HTML and wrap the parts matching any of the regular expressions in <mark>
+* @param list<string> $patterns regular expressions without delimiters, e.g. (?i:abc)
+* @param ?int $length print only this many bytes, the matches crossing the end are highlighted up to it
+*/
+function highlight_matches(string $string, array $patterns, ?int $length = null): string {
+	if ($length === null) {
+		$length = strlen($string);
+	}
+	$return = "";
+	$pos = 0;
+	// (?| - the groups of each regular expression are numbered from 1 for its back-references; @ - the regular expression typed by the user can be invalid
+	if ($patterns && @preg_match_all("((?|" . implode("|", $patterns) . "))su", $string, $matches, PREG_OFFSET_CAPTURE)) { //! highlights only the first overlapping pattern
+		foreach ($matches[0] as $match) {
+			list($text, $start) = $match;
+			if ($text != "" && $start < $length) { // an empty match, e.g. of a*, is skipped
+				$end = min($start + strlen($text), $length);
+				$return .= h(substr($string, $pos, $start - $pos)) . "<mark>" . h(substr($string, $start, $end - $start)) . "</mark>";
+				$pos = $end;
+			}
+		}
+	}
+	return $return . h(substr($string, $pos, $length - $pos));
 }
 
 /** Get button with icon */
-function icon(string $icon, string $name, string $html, string $title): string {
-	return "<button type='submit' name='$name' title='" . h($title) . "' class='icon icon-$icon'><span>$html</span></button>";
+function icon(string $icon, string $name, string $html, string $title, string $attrs = ""): string {
+	// tabindex - a drag handle can't be used by keyboard so it would be just a dead stop in every row
+	return "<button " . ($name ? "type='submit' name='$name'" : "draggable='true' tabindex='-1'")
+		. " title='" . h($title) . "' class='icon icon-$icon" . ($name ? "" : " jsonly") . "'$attrs><span>$html</span></button>"
+	;
+}
+
+/** Get link copying the adjacent <code> to clipboard */
+function copy_icon(): string {
+	$copy = lang('Copy');
+	return "<a href='' class='jsonly icon-copy' title='$copy'><span>$copy</span></a>"; // not icon() - a submit button would send the surrounding form
 }
