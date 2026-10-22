@@ -51,13 +51,19 @@ if (isset($_GET["mongo"])) {
 				$lastError = '';
 				foreach (array("mongodb+srv://", "mongodb://") as $uriPrefix) {
 					try {
+						// the constructor itself can throw, e.g. on an invalid mongodb+srv URI
 						$this->_link = new \MongoDB\Driver\Manager($uriPrefix . $hostport, $options);
-						$this->executeDbCommand('admin', array('ping' => 1), true);
-						return '';
 					} catch (\Exception $e) {
 						$lastError = $e->getMessage();
 						$this->error = $lastError;
+						continue;
 					}
+					// a failed command returns an empty array and leaves the reason in $this->error
+					$this->error = '';
+					if ($this->executeDbCommand('admin', array('ping' => 1)) instanceof \MongoDB\Driver\Cursor) {
+						return '';
+					}
+					$lastError = $this->error;
 				}
 				if (empty($options["authSource"]) && !empty($options["db"])) {
 					$options["authSource"] = $options["db"];
@@ -70,14 +76,11 @@ if (isset($_GET["mongo"])) {
 				return $this->executeDbCommand($this->_db_name, $command);
 			}
 
-			function executeDbCommand($db, $command, $throwErrors = false) {
+			function executeDbCommand($db, $command) {
 				try {
 					return $this->_link->executeCommand($db, new \MongoDB\Driver\Command($command));
 				} catch (\Exception $e) {
 					$this->error = $e->getMessage();
-					if ($throwErrors) {
-						throw $e;
-					}
 					return array();
 				}
 			}
