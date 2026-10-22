@@ -2,33 +2,47 @@
 namespace Adminer;
 
 Lang::$translations = array(
-	// label for database system selection (MySQL, SQLite, ...)
-	'System' => 'Sistem',
+	'System' => 'Sistem', // label for database system selection (MySQL, SQLite, ...)
 	'Server' => 'Pelayan',
 	'Username' => 'Nama pengguna',
 	'Password' => 'Kata laluan',
 	'Permanent login' => 'Log masuk kekal',
 	'Login' => 'Log masuk',
 	'Logout' => 'Log keluar',
-	'Logged as: %s' => 'Log masuk sebagai: %s',
+	'Logged in as: %s' => 'Log masuk sebagai: %s',
 	'Logout successful.' => 'Log keluar berjaya.',
-	'Thanks for using Adminer, consider <a href="https://www.adminer.org/en/donation/">donating</a>.' => 'Terima kasih kerana menggunakan Adminer, pertimbangkan untuk <a href="https://www.adminer.org/en/donation/">menderma</a>.',
+	'Thanks for using Adminer. Consider <a href="https://www.adminer.org/en/donation/">donating</a>.' => 'Terima kasih kerana menggunakan Adminer, pertimbangkan untuk <a href="https://www.adminer.org/en/donation/">menderma</a>.',
+	'hostname[:port] or :socket' => 'hostname[:port] atau :socket',
+	'Invalid server.' => 'Pelayan tidak sah.',
 	'Invalid credentials.' => 'Akses tidak sah.',
+	'There is a space in the entered password, which might be the cause.' => 'Terdapat ruang dalam kata laluan yang dimasukkan, yang mungkin menjadi puncanya.',
+	'Adminer does not support accessing a database without a password.' => 'Adminer tidak menyokong akses pangkalan data tanpa kata laluan.',
+	'The database does not support passwords.' => 'Pangkalan data tidak menyokong kata laluan.',
+	'The server accepts any password, so filling it in protects nothing.' => 'Pelayan menerima sebarang kata laluan, jadi mengisinya tidak melindungi apa-apa.',
+	'Require a password.' => 'Wajibkan kata laluan.',
+	'Save %s next to Adminer to require the entered password:' => 'Simpan %s bersebelahan Adminer untuk mewajibkan kata laluan yang dimasukkan:',
+	'Save %s next to Adminer to require the password %s:' => 'Simpan %s bersebelahan Adminer untuk mewajibkan kata laluan %s:',
+	'Add this line to %s to require the entered password:' => 'Tambah baris ini pada %s untuk mewajibkan kata laluan yang dimasukkan:',
+	'Add this line to %s to require the password %s:' => 'Tambah baris ini pada %s untuk mewajibkan kata laluan %s:',
+	'More options' => 'Lebih banyak pilihan',
+	'Require a password verified by Adminer' => 'Wajibkan kata laluan yang disahkan oleh Adminer',
 	'Too many unsuccessful logins, try again in %d minute(s).' => 'Terlalu banyak percubaan log masuk yang gagal, sila cuba lagi dalam masa %d minit.',
-	'Master password expired. <a href="https://www.adminer.org/en/extension/"%s>Implement</a> %s method to make it permanent.' => 'Kata laluan utama telah luput. <a href="https://www.adminer.org/en/extension/"%s>Gunakan</a> cara %s untuk mengekalkannya.',
+	'Use the %s <a%s>plugin</a> if Adminer runs behind a reverse proxy.' => 'Gunakan <a%2$s>pemalam</a> %1$s jika Adminer berjalan di sebalik proksi terbalik.',
+	'Master password expired. <a href="https://www.adminer.org/en/extension/"%s>Implement</a> the %s method to make it permanent.' => 'Kata laluan utama telah luput. <a href="https://www.adminer.org/en/extension/"%s>Gunakan</a> cara %s untuk mengekalkannya.',
 	'Language' => 'Bahasa',
-	'Invalid CSRF token. Send the form again.' => 'Token CSRF tidak sah. Sila hantar borang sekali lagi.',
-	'If you did not send this request from Adminer then close this page.' => 'Jika anda tidak menghantar permintaan ini dari Adminer sila tutup halaman ini.',
+	'Invalid CSRF token. Submit the form again.' => 'Token CSRF tidak sah. Sila hantar borang sekali lagi.',
+	'If you did not send this request from Adminer, close this page.' => 'Jika anda tidak menghantar permintaan ini dari Adminer sila tutup halaman ini.',
 	'No extension' => 'Tiada sambungan',
 	'None of the supported PHP extensions (%s) are available.' => 'Sambungan PHP yang (%s) disokong tidak wujud.',
 	'Connecting to privileged ports is not allowed.' => 'Penyambungan ke port yang istimewa tidak dibenarkan.',
+	'Disable %s or enable the %s or %s extension.' => 'Nyahaktifkan %s atau aktifkan sambungan %s atau %s.',
 	'Session support must be enabled.' => 'Sokongan sesi perlu diaktifkan.',
-	'Session expired, please login again.' => 'Sesi telah luput, sila log masuk kembali.',
+	'Session expired. Please log in again.' => 'Sesi telah luput, sila log masuk kembali.',
+	'The action will be performed after successful login with the same credentials.' => 'Tindakan akan dilaksanakan selepas berjaya log masuk dengan kelayakan yang sama.',
 	'%s version: %s through PHP extension %s' => 'Versi %s: %s melalui sambungan PHP %s',
 	'Refresh' => 'Segar kembali',
 
-	// text direction - 'ltr' or 'rtl'
-	'ltr' => 'ltr',
+	'ltr' => 'ltr', // text direction - 'ltr' or 'rtl'
 
 	'Privileges' => 'Keistimewaan',
 	'Create user' => 'Bina pengguna',
@@ -37,6 +51,7 @@ Lang::$translations = array(
 	'User has been created.' => 'Pengguna telah dibuat.',
 	'Hashed' => 'Hashed',
 	'Column' => 'Kolum',
+	'Columns' => 'Kolum',
 	'Routine' => 'Rutin',
 	'Grant' => 'Beri',
 	'Revoke' => 'Batal',
@@ -49,16 +64,17 @@ Lang::$translations = array(
 	'Status' => 'Status',
 
 	'SQL command' => 'Arahan SQL',
-	'%d query(s) executed OK.' => '%d query berjaya dilaksanakan.',
+	'%d query(ies) executed OK.' => '%d query berjaya dilaksanakan.',
 	'Query executed OK, %d row(s) affected.' => 'Query berjaya dilaksanakan, %d baris terjejas.',
 	'No commands to execute.' => 'Tiada arahan untuk dilaksanakan.',
 	'Error in query' => 'Ralat pada query',
-	'ATTACH queries are not supported.' => 'Query berikut tidak disokong.',
+	'Unknown error.' => 'Ralat tidak diketahui.',
+	'Warnings' => 'Amaran',
+	'%s queries are not supported.' => 'Query %s tidak disokong.',
 	'Execute' => 'Laksana',
 	'Stop on error' => 'Berhenti jika ralat',
 	'Show only errors' => 'Paparkan jika ralat',
-	// sprintf() format for time of the command
-	'%.3f s' => '%.3f s',
+	'%.3f s' => '%.3f s', // sprintf() format for time of the command
 	'History' => 'Sejarah',
 	'Clear' => 'Bersih',
 	'Edit all' => 'Ubah semua',
@@ -68,25 +84,28 @@ Lang::$translations = array(
 	'Webserver file %s' => 'Fail pelayan sesawang %s',
 	'Run file' => 'Jalankan fail',
 	'File does not exist.' => 'Fail tidak wujud.',
+	'Increase %s.' => 'Tingkatkan %s.',
 	'File uploads are disabled.' => 'Muat naik fail dihalang.',
 	'Unable to upload a file.' => 'Muat naik fail gagal.',
 	'Maximum allowed file size is %sB.' => 'Saiz fail maksimum yang dibenarkan adalah %sB.',
-	'Too big POST data. Reduce the data or increase the %s configuration directive.' => 'Data POST terlalu besar. Kecilkan data atau tingkatkan tetapan %s.',
-	'You can upload a big SQL file via FTP and import it from server.' => 'Anda boleh muat naik fail SQL yang besar melalui FTP dan import melalui pelayan.',
+	'The POST data is too large. Reduce the data or increase the %s configuration directive.' => 'Data POST terlalu besar. Kecilkan data atau tingkatkan tetapan %s.',
+	'You can upload a large SQL file via FTP and import it from the server.' => 'Anda boleh muat naik fail SQL yang besar melalui FTP dan import melalui pelayan.',
 	'You are offline.' => 'Anda sedang offline.',
+	'Menu' => 'Menu',
+	'Database management in a single PHP file' => 'Pengurusan pangkalan data dalam satu fail PHP',
 
 	'Export' => 'Eksport',
 	'Output' => 'Pengeluaran',
 	'open' => 'buka',
 	'save' => 'simpan',
-	'Saving' => 'Menyimpan',
+	'Saving…' => 'Menyimpan…',
 	'Format' => 'Format',
 	'Data' => 'Data',
 
 	'Database' => 'Pangkalan data',
+	'DB' => 'DB',
 	'Use' => 'Guna',
 	'Select database' => 'Pilih pangkalan data',
-	'Invalid database.' => 'Pangkalan data tidak sah.',
 	'Database has been dropped.' => 'Pangkalan data telah dijatuhkan.',
 	'Databases have been dropped.' => 'Pangkalan data telah dijatuhkan.',
 	'Database has been created.' => 'Pangkalan data telah dibuat.',
@@ -96,11 +115,9 @@ Lang::$translations = array(
 	'Create database' => 'Bina pangkalan data',
 	'Database schema' => 'Skema pangkalan data',
 
-	// link to current database schema layout
-	'Permanent link' => 'Pautan kekal',
+	'Permanent link' => 'Pautan kekal', // link to current database schema layout
 
-	// thousands separator - must contain single byte
-	',' => ',',
+	'#,##0' => '#,##0',
 	'0123456789' => '0123456789',
 	'Engine' => 'Enjin',
 	'Collation' => 'Collation',
@@ -116,11 +133,12 @@ Lang::$translations = array(
 	'Repair' => 'Baiki',
 	'Truncate' => 'Memangkas',
 	'Tables have been truncated.' => 'Jadual telah dimangkaskan.',
-	'Move to other database' => 'Pindahkan ke pangkalan data yang lain',
+	'Move to another database' => 'Pindahkan ke pangkalan data yang lain',
 	'Move' => 'Pindah',
 	'Tables have been moved.' => 'Jadual telah dipindahkan.',
 	'Copy' => 'Salin',
 	'Tables have been copied.' => 'Jadual telah disalin.',
+	'overwrite' => 'tulis ganti',
 
 	'Routines' => 'Rutin',
 	'Routine has been called, %d row(s) affected.' => 'Rutin telah dipanggil, %d baris terjejas.',
@@ -150,6 +168,7 @@ Lang::$translations = array(
 
 	'Tables' => 'Jadual',
 	'Tables and views' => 'Jadual dan pandangan',
+	'All' => 'Semua', // checkbox selecting all tables and views
 	'Table' => 'Jadual',
 	'No tables.' => 'Tiada jadual.',
 	'Alter table' => 'Ubah jadual',
@@ -176,8 +195,6 @@ Lang::$translations = array(
 	'Are you sure?' => 'Anda pasti?',
 	'Size' => 'Saiz',
 	'Compute' => 'Kira',
-	'Move up' => 'Gerak ke atas',
-	'Move down' => 'Gerak ke bawah',
 	'Remove' => 'Buang',
 	'Maximum number of allowed fields exceeded. Please increase %s.' => 'Bilangan medan telah melebihi had yang dibenarkan. Sila tingkatkan %s.',
 
@@ -185,6 +202,9 @@ Lang::$translations = array(
 	'Partitions' => 'Partition',
 	'Partition name' => 'Nama partition',
 	'Values' => 'Nilai',
+	'Inherits from' => 'Mewarisi daripada',
+	'Inherited by' => 'Diwarisi oleh',
+	'Shadow tables' => 'Jadual bayangan',
 
 	'View' => 'Papar',
 	'Materialized view' => 'Paparan yang menjadi kenyataan',
@@ -200,9 +220,11 @@ Lang::$translations = array(
 	'Add next' => 'Tambah yang seterusnya',
 	'Index Type' => 'Jenis Indeks',
 	'length' => 'kepanjangan',
+	'operator class' => 'kelas operator',
+	'Algorithm' => 'Algoritma',
+	'Condition' => 'Syarat',
 
 	'Foreign keys' => 'Kunci asing',
-	'Foreign key' => 'Kunci asing',
 	'Foreign key has been dropped.' => 'Kunci asing telah dijatuhkan.',
 	'Foreign key has been altered.' => 'Kunci asing telah diubah.',
 	'Foreign key has been created.' => 'Kunci asing telah dibuat.',
@@ -212,13 +234,13 @@ Lang::$translations = array(
 	'Target' => 'Sasaran',
 	'Add column' => 'Tambah kolum',
 	'Alter' => 'Ubah',
-	'Add foreign key' => 'Tambah kunci asing',
+	'Alter foreign key' => 'Ubah kunci asing',
+	'Create foreign key' => 'Bina kunci asing',
 	'ON DELETE' => 'ON DELETE',
 	'ON UPDATE' => 'ON UPDATE',
-	'Source and target columns must have the same data type, there must be an index on the target columns and referenced data must exist.' => 'Kolum sumber dan sasaran perlu mempunyai jenis data yang sama, indeks diperlukan pada kolum sasaran dan data yang dirujuk wujud.',
+	'Source and target columns must have the same data type, there must be an index on the target columns and the referenced data must exist.' => 'Kolum sumber dan sasaran perlu mempunyai jenis data yang sama, indeks diperlukan pada kolum sasaran dan data yang dirujuk wujud.',
 
 	'Triggers' => ' Pencetus',
-	'Add trigger' => 'Tambah pencetus',
 	'Trigger has been dropped.' => 'Pencetus telah dijatuhkan.',
 	'Trigger has been altered.' => 'Pencetus telah diubah.',
 	'Trigger has been created.' => 'Pencetus telah dibuat.',
@@ -243,14 +265,14 @@ Lang::$translations = array(
 	'Text length' => 'Kepanjangan teks',
 	'Action' => 'Aksi',
 	'Full table scan' => 'Imbasan penuh jadual',
-	'Unable to select the table' => 'Pemilihan jadual tidak berjaya',
+	'Unable to select the table.' => 'Pemilihan jadual tidak berjaya.',
 	'No rows.' => 'Tiada baris.',
 	'%d / ' => '%d / ',
 	'%d row(s)' => '%d baris',
 	'Page' => 'Halaman',
 	'last' => 'akhir',
 	'Load more data' => 'Load lebih data',
-	'Loading' => 'Loading',
+	'Loading…' => 'Loading…',
 	'Whole result' => 'Keputusan keseluruhan',
 	'%d byte(s)' => array('%d byte', '%d bytes'),
 
@@ -258,25 +280,23 @@ Lang::$translations = array(
 	'%d row(s) have been imported.' => '%d baris telah diimport.',
 	'File must be in UTF-8 encoding.' => 'Fail mesti dalam pengekodan UTF-8.',
 
-	// in-place editing in select
-	'Modify' => 'Pinda',
+	'All rows on this page' => 'Semua baris di halaman ini',
+	'Modify' => 'Pinda', // in-place editing in select
 	'Ctrl+click on a value to modify it.' => 'Ctrl+click pada nilai untuk meminda.',
-	'Use edit link to modify this value.' => 'Guna pautan ubah untuk meminda nilai ini.',
+	'Use the edit link to modify this value.' => 'Guna pautan ubah untuk meminda nilai ini.',
 
-	// %s can contain auto-increment value
-	'Item%s has been inserted.' => 'Item%s telah dimasukkan.',
+	'Item%s has been inserted.' => 'Item%s telah dimasukkan.', // %s can contain auto-increment value
 	'Item has been deleted.' => 'Item telah dipadamkan.',
 	'Item has been updated.' => 'Item telah dikemaskini.',
 	'%d item(s) have been affected.' => '%d item telah terjejas.',
 	'New item' => 'Item baru',
 	'original' => 'asli',
-	// label for value '' in enum data type
-	'empty' => 'kosong',
+	'empty' => 'kosong', // label for value '' in enum data type
 	'edit' => 'ubah',
 	'Edit' => 'Ubah',
 	'Insert' => 'Masukkan',
 	'Save' => 'Simpan',
-	'Save and continue edit' => 'Simpan dan sambung ubah',
+	'Save and continue editing' => 'Simpan dan sambung ubah',
 	'Save and insert next' => 'Simpan dan masukkan seterusnya',
 	'Selected' => 'Terpilih',
 	'Clone' => 'Klon',
@@ -291,22 +311,20 @@ Lang::$translations = array(
 	'Lists' => 'Senarai',
 	'Network' => 'Rangkaian',
 	'Geometry' => 'Geometri',
+	'Ranges' => 'Julat',
 	'Relations' => 'Hubungan',
 
 	'Editor' => 'Editor',
-	// date format in Editor: $1 yyyy, $2 yy, $3 mm, $4 m, $5 dd, $6 d
-	'$1-$3-$5' => '$1-$3-$5',
-	// hint for date format - use language equivalents for day, month and year shortcuts
-	'[yyyy]-mm-dd' => '[yyyy]-mm-dd',
-	// hint for time format - use language equivalents for hour, minute and second shortcuts
-	'HH:MM:SS' => 'HH:MM:SS',
+	'Data editing in a single PHP file' => 'Penyuntingan data dalam satu fail PHP',
+	'$1-$3-$5' => '$1-$3-$5', // date format in Editor: $1 yyyy, $2 yy, $3 mm, $4 m, $5 dd, $6 d
+	'[yyyy]-mm-dd' => '[yyyy]-mm-dd', // hint for date format - use language equivalents for day, month and year shortcuts
+	'HH:MM:SS' => 'HH:MM:SS', // hint for time format - use language equivalents for hour, minute and second shortcuts
 	'now' => 'sekarang',
 	'yes' => 'ya',
 	'no' => 'tidak',
 
-	// general SQLite error in create, drop or rename database
-	'File exists.' => 'Fail wujud.',
-	'Please use one of the extensions %s.' => 'Sila guna salah satu sambungan %s.',
+	'File exists.' => 'Fail wujud.', // general SQLite error in create, drop or rename database
+	'Please use one of these file extensions: %s.' => 'Sila guna salah satu sambungan %s.',
 
 	// PostgreSQL and MS SQL schema support
 	'Alter schema' => 'Ubah skema',
@@ -315,7 +333,6 @@ Lang::$translations = array(
 	'Schema has been created.' => 'Skema telah dibuat.',
 	'Schema has been altered.' => 'Skema telah diubah.',
 	'Schema' => 'Skema',
-	'Invalid schema.' => 'Skema tidak sah.',
 
 	// PostgreSQL sequences support
 	'Sequences' => 'Turutan',
@@ -325,12 +342,27 @@ Lang::$translations = array(
 	'Sequence has been altered.' => 'Turutan telah diubah.',
 	'Alter sequence' => 'Ubah turutan',
 
-	// PostgreSQL user types support
+	// PostgreSQL user-defined types support
 	'User types' => 'Jenis pengguna',
 	'Create type' => 'Buat jenis',
 	'Type has been dropped.' => 'Jenis telah dijatuhkan.',
 	'Type has been created.' => 'Jenis telah dibuat.',
+	'Type has been altered.' => 'Jenis telah diubah.',
 	'Alter type' => 'Ubah jenis',
+
+	// Table check constraints
+	'Checks' => 'Pemeriksaan',
+	'Create check' => 'Bina pemeriksaan',
+	'Alter check' => 'Ubah pemeriksaan',
+	'Check has been created.' => 'Pemeriksaan telah dibuat.',
+	'Check has been altered.' => 'Pemeriksaan telah diubah.',
+	'Check has been dropped.' => 'Pemeriksaan telah dijatuhkan.',
+
+	'Loaded plugins' => 'Pemalam dimuatkan',
+	'%s must <a%s>return an array</a>.' => '%s mesti <a%s>mengembalikan array</a>.',
+	'<a%s>Configure</a> %s in %s.' => '<a%s>Konfigurasikan</a> %s dalam %s.',
+	'Every plugin must <a%s>be an object</a>.' => 'Setiap pemalam mesti <a%s>merupakan objek</a>.',
+	'screenshot' => 'tangkapan skrin',
 );
 
 // run `php ../../lang.php ms` to update this file

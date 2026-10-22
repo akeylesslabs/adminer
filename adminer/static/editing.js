@@ -1,10 +1,11 @@
 'use strict'; // Adminer specific functions
 
+// eslint-disable-next-line no-unassigned-vars
 let autocompleter; // set in adminer.inc.php
 
 /** Load syntax highlighting
-* @param string first three characters of database system version
-* @param [string]
+* @param {string} version version of the database system as used in its documentation URLs
+* @param {string} [vendor]
 */
 function syntaxHighlighting(version, vendor) {
 	addEventListener('DOMContentLoaded', () => {
@@ -16,27 +17,18 @@ function syntaxHighlighting(version, vendor) {
 					if (typeof obj[key] != 'string') {
 						obj = obj[key];
 						key = 0;
-						if (vendor == 'maria') {
-							for (let i = 1; i < obj.length; i++) {
-								obj[i] = obj[i]
-									.replace('.html', '/')
-									.replace('-type-syntax', '-data-types')
-									.replace(/numeric-(data-types)/, '$1-$&')
-									.replace(/replication-options-(master|binary-log)\//, 'replication-and-binary-log-system-variables/')
-									.replace('server-options/', 'server-system-variables/')
-									.replace('innodb-parameters/', 'innodb-system-variables/')
-									.replace(/#(statvar|sysvar|option_mysqld)_(.*)/, '#$2')
-									.replace(/#sysvar_(.*)/, '#$1')
-								;
-							}
-						}
 					}
-
+					// MariaDB page keys are resolved by jush itself from the 'mysql-key maria-key' entries
 					obj[key] = (vendor == 'maria' ? obj[key].replace('dev.mysql.com/doc/mysql', 'mariadb.com/kb') : obj[key]) // MariaDB
 						.replace('/doc/mysql', '/doc/refman/' + version) // MySQL
 					;
 					if (vendor != 'cockroach') {
 						obj[key] = obj[key].replace('/docs/current', '/docs/' + version); // PostgreSQL
+					} else if (obj == jush.urls.pgsql) { // jush.link_key.pgsql resolves the CockroachDB pages, the variables and extensions stay at PostgreSQL
+						obj[key] = 'https://docs.cockroachlabs.com/docs/v' + version + '/$key';
+					}
+					if (/^\d\d$/.test(version)) { // the version of another system would make up a directory Oracle doesn't have
+						obj[key] = obj[key].replace('/oracle-database/19/', '/oracle-database/' + version + '/');
 					}
 				}
 			}
@@ -49,6 +41,7 @@ function syntaxHighlighting(version, vendor) {
 				if (/(^|\s)jush-/.test(tag.className)) {
 					const pre = jush.textarea(tag, autocompleter);
 					if (pre) {
+						tag.jushPre = pre;
 						setupSubmitHighlightInput(pre);
 						tag.onchange = () => {
 							pre.textContent = tag.value;
@@ -61,23 +54,9 @@ function syntaxHighlighting(version, vendor) {
 	});
 }
 
-/** Get value of dynamically created form field
-* @param HTMLFormElement
-* @param string
-* @return HTMLElement
-*/
-function formField(form, name) {
-	// required in IE < 8, form.elements[name] doesn't work
-	for (let i=0; i < form.length; i++) {
-		if (form[i].name == name) {
-			return form[i];
-		}
-	}
-}
-
 /** Try to change input type to password or to text
-* @param HTMLInputElement
-* @param boolean
+* @param {HTMLInputElement} el
+* @param {boolean} [disable]
 */
 function typePassword(el, disable) {
 	try {
@@ -86,17 +65,41 @@ function typePassword(el, disable) {
 	}
 }
 
-/** Install toggle handler
-* @param [HTMLElement]
+/** Display the password as a text if it's hashed
+* @this HTMLInputElement
+*/
+function hashedClick() {
+	typePassword(this.form['pass'], this.checked);
+}
+
+/** Uncheck the All privileges checkbox after granting a single privilege
+* @param {string} id
+* @this HTMLInputElement
+*/
+function grantsClick(id) {
+	if (this.checked) {
+		formUncheck(id);
+	}
+}
+
+/** Install handlers in messages
+* @param {HTMLElement} [parent]
 */
 function messagesPrint(parent) {
-	for (const el of qsa('.toggle', parent)) {
-		el.onclick = partial(toggle, el.getAttribute('href').substr(1));
-	}
-	for (const el of qsa('.copy', parent)) {
+	copyCode(parent);
+}
+
+/** Copy code to clipboard
+* @param {HTMLElement} [parent]
+*/
+function copyCode(parent) {
+	for (const el of qsa('.icon-copy', parent)) {
 		el.onclick = () => {
-			navigator.clipboard.writeText(qs('code', el.parentElement).innerText).then(() => el.textContent = '✓');
-			setTimeout(() => el.textContent = '🗐', 1000);
+			const code = qs('code', el.parentElement);
+			navigator.clipboard.writeText(code.dataset.full || code.innerText).then(() => {
+				alterClass(el, 'copied', true);
+				setTimeout(() => alterClass(el, 'copied'), 1000);
+			}, () => {});
 			return false;
 		};
 	}
@@ -105,13 +108,13 @@ function messagesPrint(parent) {
 
 
 /** Hide or show some login rows for selected driver
-* @param HTMLSelectElement
+* @this HTMLSelectElement
 */
-function loginDriver(driver) {
-	const trs = parentTag(driver, 'table').rows;
-	const disabled = /sqlite/.test(selectValue(driver));
+function loginDriver() {
+	const trs = this.closest('table').rows;
+	const disabled = /sqlite|igdb/.test(selectValue(this));
 	alterClass(trs[1], 'hidden', disabled);	// 1 - row with server
-	trs[1].getElementsByTagName('input')[0].disabled = disabled;
+	qs('input', trs[1]).disabled = disabled;
 }
 
 
@@ -120,7 +123,7 @@ let dbCtrl;
 const dbPrevious = {};
 
 /** Check if database should be opened to a new window
-* @param MouseEvent
+* @param {MouseEvent} event
 * @this HTMLSelectElement
 */
 function dbMouseDown(event) {
@@ -160,21 +163,19 @@ function dbChange() {
 function selectFieldChange() {
 	const form = this.form;
 	const ok = (() => {
-		for (const input of qsa('input', form)) {
-			if (input.value && /^fulltext/.test(input.name)) {
-				return true;
-			}
+		if ([...qsa('input', form)].some(input => input.value && /^fulltext/.test(input.name))) {
+			return true;
 		}
 		let ok = form.limit.value;
 		let group = false;
 		const columns = {};
-		for (const select of qsa('select', form)) {
+		for (const select of qsa('select, input', form)) { // input - a column typed by a plugin
 			const col = selectValue(select);
 			let match = /^(where.+)col]/.exec(select.name);
 			if (match) {
 				const op = selectValue(form[match[1] + 'op]']);
 				const val = form[match[1] + 'val]'].value;
-				if (col in indexColumns && (!/LIKE|REGEXP/.test(op) || (op == 'LIKE' && val.charAt(0) != '%'))) {
+				if (col in indexColumns && (!/LIKE|REGEXP/.test(op) || (op == 'LIKE' && val[0] != '%'))) {
 					return true;
 				} else if (col || val) {
 					ok = false;
@@ -208,23 +209,31 @@ function selectFieldChange() {
 	setHtml('noindex', (ok ? '' : '!'));
 }
 
+/** Close the help and add a row in select fieldset after selecting a function
+* @this HTMLSelectElement
+*/
+function selectFunAddRow() {
+	helpClose();
+	fire(qsl('select, input', this.parentNode), 'change'); // qsl - the column is printed after the function
+}
 
 
-let added = '.', rowCount;
+
+let added = '.';
 
 /** Check if val is equal to a-delimiter-b where delimiter is '_', '' or big letter
-* @param string
-* @param string
-* @param string
-* @return boolean
+* @param {string} val
+* @param {string} a
+* @param {string} b
+* @return {boolean}
 */
 function delimiterEqual(val, a, b) {
-	return (val == a + '_' + b || val == a + b || val == a + b.charAt(0).toUpperCase() + b.substr(1));
+	return (val == a + '_' + b || val == a + b || val == a + b[0].toUpperCase() + b.slice(1));
 }
 
 /** Escape string to use as identifier
-* @param string
-* @return string
+* @param {string} s
+* @return {string}
 */
 function idfEscape(s) {
 	return s.replace(/`/, '``');
@@ -232,8 +241,7 @@ function idfEscape(s) {
 
 
 
-/** Set up event handlers for edit_fields().
-*/
+/** Set up event handlers for edit_fields(). */
 function editFields() {
 	for (const el of qsa('[name$="[field]"]')) {
 		el.oninput = function () {
@@ -251,42 +259,86 @@ function editFields() {
 			onfocus: function () {
 				lastType = selectValue(this);
 			},
-			onchange: editingTypeChange,
-			onmouseover: function (event) {
-				helpMouseover.call(this, event, event.target.value, 1);
-			},
-			onmouseout: helpMouseout
+			onchange: editingTypeChange
 		});
 	}
+	const table = qs('#edit-fields');
+	let dragged;
+	const dragStart = el => {
+		dragged = el.closest('tr');
+		alterClass(table, 'dragging', true);
+		alterClass(dragged, 'dragged', true);
+	};
+	const dragMove = el => { // returns whether the element is a valid drop target
+		const row = el && el.closest('tr'); // el is null if the touch is outside the viewport
+		if (!dragged || !row || !qs('[draggable]', row)) {
+			return false;
+		}
+		if (row != dragged) {
+			const rows = [...row.parentNode.children];
+			row.parentNode.insertBefore(dragged, (rows.indexOf(row) < rows.indexOf(dragged) ? row : row.nextSibling));
+		}
+		return true;
+	};
+	const dragEnd = () => {
+		alterClass(dragged, 'dragged');
+		dragged = null;
+		alterClass(table, 'dragging');
+	};
+	mixin(table, {
+		ondragstart: e => {
+			if (e.target.draggable) {
+				e.dataTransfer.effectAllowed = 'move';
+				dragStart(e.target);
+			}
+		},
+		ondragend: dragEnd,
+		ondragover: e => {
+			if (dragMove(e.target)) {
+				e.preventDefault();
+			}
+		}
+	});
+	// HTML5 drag and drop doesn't work on touch screens; addEventListener() because the handlers must not be passive
+	table.addEventListener('touchstart', e => {
+		const el = e.target.closest('button');
+		if (el && el.draggable) {
+			e.preventDefault(); // to not scroll the page
+			dragStart(el);
+		}
+	}, {passive: false});
+	table.addEventListener('touchmove', e => {
+		if (dragged) {
+			e.preventDefault();
+			const touch = e.touches[0];
+			dragMove(document.elementFromPoint(touch.clientX, touch.clientY));
+		}
+	}, {passive: false});
+	table.addEventListener('touchend', dragEnd);
 }
 
 /** Handle clicks on fields editing
-* @param MouseEvent
-* @return boolean false to cancel action
+* @param {MouseEvent} event
+* @return {boolean} false to cancel action
 */
 function editingClick(event) {
-	let el = parentTag(event.target, 'button');
+	let el = event.target.closest('button');
 	if (el) {
 		const name = el.name;
 		if (/^add\[/.test(name)) {
 			editingAddRow.call(el, 1);
-		} else if (/^up\[/.test(name)) {
-			editingMoveRow.call(el, 1);
-		} else if (/^down\[/.test(name)) {
-			editingMoveRow.call(el);
 		} else if (/^drop_col\[/.test(name)) {
 			editingRemoveRow.call(el, 'fields$1[field]');
 		}
 		return false;
 	}
 	el = event.target;
-	if (!isTag(el, 'input')) {
-		el = parentTag(el, 'label');
+	if (!el.matches('input')) {
+		el = el.closest('label');
 		el = el && qs('input', el);
 	}
 	if (el) {
-		const name = el.name;
-		if (name == 'auto_increment_col') {
+		if (el.name == 'auto_increment_col') {
 			const field = el.form['fields[' + el.value + '][field]'];
 			if (!field.value) {
 				field.value = 'id';
@@ -297,7 +349,7 @@ function editingClick(event) {
 }
 
 /** Handle input on fields editing
-* @param InputEvent
+* @param {InputEvent} event
 */
 function editingInput(event) {
 	const el = event.target;
@@ -311,8 +363,8 @@ function editingInput(event) {
 * @this HTMLInputElement
 */
 function editingNameChange() {
-	const name = this.name.substr(0, this.name.length - 7);
-	const type = formField(this.form, name + '[type]');
+	const name = this.name.slice(0, -7);
+	const type = this.form[name + '[type]'];
 	const opts = type.options;
 	let candidate; // don't select anything with ambiguous match (like column `id`)
 	const val = this.value;
@@ -324,8 +376,7 @@ function editingNameChange() {
 			}
 			break;
 		}
-		const base = match[1];
-		const column = match[2];
+		const [, base, column] = match;
 		for (const table of [ base, base.replace(/s$/, ''), base.replace(/es$/, '') ]) {
 			if (val == column || val == table || delimiterEqual(val, table, column) || delimiterEqual(val, column, table)) {
 				if (candidate) {
@@ -343,72 +394,77 @@ function editingNameChange() {
 }
 
 /** Add table row for next field
-* @param [boolean]
-* @return boolean false
+* @param {number} [focus]
+* @return {boolean} false
 * @this HTMLInputElement
 */
 function editingAddRow(focus) {
 	const match = /(\d+)(\.\d+)?/.exec(this.name);
-	const x = match[0] + (match[2] ? added.substr(match[2].length) : added) + '1';
-	const row = parentTag(this, 'tr');
+	const x = match[0] + (match[2] ? added.slice(match[2].length) : added) + '1';
+	const row = this.closest('tr');
 	const row2 = cloneNode(row);
 	let tags = qsa('select, input, button', row);
 	let tags2 = qsa('select, input, button', row2);
-	for (let i=0; i < tags.length; i++) {
-		tags2[i].name = tags[i].name.replace(/[0-9.]+/, x);
-		tags2[i].selectedIndex = (/\[(generated)/.test(tags[i].name) ? 0 : tags[i].selectedIndex);
+	for (const [i, tag] of tags.entries()) {
+		tags2[i].name = tag.name.replace(/[0-9.]+/, x);
+		tags2[i].selectedIndex = (/\[(generated)/.test(tag.name) ? 0 : tag.selectedIndex);
 	}
 	tags = qsa('input', row);
 	tags2 = qsa('input', row2);
-	const input = tags2[0]; // IE loose tags2 after insertBefore()
-	for (let i=0; i < tags.length; i++) {
-		if (tags[i].name == 'auto_increment_col') {
+	for (const [i, tag] of tags.entries()) {
+		if (tag.name == 'auto_increment_col') {
 			tags2[i].value = x;
 			tags2[i].checked = false;
 		}
-		if (/\[(orig|field|comment|default)/.test(tags[i].name)) {
+		if (/\[(orig|field|comment|default)/.test(tag.name)) {
 			tags2[i].value = '';
 		}
-		if (/\[(generated)/.test(tags[i].name)) {
+		if (/\[(generated)/.test(tag.name)) {
 			tags2[i].checked = false;
 		}
 	}
 	tags[0].oninput = editingNameChange;
 	row.parentNode.insertBefore(row2, row.nextSibling);
 	if (focus) {
-		input.oninput = editingNameChange;
-		input.focus();
+		tags2[0].oninput = editingNameChange;
+		tags2[0].focus();
 	}
 	added += '0';
-	rowCount++;
+	maxFieldsCheck();
 	return false;
+}
+
+/** Display the error about the number of fields if the form has too many columns */
+function maxFieldsCheck() {
+	const el = qs('#max-fields'); // only in create.inc.php, only if max_input_vars is set and only if the message is hidden
+	// [orig] is printed for every column and editingRemoveRow() keeps it, so the removed columns are counted too
+	if (el && qsa('#edit-fields [name$="[orig]"]').length > +el.dataset.columns) {
+		alterClass(el, 'hidden');
+		qs('#edit-fields').parentNode.after(el); // the top of the page is not visible after adding columns
+	}
+}
+
+/** Add table row after the last field; used by drivers where columns can be added only to the end
+* @return {boolean} false for success
+* @this HTMLElement
+*/
+function editingAddLastRow() {
+	const inputs = qsa('#edit-fields [name$="[field]"]');
+	if (!inputs.length) {
+		return true; // submit the form to add the row by PHP
+	}
+	return editingAddRow.call(inputs[inputs.length - 1], 1);
 }
 
 /** Remove table row for field
-* @param string regular expression replacement
-* @return boolean false
+* @param {string} name regular expression replacement
+* @return {boolean} false
 * @this HTMLInputElement
 */
 function editingRemoveRow(name) {
-	const field = formField(this.form, this.name.replace(/[^[]+(.+)/, name));
+	const field = this.form[this.name.replace(/[^[]+(.+)/, name)];
 	field.remove();
-	parentTag(this, 'tr').style.display = 'none';
-	return false;
-}
-
-/** Move table row for field
-* @param [boolean]
-* @return boolean false for success
-* @this HTMLInputElement
-*/
-function editingMoveRow(up){
-	const row = parentTag(this, 'tr');
-	if (!('nextElementSibling' in row)) {
-		return true;
-	}
-	row.parentNode.insertBefore(row, up
-		? row.previousElementSibling
-		: row.nextElementSibling ? row.nextElementSibling.nextElementSibling : row.parentNode.firstChild);
+	this.closest('tr').hidden = true;
 	return false;
 }
 
@@ -419,7 +475,7 @@ let lastType = '';
 */
 function editingTypeChange() {
 	const type = this;
-	const name = type.name.substr(0, type.name.length - 6);
+	const name = type.name.slice(0, -6);
 	const text = selectValue(type);
 	for (const el of type.form.elements) {
 		if (el.name == name + '[length]') {
@@ -429,23 +485,15 @@ function editingTypeChange() {
 			)) {
 				el.value = '';
 			}
-			el.oninput.apply(el);
+			el.oninput.call(el);
 		}
-		if (lastType == 'timestamp' && el.name == name + '[generated]' && /timestamp/i.test(formField(type.form, name + '[default]').value)) {
+		if (lastType == 'timestamp' && el.name == name + '[generated]' && /timestamp/i.test(type.form[name + '[default]'].value)) {
 			el.checked = false;
 			el.selectedIndex = 0;
 		}
-		if (el.name == name + '[collation]') {
-			alterClass(el, 'hidden', !/(char|text|enum|set)$/.test(text));
-		}
-		if (el.name == name + '[unsigned]') {
-			alterClass(el, 'hidden', !/(^|[^o])int(?!er)|numeric|real|float|double|decimal|money/.test(text));
-		}
-		if (el.name == name + '[on_update]') {
-			alterClass(el, 'hidden', !/timestamp|datetime/.test(text)); // MySQL supports datetime since 5.6.5
-		}
-		if (el.name == name + '[on_delete]') {
-			alterClass(el, 'hidden', !/`/.test(text));
+		// the expressions come from option_types(), the options of the other columns start with another name
+		if (el.dataset.types && el.name.startsWith(name + '[')) {
+			alterClass(el, 'hidden', !new RegExp(el.dataset.types).test(text));
 		}
 	}
 	helpClose();
@@ -466,16 +514,16 @@ function editingLengthFocus() {
 	if (/^(enum|set)$/.test(selectValue(td.previousSibling.firstChild))) {
 		const edit = qs('#enum-edit');
 		edit.value = enumValues(this.value);
-		td.appendChild(edit);
-		this.style.display = 'none';
-		edit.style.display = 'inline';
+		td.append(edit);
+		this.hidden = true;
+		edit.hidden = false;
 		edit.focus();
 	}
 }
 
 /** Get enum values
-* @param string
-* @return string values separated by newlines
+* @param {string} s
+* @return {string} values separated by newlines
 */
 function enumValues(s) {
 	const re = /(^|,)\s*'(([^\\']|\\.|'')*)'\s*/g;
@@ -499,27 +547,44 @@ function editingLengthBlur() {
 	const field = this.parentNode.firstChild;
 	const val = this.value;
 	field.value = (/^'[^\n]+'$/.test(val) ? val : val && "'" + val.replace(/\n+$/, '').replace(/'/g, "''").replace(/\\/g, '\\\\').replace(/\n/g, "','") + "'");
-	field.style.display = 'inline';
-	this.style.display = 'none';
+	field.hidden = false;
+	this.hidden = true;
 }
 
 /** Show or hide selected table column
-* @param boolean
-* @param number
+* @param {boolean} checked
+* @param {number} column
 */
 function columnShow(checked, column) {
 	for (const tr of qsa('tr', qs('#edit-fields'))) {
-		alterClass(qsa('td', tr)[column], 'hidden', !checked);
+		alterClass(tr.cells[column], 'hidden', !checked);
 	}
 }
 
-/** Show or hide index column options
-* @param boolean
+/** Show or hide the clicked table column
+* @param {number} column
+* @this HTMLInputElement
 */
-function indexOptionsShow(checked) {
+function columnShowClick(column) {
+	columnShow(this.checked, column);
+}
+
+/** Show or hide index column options
+* @this HTMLInputElement
+*/
+function indexOptionsShow() {
 	for (const option of qsa('.idxopts')) {
-		alterClass(option, 'hidden', !checked);
+		alterClass(option, 'hidden', !this.checked);
 	}
+}
+
+/** Reload the page for the selected target
+* @this HTMLSelectElement
+*/
+function foreignChange() {
+	const form = this.form;
+	form['change-js'].value = '1';
+	form.submit();
 }
 
 /** Display partition options
@@ -536,21 +601,22 @@ function partitionByChange() {
 * @this HTMLInputElement
 */
 function partitionNameChange() {
-	const row = cloneNode(parentTag(this, 'tr'));
+	const tr = this.closest('tr');
+	const row = cloneNode(tr);
 	row.firstChild.firstChild.value = '';
-	parentTag(this, 'table').appendChild(row);
-	this.oninput = () => { };
+	tr.parentNode.append(row);
+	this.removeAttribute('data-oninput'); // the appended row adds the next one
 }
 
 /** Show or hide comment fields
-* @param HTMLInputElement
-* @param [boolean] whether to focus Comment if checked
+* @param {boolean} [focus] whether to focus Comment if checked
+* @this HTMLInputElement
 */
-function editingCommentsClick(el, focus) {
-	const comment = el.form['Comment'];
-	columnShow(el.checked, 6);
-	alterClass(comment, 'hidden', !el.checked);
-	if (focus && el.checked) {
+function editingCommentsClick(focus) {
+	const comment = this.form['Comment'];
+	columnShow(this.checked, 7);
+	alterClass(comment, 'hidden', !this.checked);
+	if (focus && this.checked) {
 		comment.focus();
 	}
 }
@@ -558,11 +624,11 @@ function editingCommentsClick(el, focus) {
 
 
 /** Uncheck 'all' checkbox
-* @param MouseEvent
+* @param {MouseEvent} event
 * @this HTMLTableElement
 */
 function dumpClick(event) {
-	let el = parentTag(event.target, 'label');
+	let el = event.target.closest('label');
 	if (el) {
 		el = qs('input', el);
 		const match = /(.+)\[]$/.exec(el.name);
@@ -579,13 +645,14 @@ function dumpClick(event) {
 * @this HTMLSelectElement
 */
 function foreignAddRow() {
-	const row = cloneNode(parentTag(this, 'tr'));
-	this.onchange = () => { };
+	const tr = this.closest('tr');
+	const row = cloneNode(tr); // the clone keeps the attribute so that it adds the next row
+	this.removeAttribute('data-onchange');
 	for (const select of qsa('select', row)) {
 		select.name = select.name.replace(/\d+]/, '1$&');
 		select.selectedIndex = 0;
 	}
-	parentTag(this, 'table').appendChild(row);
+	tr.parentNode.append(row);
 }
 
 
@@ -594,133 +661,295 @@ function foreignAddRow() {
 * @this HTMLSelectElement
 */
 function indexesAddRow() {
-	const row = cloneNode(parentTag(this, 'tr'));
-	this.onchange = () => { };
-	for (const select of qsa('select', row)) {
-		select.name = select.name.replace(/indexes\[\d+/, '$&1');
-		select.selectedIndex = 0;
+	const tr = this.closest('tr');
+	const row = cloneNode(tr);
+	for (const tag of qsa('select, input, button', row)) {
+		tag.name = tag.name.replace(/\[\d+/, '$&1'); // indexes[$j] and drop_col[$j]
+		if (tag.matches('select')) {
+			tag.selectedIndex = 0;
+		} else if (tag.matches('input')) {
+			tag.value = '';
+		}
 	}
-	for (const input of qsa('input', row)) {
-		input.name = input.name.replace(/indexes\[\d+/, '$&1');
-		input.value = '';
-	}
-	parentTag(this, 'table').appendChild(row);
+	tr.parentNode.append(row);
 }
 
-/** Change column in index
-* @param string name prefix
+/** Get the name of an index from its columns
+* @param {HTMLTableRowElement} tr
+* @param {string} pattern Adminer::namePattern() with the table
+* @return {string}
+*/
+function indexesName(tr, pattern) {
+	const names = [...qsa('select, input', tr)].filter(column => /\[columns]/.test(column.name)).map(column => selectValue(column)).filter(value => value);
+	return pattern.replace('{columns}', () => names.join('_')); // function - column names can contain $&
+}
+
+/** Change index type, the last row also adds the next one
+* @param {Object<string, string>} namePatterns type => Adminer::namePattern() with the table
 * @this HTMLSelectElement
 */
-function indexesChangeColumn(prefix) {
-	const names = [];
-	for (const tag in { 'select': 1, 'input': 1 }) {
-		for (const column of qsa(tag, parentTag(this, 'td'))) {
-			if (/\[columns]/.test(column.name)) {
-				const value = selectValue(column);
-				if (value) {
-					names.push(value);
-				}
+function indexesChangeType(namePatterns) {
+	const tr = this.closest('tr');
+	if (!tr.nextElementSibling) {
+		indexesAddRow.call(this);
+	}
+	const name = this.form[this.name.replace(/].*/, '][name]')];
+	const pattern = namePatterns[selectValue(this)];
+	if (pattern !== undefined && Object.keys(namePatterns).some(type => name.value == indexesName(tr, namePatterns[type]))) { // don't overwrite a name typed by the user
+		name.value = indexesName(tr, pattern);
+	}
+}
+
+/** Change column in index, the last column also adds the next one
+* @param {Object<string, string>} namePatterns type => Adminer::namePattern() with the table
+* @this HTMLSelectElement
+*/
+function indexesChangeColumn(namePatterns) {
+	const field = this;
+	const td = field.closest('td');
+	const columns = [...qsa('select, input', td)].filter(column => /\[columns]/.test(column.name));
+	const type = field.form[field.name.replace(/].*/, '][type]')];
+	if (columns[columns.length - 1] == field) { // the appended column becomes the last one so it adds the next
+		if (!type.selectedIndex) {
+			while (selectValue(type) != "INDEX" && type.selectedIndex < type.options.length) {
+				type.selectedIndex++;
+			}
+			fire(type, 'change');
+		}
+		const column = cloneNode(field.parentNode);
+		for (const select of qsa('select', column)) {
+			select.name = select.name.replace(/]\[\d+/, '$&1');
+			select.selectedIndex = 0;
+		}
+		for (const input of qsa('input', column)) {
+			input.name = input.name.replace(/]\[\d+/, '$&1');
+			if (input.type != 'checkbox') {
+				input.value = '';
 			}
 		}
+		td.append(column);
 	}
-	this.form[this.name.replace(/].*/, '][name]')].value = prefix + names.join('_');
-}
-
-/** Add column for index
-* @param string name prefix
-* @this HTMLSelectElement
-*/
-function indexesAddColumn(prefix) {
-	const field = this;
-	const select = field.form[field.name.replace(/].*/, '][type]')];
-	if (!select.selectedIndex) {
-		while (selectValue(select) != "INDEX" && select.selectedIndex < select.options.length) {
-			select.selectedIndex++;
-		}
-		select.onchange();
-	}
-	const column = cloneNode(field.parentNode);
-	for (const select of qsa('select', column)) {
-		select.name = select.name.replace(/]\[\d+/, '$&1');
-		select.selectedIndex = 0;
-	}
-	field.onchange = partial(indexesChangeColumn, prefix);
-	for (const input of qsa('input', column)) {
-		input.name = input.name.replace(/]\[\d+/, '$&1');
-		if (input.type != 'checkbox') {
-			input.value = '';
-		}
-	}
-	parentTag(field, 'td').appendChild(column);
-	field.onchange();
+	field.form[field.name.replace(/].*/, '][name]')].value = indexesName(field.closest('tr'), namePatterns[selectValue(type)] || '');
 }
 
 
 
 /** Update the form action
-* @param HTMLFormElement
-* @param string
+* @param {string} root
+* @param {number} maxLength
+* @this HTMLFormElement
 */
-function sqlSubmit(form, root) {
-	const action = root
-		+ '&sql=' + encodeURIComponent(form['query'].value)
-		+ (form['limit'].value ? '&limit=' + +form['limit'].value : '')
-		+ (form['error_stops'].checked ? '&error_stops=1' : '')
-		+ (form['only_errors'].checked ? '&only_errors=1' : '')
-	;
-	if ((document.location.origin + document.location.pathname + action).length < 2000) { // reasonable minimum is 2048
-		form.action = action;
+function sqlSubmit(root, maxLength) {
+	const suffix = (this['limit'].value ? '&limit=' + +this['limit'].value : '')
+		+ (this['error_stops'].checked ? '&error_stops=1' : '')
+		+ (this['only_errors'].checked ? '&only_errors=1' : '');
+	const action = root + '&sql=' + urlEscape(this['query'].value) + suffix;
+	this.action = ((location.origin + location.pathname + action).length < maxLength
+		? action
+		: root + '&sql=' + suffix
+	);
+}
+
+/** Export the result table by JS without re-running the query
+* @param {MouseEvent} event
+* @return {boolean} false when handled by JS
+* @this HTMLInputElement
+*/
+function sqlExport(event) {
+	const form = this.form;
+	const format = form['format'].value;
+	const output = form['output'].value;
+	if (!/^(csv|csv;|tsv)$/.test(format) || !/^(text|file)$/.test(output)) {
+		return true;
 	}
+	const table = qs('.scrollable table', form);
+	if (!table) {
+		return true;
+	}
+	// <i> other than NULL means the value is not displayed fully
+	if ([...qsa('i', table)].some(i => i.textContent != 'NULL')) {
+		return true;
+	}
+	// save_settings() - the server-side export stores the settings too
+	cookie(
+		'adminer_import=' + encodeURIComponent('output=' + output + '&format=' + encodeURIComponent(format)),
+		30 // 30 - $lifetime of cookie()
+	);
+	const tsv = (format == 'tsv');
+	const quotable = new RegExp('["\n]|^0[^.]|\\.\\d*0$|' + (tsv ? '\t' : '[,;]|^$')); // dump_csv()
+	let data = '\ufeff'; // UTF-8 byte order mark
+	for (const row of qsa('tr', table)) {
+		data += Array.from(row.children).map(cell => {
+			const val = (qsa('i', cell).length ? '' : cell.textContent); // <i> - NULL
+			return (quotable.test(val) ? '"' + val.replace(/"/g, '""') + '"' : val);
+		}).join(format == 'csv' ? ',' : (tsv ? '\t' : ';')) + '\r\n';
+	}
+	const url = URL.createObjectURL(new Blob([data], {type: (output == 'file' ? 'text/csv' : 'text/plain') + '; charset=utf-8'}));
+	if (output == 'file') {
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = 'sql.csv';
+		document.body.append(a);
+		a.click();
+		a.remove();
+		setTimeout(() => URL.revokeObjectURL(url));
+	} else if (isCtrl(event) || event.shiftKey) {
+		// the same modifiers open the server-side export in a new window in bodyClick(), submit the form if the pop-up is blocked
+		// the URL is not revoked to not break the load of the new window
+		return !open(url);
+	} else {
+		location.href = url;
+	}
+	return false;
+}
+
+/** Save the values modified by Ctrl+click in the result of the SQL command
+* @param {string} message
+* @return {boolean} false
+* @this HTMLInputElement submit button
+*/
+function sqlSave(message) {
+	const button = this;
+	const form = button.form;
+	ajax(form.action, request => {
+		const response = document.createElement('div');
+		response.innerHTML = request.responseText;
+		for (const el of qsa('[data-name]', response)) {
+			// a join can display the same row more than once, refresh all its cells
+			for (const td of qsa('[data-name="' + el.dataset.name.replace(/[\\"]/g, '\\$&') + '"]')) {
+				td.innerHTML = el.innerHTML;
+			}
+			el.remove();
+		}
+		button.disabled = !qs('.error', response); // an error can be fixed and saved again
+		ajaxStatus(response.innerHTML);
+	}, formData(form, button), message);
+	return false;
 }
 
 /** Check if PHP can handle the uploaded files
-* @param Event
-* @param number
-* @param string
-* @param number
-* @param string
+* @param {number} count
+* @param {string} countMessage
+* @param {number} size
+* @param {string} sizeMessage
+* @this HTMLInputElement
 */
-function fileChange(event, count, countMessage, size, sizeMessage) {
-	if (event.target.files.length > count) {
+function fileChange(count, countMessage, size, sizeMessage) {
+	if (this.files.length > count) {
 		alert(countMessage);
-	} else if (Array.from(event.target.files).reduce((sum, file) => sum + file.size, 0) > size) {
+	} else if (Array.from(this.files).reduce((sum, file) => sum + file.size, 0) > size) {
 		alert(sizeMessage);
 	}
+}
+
+/** Display the progress of the file upload
+* @param {string} url
+* @param {string} assign cookie identifying the session where PHP stores the progress - it uses the session name from php.ini which differs from Adminer's
+* @this HTMLFormElement
+*/
+function uploadProgress(url, assign) {
+	const progress = qs('progress', this);
+	// the form can be submitted also without a file - by Run file in Import or by Save, Delete and Export in Select
+	if (!progress || !Array.from(qsa('input[type=file]', this)).some(input => input.value)) {
+		return;
+	}
+	cookie(assign, 1);
+	let started = false;
+	const poll = () => ajax(url, request => {
+		const data = JSON.parse(request.responseText);
+		if (!data.length) {
+			if (started) {
+				progress.value = 1;
+				progress.textContent = '100%';
+				cookie(assign, -1); // the session is no longer needed, don't keep its name taken
+				return;
+			}
+		} else if (data[1]) {
+			started = true;
+			alterClass(progress, 'hidden');
+			progress.value = data[0] / data[1];
+			progress.textContent = Math.floor(100 * data[0] / data[1]) + '%';
+		}
+		setTimeout(poll, 1000);
+	}, null, null); // null message - a failed poll would print an error and stop the polling
+	setTimeout(poll, 1000);
 }
 
 
 
 /** Handle changing trigger time or event
-* @param RegExp
-* @param string
-* @param HTMLFormElement
+* @param {string} nameRe string - a regular expression can't be passed in a data attribute
+* @param {string} namePattern Adminer::namePattern() with the table
+* @this HTMLSelectElement
 */
-function triggerChange(tableRe, table, form) {
+function triggerChange(nameRe, namePattern) {
+	const form = this.form;
 	const formEvent = selectValue(form['Event']);
-	if (tableRe.test(form['Trigger'].value)) {
-		form['Trigger'].value = table + '_' + (selectValue(form['Timing']).charAt(0) + formEvent.charAt(0)).toLowerCase();
+	if (new RegExp(nameRe).test(form['Trigger'].value)) {
+		form['Trigger'].value = namePattern
+			.replace('{timing}', selectValue(form['Timing'])[0].toLowerCase())
+			.replace('{event}', ['INSERT', 'UPDATE', 'DELETE'].filter(event => formEvent.includes(event)).map(event => event[0].toLowerCase()).join(''))
+			.replace('{type}', (/ROW/.test(selectValue(form['Type'])) ? 'row' : 'statement')) // MS SQL AS and Oracle '' are statement-level
+			.replace('{columns}', () => (/ OF/.test(formEvent) ? form['Of'].value.split(',').map(column => column.trim()).filter(column => column).map(column => '_' + column).join('') : '')) // function - column names can contain $&
+		;
 	}
 	alterClass(form['Of'], 'hidden', !/ OF/.test(formEvent));
 }
 
 
 
-let that, x, y; // em and tablePos defined in schema.inc.php
+/** Highlight the routine definition by the selected language
+* @param {Object} jushLangs routine language => syntax highlighting language
+* @this HTMLSelectElement
+*/
+function routineLanguage(jushLangs) {
+	const jushClass = 'jush-' + jushLangs[selectValue(this)];
+	const textarea = this.form['definition'];
+	textarea.className = textarea.className.replace(/jush-\S+/, jushClass);
+	const pre = textarea.jushPre;
+	if (pre) {
+		pre.className = pre.className.replace(/jush-\S+/, jushClass);
+		textarea.onchange(); // highlights the <pre> again, jush.textarea() reads the language from the <textarea>
+	}
+}
+
+
+
+let that, x, y; // em, tablePos and tablePosDefault defined in schema.inc.php
 
 /** Get mouse position
-* @param MouseEvent
+* @param {MouseEvent} event
 * @this HTMLElement
 */
 function schemaMousedown(event) {
-	if ((event.which || event.button) == 1) {
+	if (event.button == 0) { // 0 - left button
 		that = this;
 		x = event.clientX - this.offsetLeft;
 		y = event.clientY - this.offsetTop;
 	}
 }
 
+/** Connect one end of a reference to the vertical line
+* @param {HTMLElement} div .references inside the table
+* @param {number} line position of the vertical line in em
+* @param {number} table position of the table in em
+*/
+function schemaRef(div, line, table) {
+	const left = line - table;
+	const inner = div.querySelector('div');
+	if (left > 0) { // the line is right of the table so the reference leaves it on its right edge, 100% is the width of the table
+		div.style.left = '100%';
+		div.style.width = 'calc(' + left + 'em - 100%)';
+		inner.style.width = '100%';
+	} else {
+		div.style.left = left + 'em';
+		div.style.width = '';
+		inner.style.width = -left + 'em';
+	}
+}
+
 /** Move object
-* @param MouseEvent
+* @param {MouseEvent} event
 */
 function schemaMousemove(event) {
 	if (that !== undefined) {
@@ -729,17 +958,22 @@ function schemaMousemove(event) {
 		const lineSet = { };
 		for (const div of qsa('div', that)) {
 			if (div.classList.contains('references')) {
-				const div2 = qs('[id="' + (/^refs/.test(div.id) ? 'refd' : 'refs') + div.id.substr(4) + '"]');
-				const ref = (tablePos[div.title] || [ div2.parentNode.offsetTop / em, 0 ]);
-				let left1 = -1;
+				const div2 = qs('[id="' + (/^refs/.test(div.id) ? 'refd' : 'refs') + div.id.slice(4) + '"]');
+				if (!div2) { // table in another schema
+					continue;
+				}
+				const ref = (tablePos[div.title] || tablePosDefault[div.title] || [ div2.parentNode.offsetTop / em, div2.parentNode.offsetLeft / em ]);
 				const id = div.id.replace(/^ref.(.+)-.+/, '$1');
+				let lineLeft = left - 1; // a self-reference, the line is left of the table
 				if (div.parentNode != div2.parentNode) {
-					left1 = Math.min(0, ref[1] - left) - 1;
-					div.style.left = left1 + 'em';
-					div.querySelector('div').style.width = -left1 + 'em';
-					const left2 = Math.min(0, left - ref[1]) - 1;
-					div2.style.left = left2 + 'em';
-					div2.querySelector('div').style.width = -left2 + 'em';
+					const refs = /^refs/.test(div.id); // refs is in the referencing table, refd in the referenced one
+					const source = (refs ? left : ref[1]);
+					const target = (refs ? ref[1] : left);
+					const width = (refs ? that : div2.parentNode).offsetWidth / em;
+					// 1 em right of the referencing table, unless the referenced table is not right of it - then left of both
+					lineLeft = (target - 1 > source + width ? source + width + 1 : Math.min(source, target) - 1);
+					schemaRef(div, lineLeft, left);
+					schemaRef(div2, lineLeft, ref[1]);
 				}
 				if (!lineSet[id]) {
 					const line = qs('[id="' + div.id.replace(/^....(.+)-.+$/, 'refl$1') + '"]');
@@ -749,7 +983,7 @@ function schemaMousemove(event) {
 						top2 += ref[0] - top;
 						line.querySelector('div').style.height = Math.abs(top1 - top2) + 'em';
 					}
-					line.style.left = (left + left1) + 'em';
+					line.style.left = lineLeft + 'em';
 					line.style.top = Math.min(top1, top2) + 'em';
 					lineSet[id] = true;
 				}
@@ -761,8 +995,8 @@ function schemaMousemove(event) {
 }
 
 /** Finish move
-* @param MouseEvent
-* @param string
+* @param {MouseEvent} event
+* @param {string} db
 */
 function schemaMouseup(event, db) {
 	if (that !== undefined) {
@@ -770,12 +1004,14 @@ function schemaMouseup(event, db) {
 		that = undefined;
 		let s = '';
 		for (const key in tablePos) {
-			s += '_' + key + ':' + Math.round(tablePos[key][0]) + 'x' + Math.round(tablePos[key][1]);
+			const [top, left] = tablePos[key];
+			s += '_' + key + ':' + Math.round(top) + 'x' + Math.round(left);
 		}
-		s = encodeURIComponent(s.substr(1));
+		s = s.slice(1);
 		const link = qs('#schema-link');
-		link.href = link.href.replace(/[^=]+$/, '') + s;
-		cookie('adminer_schema-' + db + '=' + s, 30); //! special chars in db
+		link.href = link.href.replace(/[^=]+$/, '') + urlEscape(s);
+		// encodeURIComponent() instead of urlEscape() - it keeps ';' verbatim, which would end the cookie value
+		cookie('adminer_schema-' + db + '=' + encodeURIComponent(s), 30); //! special chars in db
 	}
 }
 
@@ -784,19 +1020,19 @@ function schemaMouseup(event, db) {
 let helpOpen, helpIgnore; // when mouse outs <option> then it mouse overs border of <select> - ignore it
 
 /** Display help
-* @param MouseEvent
-* @param string
-* @param bool display on left side (otherwise on top)
+* @param {string} text
+* @param {number} side 1 to display on left side, 0 on top
+* @param {MouseEvent} event
 * @this HTMLElement
 */
-function helpMouseover(event, text, side) {
+function helpMouseover(text, side, event) {
 	const target = event.target;
 	if (!text) {
 		helpClose();
 	} else if (window.jush && (!helpIgnore || this != target)) {
 		helpOpen = 1;
 		const help = qs('#help');
-		help.innerHTML = text;
+		help.textContent = text;
 		jush.highlight_tag([ help ]);
 		alterClass(help, 'hidden');
 		const rect = target.getBoundingClientRect();
@@ -806,8 +1042,22 @@ function helpMouseover(event, text, side) {
 	}
 }
 
+/** Display help with the hovered value
+* @param {string} regexp regular expression transforming the value, empty to display the value itself
+* @param {string} replacement can use $& and $1
+* @param {MouseEvent} event
+* @this HTMLSelectElement
+*/
+function helpValueMouseover(regexp, replacement, event) {
+	// target - the hovered <option> in an open <select>
+	const value = event.target.value;
+	// new RegExp() - a regular expression can't be passed in a data attribute
+	// 1 - an open <select> would cover the help displayed on top
+	helpMouseover.call(this, (value && regexp ? value.replace(new RegExp(regexp), replacement) : value), 1, event);
+}
+
 /** Close help after timeout
-* @param MouseEvent
+* @param {MouseEvent} event
 * @this HTMLElement
 */
 function helpMouseout(event) {
@@ -820,8 +1070,12 @@ function helpMouseout(event) {
 	}, 200);
 }
 
-/** Close help
-*/
+/** Keep the help open while hovering it */
+function helpKeep() {
+	helpOpen = 1;
+}
+
+/** Close help */
 function helpClose() {
 	alterClass(qs('#help'), 'hidden', true);
 }

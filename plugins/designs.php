@@ -20,21 +20,25 @@ class AdminerDesigns extends Adminer\Plugin {
 		if (isset($_POST["design"]) && Adminer\verify_token()) {
 			Adminer\restart_session();
 			$_SESSION["design"] = $_POST["design"];
-			Adminer\redirect($_SERVER["REQUEST_URI"]);
+			Adminer\redirect(Adminer\relative_uri());
 		}
 	}
 
 	function css() {
 		$return = array();
-		if (array_key_exists($_SESSION["design"], $this->designs)) {
-			$return[$_SESSION["design"]] = (preg_match('~-dark~', $_SESSION["design"]) ? "dark" : "light");
+		$design = $_SESSION["design"];
+		if (array_key_exists($design, $this->designs)) {
+			$return[$design] = (preg_match('~-dark~', $design)
+				? "dark"
+				: (preg_match('~prefers-color-scheme:\s*dark~', file_get_contents($design)) ? "" : "light")
+			);
 		}
 		return $return;
 	}
 
 	function navigation($missing) {
 		echo "<form action='' method='post' style='position: fixed; bottom: .5em; right: .5em;'>";
-		echo Adminer\html_select("design", array("" => "(design)") + $this->designs, $_SESSION["design"], "this.form.submit();");
+		echo Adminer\html_select("design", array("" => "(design)") + $this->designs, $_SESSION["design"], Adminer\on('change', 'formSubmit'));
 		echo Adminer\input_token();
 		echo "</form>\n";
 	}
@@ -46,8 +50,11 @@ class AdminerDesigns extends Adminer\Plugin {
 	protected $translations = array(
 		'cs' => array('' => 'Umožní změnit vzhled'),
 		'de' => array('' => 'Designwechsel ermöglichen'),
+		'hr' => array('' => 'Omogućuje promjenu dizajna'),
+		'ja' => array('' => 'テーマ設定を有効化'),
 		'pl' => array('' => 'Zezwalaj na przełączanie motywów'),
 		'ro' => array('' => 'Permiteți comutarea designurilor'),
-		'ja' => array('' => 'テーマ設定を有効化'),
+		'sk' => array('' => 'Umožní prepínať vzhľady'), // Claude Opus 5
+		'zh' => array('' => '允许切换外观'), // Claude Opus 5
 	);
 }

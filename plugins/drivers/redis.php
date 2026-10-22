@@ -1,0 +1,511 @@
+<?php
+//! clone
+
+namespace Adminer;
+
+add_driver("redis", "Redis");
+
+if (isset($_GET["redis"])) {
+	define('Adminer\DRIVER', "redis");
+
+	/** Split a command to arguments the same way as redis-cli does
+	* @return list<string>|false false for unbalanced quotes
+	*/
+	function parse_command(string $command) {
+		$escapes = array('n' => "\n", 'r' => "\r", 't' => "\t", 'a' => "\x07", 'b' => "\x08");
+		$length = strlen($command);
+		$args = array();
+		$i = 0;
+		while ($i < $length) {
+			if (preg_match('~\s~', $command[$i])) {
+				$i++;
+				continue;
+			}
+			$arg = '';
+			$quote = '';
+			for (; $i < $length; $i++) {
+				$c = $command[$i];
+				if ($quote == '"') {
+					if ($c == '\\' && $i + 1 < $length) {
+						$c = $command[++$i];
+						if ($c == 'x' && $i + 2 < $length && ctype_xdigit(substr($command, $i + 1, 2))) {
+							$arg .= chr(hexdec(substr($command, $i + 1, 2)));
+							$i += 2;
+						} else {
+							$arg .= idx($escapes, $c, $c);
+						}
+					} elseif ($c == '"') {
+						$quote = '';
+					} else {
+						$arg .= $c;
+					}
+				} elseif ($quote == "'") {
+					if ($c == '\\' && $i + 1 < $length && $command[$i + 1] == "'") {
+						$arg .= $command[++$i];
+					} elseif ($c == "'") {
+						$quote = '';
+					} else {
+						$arg .= $c;
+					}
+				} elseif (preg_match('~\s~', $c)) {
+					break;
+				} elseif ($c == '"' || $c == "'") {
+					$quote = $c;
+				} else {
+					$arg .= $c;
+				}
+			}
+			if ($quote != '') {
+				return false;
+			}
+			$args[] = $arg;
+		}
+		return $args;
+	}
+
+	/** Escape an argument as a double quoted string in the redis-cli syntax */
+	function quote_arg(string $arg): string {
+		static $escapes, $escapes_binary;
+		if (!$escapes) {
+			// redis-cli doesn't understand octal escapes
+			$escapes = array("\\" => '\\\\', '"' => '\"', "\n" => '\n', "\r" => '\r', "\t" => '\t', "\x07" => '\a', "\x08" => '\b', "\x7F" => '\x7f');
+			for ($i = 0; $i < 32; $i++) {
+				if (!isset($escapes[chr($i)])) {
+					$escapes[chr($i)] = sprintf('\x%02x', $i);
+				}
+			}
+			$escapes_binary = $escapes;
+			for ($i = 128; $i < 256; $i++) {
+				$escapes_binary[chr($i)] = sprintf('\x%02x', $i);
+			}
+		}
+		// bytes >= 0x80 are escaped only outside UTF-8 where there's no readability to preserve
+		return '"' . strtr($arg, (is_utf8($arg) ? $escapes : $escapes_binary)) . '"';
+	}
+
+	/** Format arguments as a command in the redis-cli syntax
+	* @param list<string> $args
+	*/
+	function format_command(array $args): string {
+		$return = array();
+		foreach ($args as $arg) {
+			$arg = (string) $arg;
+			$return[] = ($arg == '' || !is_utf8($arg) || preg_match('~[\s"\'\\\\\x00-\x1F\x7F]~', $arg) ? quote_arg($arg) : $arg);
+		}
+		return implode(" ", $return);
+	}
+
+	/** Escape a value in the redis-cli syntax if it can't be printed as is
+	* @param string|mixed[]|null $val
+	* @return string|mixed[]|null
+	*/
+	function escape_value($val) {
+		if (is_array($val)) {
+			return array_map('Adminer\escape_value', $val);
+		}
+		// a printable value starting and ending with a quote is escaped too, otherwise unescape_value() couldn't tell it apart
+		return ($val !== null && (!is_utf8($val) || preg_match('~^".*"$~s', $val)) ? quote_arg($val) : $val);
+	}
+
+	/** Get a value escaped by escape_value(), keep it intact if it's not a single quoted string */
+	function unescape_value(string $val): string {
+		if (!preg_match('~^".*"$~s', $val)) {
+			return $val;
+		}
+		$args = parse_command($val);
+		return ($args && count($args) == 1 ? $args[0] : $val);
+	}
+
+	class Db extends SqlDb {
+		public $extension = "socket";
+		private $fp;
+
+		function attach(array $server, string $username, string $password): string {
+			$scheme = $server["scheme"];
+			$host = ($scheme ? "$scheme://" : "") . ($server["host"] ?: "127.0.0.1");
+			$this->fp = @fsockopen($host, intval($server["port"] ?: 6379), $errno, $error);
+			if (!$this->fp) {
+				return $error;
+			}
+			// PING verifies that a server without a password really doesn't require one
+			if (!$this->send($password != "" ? array("AUTH", $username, $password) : array("PING"))) {
+				return $this->error;
+			}
+			if (DB == "" && preg_match('~redis_version:(.+)~', $this->send(array("INFO", "server")), $match)) {
+				$this->server_info = $match[1];
+			}
+			return '';
+		}
+
+		function select_db(string $database) {
+			return $this->send(array("SELECT", $database));
+		}
+
+		function quote(string $string): string {
+			return quote_arg(unescape_value($string)); // the values are used as arguments of the commands
+		}
+
+		function query(string $query, bool $unbuffered = false) {
+			$this->error = ''; // the error is checked after each command in SQL command
+			$args = parse_command($query);
+			if ($args === false) {
+				$this->error = "Unbalanced quotes";
+				return false;
+			}
+			if (!$args) {
+				$this->error = "Query was empty";
+				return false;
+			}
+			$reply = $this->send($args);
+			if ($reply === false) {
+				return false;
+			}
+			$name = strtoupper($args[0]);
+			$rows = array();
+			foreach ((is_array($reply) ? $reply : array($reply)) as $val) {
+				$rows[] = array($name => escape_value($val)); // nested arrays are printed as nested tables by select_value()
+			}
+			return new Result($rows);
+		}
+
+		function send(array $args) {
+			return first($this->sendMulti(array($args)));
+		}
+
+		/** Send commands in a pipeline
+		* @param list<list<string|int>> $commands
+		* @return list<mixed> replies in the order of the commands
+		*/
+		function sendMulti(array $commands): array {
+			$cmd = '';
+			foreach ($commands as $args) {
+				$cmd .= "*" . count($args) . "\r\n";
+				foreach ($args as $arg) {
+					$cmd .= '$' . strlen($arg) . "\r\n$arg\r\n";
+				}
+			}
+			fwrite($this->fp, $cmd);
+			$return = array();
+			$count = count($commands);
+			for ($i = 0; $i < $count; $i++) {
+				$return[] = $this->read(); // all replies must be read even after an error, otherwise the next command would get them
+			}
+			return $return;
+		}
+
+		function read() {
+			$line = fgets($this->fp);
+			if ($line === false) {
+				$this->error = error_get_last()['message'];
+				return false;
+			}
+			$type = $line[0];
+			$payload = substr($line, 1, -2);
+			switch ($type) {
+				case '+': // simple string
+				case ':': // integer
+					return $payload;
+				case '-': // error
+					$this->error = $payload;
+					return false;
+				case '$': // bulk string
+					$len = $payload;
+					if ($len == -1) {
+						return null;
+					}
+					$data = '';
+					while (strlen($data) < $len) {
+						$block = fread($this->fp, $len - strlen($data));
+						if ($block === false) {
+							$this->error = error_get_last()['message'];
+							return false;
+						}
+						$data .= $block;
+					}
+					fgets($this->fp); // discard \r\n
+					return $data;
+				case '*': // array
+					$count = $payload;
+					if ($count == -1) {
+						return null;
+					}
+					$arr = array();
+					for ($i = 0; $i < $count; $i++) {
+						$arr[] = $this->read();
+					}
+					return $arr;
+				default:
+					$this->error = "Unknown response type: $type";
+					return false;
+			}
+		}
+	}
+
+	class Result {
+		public $num_rows;
+		private $result;
+		private $fields;
+
+		function __construct(array $result) {
+			$this->result = $result;
+			$this->num_rows = count($result);
+			$this->fields = array_keys(idx($result, 0, array()));
+		}
+
+		function fetch_assoc() {
+			$row = current($this->result);
+			next($this->result);
+			return $row;
+		}
+
+		function fetch_row() {
+			$row = $this->fetch_assoc();
+			return ($row ? array_values($row) : false);
+		}
+
+		function fetch_field(): \stdClass {
+			$field = current($this->fields);
+			next($this->fields);
+			return (object) array('name' => $field);
+		}
+	}
+
+	class Driver extends SqlDriver {
+		static $jush = "redis";
+
+		static $serverSchemes = array("ssl", "tls");
+
+		public $delimiter = "\n"; // commands are separated by a newline as in redis-cli
+
+		function operators(?array $tableStatus): array {
+			return array("*");
+		}
+
+		/** Get the JUSH module inlined in the released driver by the release script */
+		static function jushModule(): string {
+			return ""; // the repository and the source archive load adminer/static/jush/modules/jush-redis.js
+		}
+
+		static function jushAutocomplete(array $tables, ?array $statements): string {
+			return ""; // the commands are not SQL
+		}
+
+		function select(string $table, array $select, array $where, array $group, array $order = array(), int $limit = 1, ?int $page = 0, bool $print = false) {
+			$next = $_GET["next"];
+			$_GET["next"] = ""; // there is no following page unless SCAN returns a cursor
+			$this->query = "";
+			if (preg_match('~^key =~', $where[0])) {
+				$args = $this->whereKeys($where[0]);
+			} elseif ($limit) {
+				$args = array("SCAN", ($next != "" ? $next : 0), "COUNT", $limit);
+				if ($where) {
+					$args[] = "MATCH";
+					$args[] = $this->whereKeys($where[0])[0];
+				}
+				$scan = $this->send($args, $print);
+				if (!$scan) {
+					return false;
+				}
+				list($cursor, $args) = $scan;
+				$_GET["next"] = ($cursor != "0" ? $cursor : ""); // 0 - the iteration has finished
+			} else {
+				$args = $this->send(array("KEYS", ($where ? $this->whereKeys($where[0])[0] : "*")), $print);
+				if ($args === false) {
+					return false;
+				}
+			}
+			$return = array();
+			if ($args) {
+				$columns = (in_array("*", $select) ? array('key', 'type', 'value') : $select);
+				$types = array();
+				if (in_array('type', $columns)) {
+					$commands = array();
+					foreach ($args as $key) {
+						$commands[] = array("TYPE", $key);
+					}
+					$types = $this->conn->sendMulti($commands); // TYPE is not printed, it is an implementation detail of getting the types
+					if (in_array(false, $types, true)) {
+						return false;
+					}
+				}
+				$values = array();
+				if (in_array('value', $columns)) {
+					// MGET is an implementation detail of getting the values, print it only if there was no SCAN or KEYS
+					$query = $this->query;
+					$values = $this->send(array_merge(array("MGET"), $args), $print && !$query);
+					$this->query = ($query ?: $this->query);
+					if ($values === false) {
+						return false;
+					}
+				}
+				foreach ($args as $i => $key) {
+					$row = array('key' => $key, 'type' => $types[$i], 'value' => $values[$i]);
+					$selected = array();
+					foreach ($columns as $column) { // in this order, Select pairs the printed cells with the selected columns
+						$selected[$column] = escape_value($row[$column]);
+					}
+					$return[] = $selected;
+				}
+			}
+			return new Result($return);
+		}
+
+		/** Send a command, remember it and optionally print it
+		* @param list<string|int> $args
+		* @return mixed
+		*/
+		private function send(array $args, bool $print) {
+			$start = microtime(true);
+			$this->query = format_command($args);
+			$return = $this->conn->send($args);
+			if ($print) {
+				echo adminer()->selectQuery($this->query, $start, $return === false);
+			}
+			return $return;
+		}
+
+		function hasCStyleEscapes(): bool {
+			return true;
+		}
+
+		function lineComment(): string {
+			return '[^\s\S]'; // Redis has no comments
+		}
+
+		function insert(string $table, array $set) {
+			return queries("SET " . implode(" ", $set)); // the values are quoted by quote()
+		}
+
+		function update(string $table, array $set, string $queryWhere, int $limit = 0, string $separator = "\n") {
+			$args = array();
+			$where = $this->where($queryWhere);
+			foreach ($where as $key) {
+				$args[] = "$key " . $set["value"];
+			}
+			$this->conn->affected_rows = count($where);
+			return !!queries("MSET " . implode(" ", $args)); // not the Result, Select would add its num_rows to the affected rows
+		}
+
+		function delete(string $table, string $queryWhere, int $limit = 0) {
+			$result = queries("DEL " . implode(" ", $this->where($queryWhere)));
+			if (!$result) {
+				return false;
+			}
+			$this->conn->affected_rows = $result->fetch_row()[0]; // DEL returns the number of deleted keys
+			return true;
+		}
+
+		/** Get the keys of a where condition as quoted arguments
+		* @return list<string>
+		*/
+		private function where(string $queryWhere): array {
+			preg_match_all('~key . ("(?:\\\\.|[^\\\\"])*+")~', $queryWhere, $matches);
+			return $matches[1];
+		}
+
+		/** Get the keys of a where condition
+		* @return list<string>
+		*/
+		private function whereKeys(string $queryWhere) {
+			return parse_command(implode(" ", $this->where($queryWhere)));
+		}
+	}
+
+	function logged_user(): string {
+		return $_GET["username"];
+	}
+
+	function get_databases(bool $flush): array {
+		return array_map('strval', range(0, connection()->send(array("CONFIG", "GET", "databases"))[1] - 1));
+	}
+
+	function collations(): array {
+		return array();
+	}
+
+	function db_collation(string $db, array $collations) {
+	}
+
+	function information_schema(string $db): bool {
+		return false;
+	}
+
+	function indexes(string $table, ?Db $connection2 = null): array {
+		return array(array('type' => 'PRIMARY', 'columns' => array('key')));
+	}
+
+	function fields(string $table): array {
+		return array(
+			"key" => array("field" => "key", "privileges" => array("select" => 1, "where" => 1, "insert" => 1)),
+			"type" => array("field" => "type", "privileges" => array("select" => 1)), // the type is determined by the command creating the key
+			"value" => array("field" => "value", "privileges" => array("select" => 1, "insert" => 1, "update" => 1)),
+		);
+	}
+
+	function convert_field(array $field) {
+	}
+
+	function unconvert_field(array $field, string $return): string {
+		return $return;
+	}
+
+	function limit(string $query, string $where, int $limit, int $offset = 0, string $separator = " "): string {
+		return $query;
+	}
+
+	function limit1(string $table, string $query, string $where, string $separator = "\n"): string {
+		return limit($query, $where, 1, 0, $separator);
+	}
+
+	function idf_escape(string $idf): string {
+		return $idf;
+	}
+
+	function table(string $idf): string {
+		return idf_escape($idf);
+	}
+
+	function foreign_keys(string $table): array {
+		return array();
+	}
+
+	function tables_list(): array {
+		return array('data' => 'table');
+	}
+
+	function table_status(string $name = "", bool $fast = false): array {
+		return array('data' => array('Name' => 'data'));
+	}
+
+	function count_tables(array $databases): array {
+		return array_fill_keys($databases, 1);
+	}
+
+	function error(): string {
+		return h(connection()->error);
+	}
+
+	// SELECT is a Redis command so this is called from SQL command
+	function explain(Db $connection, string $query) {
+	}
+
+	function is_view(array $table_status): bool {
+		return false;
+	}
+
+	function found_rows(array $table_status, array $where) {
+		return null;
+	}
+
+	function fk_support(array $table_status): bool {
+		return false;
+	}
+
+	function last_id($result): string {
+		return '';
+	}
+
+	function support(string $feature): bool {
+		return preg_match('~^(cursor|single_table|sql)$~', $feature);
+	}
+}

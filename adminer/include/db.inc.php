@@ -4,7 +4,8 @@ namespace Adminer;
 // this could be interface when "Db extends \mysqli" can have compatible type declarations (PHP 7)
 // interfaces can include properties only since PHP 8.4
 abstract class SqlDb {
-	/** @var Db */ static $instance;
+	/** @var ?Db */ static $instance;
+	/** @var bool */ static $untrusted = false; // queries contain a fragment sent by the user, drivers should not allow multiple commands and modifying data in them
 
 	/** @var string */ public $extension; // extension name
 	/** @var string */ public $flavor = ''; // different vendor with the same API, e.g. MariaDB; usually stays empty
@@ -16,9 +17,10 @@ abstract class SqlDb {
 	/** @var Result|bool */ protected $multi; // used for multiquery
 
 	/** Connect to server
+	* @param Server $server
 	* @return string error message
 	*/
-	abstract function attach(string $server, string $username, string $password): string;
+	abstract function attach(array $server, string $username, string $password): string;
 
 	/** Quote string to use in SQL
 	* @return string escaped string enclosed in '
@@ -52,5 +54,25 @@ abstract class SqlDb {
 	/** Fetch next resultset */
 	function next_result(): bool {
 		return false;
+	}
+
+	/** Check if a transaction is in progress, false if the extension can't tell */
+	function inTransaction(): bool {
+		return false;
+	}
+
+	/** Begin transaction, the extensions with a transaction API use it */
+	function begin(): bool {
+		return !!$this->query("BEGIN");
+	}
+
+	/** Commit transaction */
+	function commit(): bool {
+		return !!$this->query("COMMIT");
+	}
+
+	/** Rollback transaction, it is called also without a transaction */
+	function rollback(): bool {
+		return !!$this->query("ROLLBACK");
 	}
 }

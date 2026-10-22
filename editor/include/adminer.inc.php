@@ -2,74 +2,109 @@
 namespace Adminer;
 
 class Adminer {
-	static $instance;
-	public $error = '';
-	private $values = array();
+	/** @var Adminer|Plugins|null */ static $instance;
+	/** @visibility protected(set) */ public string $error = ''; // HTML
+	/** @var array<string, string[]|string> */ private array $values = array(); // [table => options or one description]
+	/** @var true[] */ private array $described = array(); // [column => true] of the columns replaced by rowDescriptions()
 
-	function name() {
-		return "<a href='https://www.adminer.org/editor/'" . target_blank() . " id='h1'><img src='../adminer/static/logo.png' width='24' height='24' alt='' id='logo'>" . lang('Editor') . "</a>";
+	function name(): string {
+		return "<a href='https://www.adminer.org/editor/'" . target_blank() . " id='h1'><img src='" . DIR . "static/logo.svg' width='24' height='24' alt='' id='logo'>" . lang('Editor') . "</a>";
 	}
 
 	//! driver, ns
 
-	function credentials() {
+	function credentials(): array {
 		return array(SERVER, $_GET["username"], get_password());
 	}
 
 	function connectSsl() {
 	}
 
-	function permanentLogin($create = false) {
+	function permanentLogin(bool $create = false): string {
 		return password_file($create);
 	}
 
-	function bruteForceKey() {
+	function bruteForceKey(): string {
 		return $_SERVER["REMOTE_ADDR"];
 	}
 
-	function serverName($server) {
+	function verifyLoginToken(): bool {
+		return true;
 	}
 
-	function database() {
+	function serverName(?string $server): string {
+		return '';
+	}
+
+	function database(): ?string {
 		if (connection()) {
 			$databases = adminer()->databases(false);
-			return (!$databases
-				? get_val("SELECT SUBSTRING_INDEX(CURRENT_USER, '@', 1)") // username without the database list
-				: $databases[(information_schema($databases[0]) ? 1 : 0)] // first available database
-			);
+			if (!$databases) {
+				return get_val("SELECT SUBSTRING_INDEX(CURRENT_USER, '@', 1)"); // username without the database list
+			}
+			foreach ($databases as $db) {
+				if (!information_schema($db)) {
+					return $db; // first available database
+				}
+			}
+			return $databases[0];
 		}
+		return null; // drivers ask for the database also before connecting
 	}
 
-	function operators() {
+	function operators(?array $tableStatus = null): array {
 		return array("<=", ">=");
 	}
 
-	function schemas() {
+	function schemas(): array {
 		return schemas();
 	}
 
-	function databases($flush = true) {
+	function databases(bool $flush = true): array {
 		return get_databases($flush);
 	}
 
 	function pluginsLinks(): void {
 	}
 
-	function queryTimeout() {
+	function queryTimeout(): float {
 		return 5;
 	}
 
-	function afterConnect() {
+	function afterConnect(): void {
 	}
 
-	function headers() {
+	function headers(): void {
 	}
 
-	function csp($csp) {
+	function csp(array $csp): array {
 		return $csp;
 	}
 
-	function head($dark = null) {
+	function verifyVersion(): bool {
+		return true;
+	}
+
+	function serviceWorker(): void {
+		service_worker();
+	}
+
+	/** @return mixed[] */
+	function manifest(): array {
+		$host = $_SERVER["HTTP_HOST"] ?: $_SERVER["SERVER_NAME"];
+		$self = preg_replace('~\?.*~', '', ME) ?: '.';
+		return array(
+			'name' => "Adminer Editor" . ($host != "" ? " - $host" : ""),
+			'short_name' => 'Adminer Editor',
+			'description' => lang('Data editing in a single PHP file'),
+			'start_url' => $self,
+			'scope' => $self,
+			'display' => 'minimal-ui',
+			'icons' => array(array('src' => DIR . "static/logo.svg", 'sizes' => 'any', 'type' => 'image/svg+xml')),
+		);
+	}
+
+	function head(?bool $dark = null): bool {
 		return true;
 	}
 
@@ -77,7 +112,7 @@ class Adminer {
 		echo " editor";
 	}
 
-	function css() {
+	function css(): array {
 		$return = array();
 		foreach (array("", "-dark") as $mode) {
 			$filename = "adminer$mode.css";
@@ -92,46 +127,55 @@ class Adminer {
 		return $return;
 	}
 
-	function loginForm() {
+	function loginForm(): void {
 		echo "<table class='layout'>\n";
-		echo adminer()->loginFormField('username', '<tr><th>' . lang('Username') . '<td>', input_hidden("auth[driver]", "server") . '<input name="auth[username]" autofocus value="' . h($_GET["username"]) . '" autocomplete="username" autocapitalize="off">');
+		echo adminer()->loginFormField('username', '<tr><th>' . lang('Username') . '<td>', input_hidden("auth[driver]", "server")
+			. '<input name="auth[username]" autofocus value="' . h($_GET["username"]) . '" autocomplete="username" autocapitalize="off">');
 		echo adminer()->loginFormField('password', '<tr><th>' . lang('Password') . '<td>', '<input type="password" name="auth[password]" autocomplete="current-password">');
 		echo "</table>\n";
 		echo "<p><input type='submit' value='" . lang('Login') . "'>\n";
 		echo checkbox("auth[permanent]", 1, $_COOKIE["adminer_permanent"], lang('Permanent login')) . "\n";
 	}
 
-	function loginFormField($name, $heading, $value) {
+	function loginFormField(string $name, string $heading, string $value): string {
 		return $heading . $value . "\n";
 	}
 
-	function login($login, $password) {
+	function login(string $login, string $password) {
+		if ($password == "") {
+			return lang('Adminer does not support accessing a database without a password.');
+		}
+		if (!Driver::$passwords) {
+			return lang('The database does not support passwords.');
+		}
+		if (!password_required()) {
+			return lang('The server accepts any password, so filling it in protects nothing.');
+		}
 		return true;
 	}
 
-	function tableName($tableStatus) {
+	function tableName(array $tableStatus): string {
 		return h(isset($tableStatus["Engine"])
 			? ($tableStatus["Comment"] != "" ? $tableStatus["Comment"] : $tableStatus["Name"])
-			: "" // ignore views
-		);
+			: ""); // ignore views
 	}
 
-	function fieldName($field, $order = 0) {
+	function fieldName(array $field, int $order = 0): string {
 		return h(preg_replace('~\s+\[.*\]$~', '', ($field["comment"] != "" ? $field["comment"] : $field["field"])));
 	}
 
-	function selectLinks($tableStatus, $set = "") {
+	function selectLinks(array $tableStatus, ?string $set = ""): void {
 		$TABLE = $tableStatus["Name"];
 		if ($set !== null) {
-			echo '<p class="tabs"><a href="' . h(ME . 'edit=' . urlencode($TABLE) . $set) . '">' . lang('New item') . "</a>\n";
+			echo '<p class="tabs"><a href="' . h(ME . 'edit=' . url_escape($TABLE) . $set) . '">' . lang('New item') . "</a>\n";
 		}
 	}
 
-	function foreignKeys($table) {
+	function foreignKeys(string $table): array {
 		return foreign_keys($table);
 	}
 
-	function backwardKeys($table, $tableName) {
+	function backwardKeys(string $table, string $tableName): array {
 		$return = array();
 		foreach (
 			get_rows("SELECT TABLE_NAME, CONSTRAINT_NAME, COLUMN_NAME, REFERENCED_COLUMN_NAME
@@ -156,46 +200,51 @@ ORDER BY ORDINAL_POSITION", null, "") as $row
 		return $return;
 	}
 
-	function backwardKeysPrint($backwardKeys, $row) {
+	function backwardKeysPrint(array $backwardKeys, array $row): void {
 		foreach ($backwardKeys as $table => $backwardKey) {
 			foreach ($backwardKey["keys"] as $cols) {
-				$link = ME . 'select=' . urlencode($table);
+				$link = ME . 'select=' . url_escape($table);
 				$i = 0;
 				foreach ($cols as $column => $val) {
 					$link .= where_link($i++, $column, $row[$val]);
 				}
 				echo "<a href='" . h($link) . "'>" . h($backwardKey["name"]) . "</a>";
-				$link = ME . 'edit=' . urlencode($table);
+				$link = ME . 'edit=' . url_escape($table);
 				foreach ($cols as $column => $val) {
-					$link .= "&set" . urlencode("[" . bracket_escape($column) . "]") . "=" . urlencode($row[$val]);
+					$link .= "&set[" . url_escape(bracket_escape($column)) . "]=" . url_escape($row[$val]);
 				}
 				echo "<a href='" . h($link) . "' title='" . lang('New item') . "'>+</a> ";
 			}
 		}
 	}
 
-	function selectQuery($query, $start, $failed = false) {
-		return "<!--\n" . str_replace("--", "--><!-- ", $query) . "\n(" . format_time($start) . ")\n-->\n";
+	function selectQuery(string $query, float $start, bool $failed = false): string {
+		return sql_comment($query, format_time($start));
 	}
 
-	function rowDescription($table) {
-		// first varchar column
+	function rowDescription(string $table): string {
+		// first string column
 		foreach (fields($table) as $field) {
-			if (preg_match("~varchar|character varying~", $field["type"])) {
+			if (preg_match("~char|text~", $field["type"])) {
 				return idf_escape($field["field"]);
 			}
 		}
 		return "";
 	}
 
-	function rowDescriptions($rows, $foreignKeys) {
+	function rowDescriptions(array $rows, array $foreignKeys): array {
 		$return = $rows;
 		foreach ($rows[0] as $key => $val) {
 			if (list($table, $id, $name) = $this->_foreignColumn($foreignKeys, $key)) {
 				// find all used ids
 				$ids = array();
 				foreach ($rows as $row) {
-					$ids[$row[$key]] = q($row[$key]);
+					if (isset($row[$key])) {
+						$ids[$row[$key]] = q($row[$key]);
+					}
+				}
+				if (!$ids) {
+					continue;
 				}
 				// uses constant number of queries to get the descriptions, join would be complex, multiple queries would be slow
 				$descriptions = $this->values[$table];
@@ -203,6 +252,7 @@ ORDER BY ORDINAL_POSITION", null, "") as $row
 					$descriptions = get_key_vals("SELECT $id, $name FROM " . table($table) . " WHERE $id IN (" . implode(", ", $ids) . ")");
 				}
 				// use the descriptions
+				$this->described[$key] = true;
 				foreach ($rows as $n => $row) {
 					if (isset($row[$key])) {
 						$return[$n][$key] = (string) $descriptions[$row[$key]];
@@ -213,16 +263,20 @@ ORDER BY ORDINAL_POSITION", null, "") as $row
 		return $return;
 	}
 
-	function selectLink($val, $field) {
+	function selectLink(?string $val, array $field) {
 	}
 
-	function selectVal($val, $link, $field, $original) {
+	function selectVal(?string $val, ?string $link, array $field, ?string $original): string {
 		$return = "$val";
+		if (isset($this->described[$field["field"]]) && $original !== null) {
+			$return = shorten_utf8($original, max(0, +adminer()->selectLengthProcess())); // the foreign key column is usually a number which is not shortened
+		}
 		$link = h($link);
 		if (is_blob($field) && !is_utf8($val)) {
 			$return = lang('%d byte(s)', strlen($original));
-			if (preg_match("~^(GIF|\xFF\xD8\xFF|\x89PNG\x0D\x0A\x1A\x0A)~", $original)) { // GIF|JPG|PNG, getimagetype() works with filename
-				$return = "<img src='$link' alt='$return'>";
+			$size = (function_exists('getimagesizefromstring') ? @getimagesizefromstring($original) : array()); // @ - the notice for other data contains the data; the function is since PHP 5.4
+			if ($size) { // the same as in the select-image plugin
+				$return = "<img src='$link' alt='$return' $size[3] loading='lazy'>"; // $size[3] is width and height
 			}
 		}
 		if (like_bool($field) && $return != "") { // bool
@@ -238,71 +292,85 @@ ORDER BY ORDINAL_POSITION", null, "") as $row
 		return $return;
 	}
 
-	function editVal($val, $field) {
+	function editVal(?string $val, array $field): ?string {
 		if (preg_match('~date|timestamp~', $field["type"]) && $val !== null) {
 			return preg_replace('~^(\d{2}(\d+))-(0?(\d+))-(0?(\d+))~', lang('$1-$3-$5'), $val);
 		}
 		return $val;
 	}
 
-	function config() {
+	function config(): array {
 		return array();
 	}
 
-	function selectColumnsPrint($select, $columns) {
+	function selectColumnsPrint(array $select, array $columns): void {
 		// can allow grouping functions by indexes
 	}
 
-	function selectSearchPrint($where, $columns, $indexes) {
-		$where = (array) $_GET["where"];
-		echo '<fieldset id="fieldset-search"><legend>' . lang('Search') . "</legend><div>\n";
-		$keys = array();
-		foreach ($where as $key => $val) {
-			$keys[$val["col"]] = $key;
+	/** Get columns having their own search field; they are identified by their position, not by the name in the query string
+	* @param Field[] $fields
+	* @return string[] negative index => column name
+	*/
+	private function searchColumns(array $fields): array {
+		$return = array();
+		$table = $_GET["select"];
+		if ($table == "") {
+			return $return; // the search fields are printed only in select, not when searching in all tables
 		}
 		$i = 0;
-		$fields = fields($_GET["select"]);
-		foreach ($columns as $name => $desc) {
-			$field = $fields[$name];
-			if ($field["type"] == "enum" || like_bool($field)) { //! set - uses 1 << $i and FIND_IN_SET()
-				$key = $keys[$name];
-				$i--;
-				echo "<div>" . h($desc) . ":" . input_hidden("where[$i][col]", $name);
-				$val = idx($where[$key], "val");
-				echo (like_bool($field)
-					? "<select name='where[$i][val]'>" . optionlist(array("" => "", lang('no'), lang('yes')), $val, true) . "</select>"
-					: enum_input("checkbox", " name='where[$i][val][]'", $field, (array) $val, lang('empty'))
-				);
-				echo "</div>\n";
-				unset($columns[$name]);
-			} elseif (is_array($options = $this->foreignKeyOptions($_GET["select"], $name))) {
-				if ($fields[$name]["null"]) {
-					$options[0] = '(' . lang('empty') . ')';
-				}
-				$key = $keys[$name];
-				$i--;
-				echo "<div>" . h($desc) . input_hidden("where[$i][col]", $name) . input_hidden("where[$i][op]", "=") . ": <select name='where[$i][val]'>" . optionlist($options, idx($where[$key], "val"), true) . "</select></div>\n";
-				unset($columns[$name]);
+		foreach ($fields as $name => $field) {
+			if (
+				isset($field["privileges"]["where"]) && $this->fieldName($field) != "" // the same condition as for $search_columns in select.inc.php
+				&& ($field["type"] == "enum" || like_bool($field) || is_array($this->foreignKeyOptions($table, $name)))
+			) {
+				$return[--$i] = $name;
 			}
 		}
+		return $return;
+	}
+
+	function selectSearchPrint(array $where, array $columns, array $indexes, ?array $tableStatus = null): void {
+		$where = (array) $_GET["where"];
+		echo '<fieldset id="fieldset-search"><legend>' . lang('Search') . "</legend><div>\n";
+		$fields = fields($_GET["select"]);
+		foreach ($this->searchColumns($fields) as $i => $name) {
+			$field = $fields[$name];
+			$val = idx($where[$i], "val");
+			echo "<div>" . h($columns[$name]);
+			if ($field["type"] == "enum" || like_bool($field)) { //! set - uses 1 << $i and FIND_IN_SET()
+				echo ": ";
+				echo (like_bool($field)
+					? "<select name='where[$i][val]' data-default=''>" . optionlist(array("" => "", lang('no'), lang('yes')), $val, true) . "</select>"
+					: enum_input("checkbox", " name='where[$i][val][]'", $field, (array) $val, lang('empty'))
+				);
+			} else {
+				$options = $this->foreignKeyOptions($_GET["select"], $name);
+				if ($field["null"]) {
+					$options[0] = '(' . lang('empty') . ')';
+				}
+				echo ": <select name='where[$i][val]' data-default=''>" . optionlist($options, $val, true) . "</select>";
+			}
+			echo "</div>\n";
+			unset($columns[$name]);
+		}
 		$i = 0;
-		foreach ($where as $val) {
-			if (($val["col"] == "" || $columns[$val["col"]]) && "$val[col]$val[val]" != "") {
-				echo "<div><select name='where[$i][col]'><option value=''>(" . lang('anywhere') . ")" . optionlist($columns, $val["col"], true) . "</select>";
-				echo html_select("where[$i][op]", array(-1 => "") + adminer()->operators(), $val["op"]);
-				echo "<input type='search' name='where[$i][val]' value='" . h($val["val"]) . "'>" . script("mixin(qsl('input'), {onkeydown: selectSearchKeydown, onsearch: selectSearchSearch});", "") . "</div>\n";
+		foreach ($where as $key => $val) {
+			if ($key >= 0 && ($val["col"] == "" || $columns[$val["col"]]) && "$val[col]$val[val]" != "") {
+				echo "<div><select name='where[$i][col]' data-default=''><option value=''>(" . lang('anywhere') . ")" . optionlist($columns, $val["col"], true) . "</select>";
+				echo html_select("where[$i][op]", array(-1 => "") + adminer()->operators($tableStatus), $val["op"], " data-default=''");
+				echo "<input type='search' name='where[$i][val]' value='" . h($val["val"]) . "' data-default=''"
+					. on('keydown', 'selectSearchKeydown') . on('search', 'selectSearchSearch') . "></div>\n";
 				$i++;
 			}
 		}
-		echo "<div><select name='where[$i][col]'><option value=''>(" . lang('anywhere') . ")" . optionlist($columns, null, true) . "</select>";
-		echo script("qsl('select').onchange = selectAddRow;", "");
-		echo html_select("where[$i][op]", array(-1 => "") + adminer()->operators());
-		echo "<input type='search' name='where[$i][val]'></div>";
-		echo script("mixin(qsl('input'), {onchange: function () { this.parentNode.firstChild.onchange(); }, onsearch: selectSearchSearch});");
+		echo "<div><select name='where[$i][col]' data-default=''" . on('change', 'selectAddRow') . "><option value=''>(" . lang('anywhere') . ")" . optionlist($columns, null, true) . "</select>";
+		echo html_select("where[$i][op]", array(-1 => "") + adminer()->operators($tableStatus), null, " data-default=''");
+		echo "<input type='search' name='where[$i][val]' data-default=''"
+			. on('change', 'selectFirstChange') . on('keydown', 'selectSearchKeydown') . on('search', 'selectSearchSearch') . "></div>\n";
 		echo "</div></fieldset>\n";
 	}
 
-	function selectOrderPrint($order, $columns, $indexes) {
+	function selectOrderPrint(array $order, array $columns, array $indexes): void {
 		//! desc
 		$orders = array();
 		foreach ($indexes as $key => $index) {
@@ -316,71 +384,100 @@ ORDER BY ORDINAL_POSITION", null, "") as $row
 		}
 		if ($orders) {
 			echo '<fieldset><legend>' . lang('Sort') . "</legend><div>";
-			echo "<select name='index_order'>" . optionlist(array("" => "") + $orders, (idx($_GET["order"], 0) != "" ? "" : $_GET["index_order"]), true) . "</select>";
+			echo "<select name='index_order' data-default=''>" . optionlist(array("" => "") + $orders, (idx($_GET["order"], 0) != "" ? "" : $_GET["index_order"]), true) . "</select>";
 			echo "</div></fieldset>\n";
 		}
 		if ($_GET["order"]) {
-			echo "<div style='display: none;'>" . hidden_fields(array(
+			echo "<div hidden>" . hidden_fields(array(
 				"order" => array(1 => reset($_GET["order"])),
 				"desc" => ($_GET["desc"] ? array(1 => 1) : array()),
 			)) . "</div>\n";
 		}
 	}
 
-	function selectLimitPrint($limit) {
+	function selectLimitPrint(int $limit): void {
 		echo "<fieldset><legend>" . lang('Limit') . "</legend><div>"; // <div> for easy styling
-		echo html_select("limit", array("", 50, 100), $limit);
+		// data-default - the same value as in selectLimitProcess()
+		echo html_select("limit", array("", "50", "100"), (string) $limit, " data-default='50'");
 		echo "</div></fieldset>\n";
 	}
 
-	function selectLengthPrint($text_length) {
+	function selectLengthPrint(string $text_length): void {
 	}
 
-	function selectActionPrint($indexes) {
+	function selectActionPrint(array $indexes): void {
 		echo "<fieldset><legend>" . lang('Action') . "</legend><div>";
 		echo "<input type='submit' value='" . lang('Select') . "'>";
 		echo "</div></fieldset>\n";
 	}
 
-	function selectCommandPrint() {
+	function selectCommandPrint(): bool {
 		return true;
 	}
 
-	function selectImportPrint() {
+	function selectImportPrint(): bool {
 		return true;
 	}
 
-	function selectEmailPrint($emailFields, $columns) {
+	function selectEmailPrint(array $emailFields, array $columns): void {
 	}
 
-	function selectColumnsProcess($columns, $indexes) {
+	function selectColumnsProcess(array $columns, array $indexes): array {
 		return array(array(), array());
 	}
 
-	function selectSearchProcess($fields, $indexes) {
+	function selectSearchProcess(array $fields, array $indexes, ?array $tableStatus = null): array {
 		$return = array();
+		$search_columns = $this->searchColumns($fields);
+		// the columns with their own search field are identified by their position, redirect the links using their name
+		if ($_GET["select"] != "" && !$_POST && !is_ajax()) {
+			$keys = array();
+			$link = "";
+			foreach ((array) $_GET["where"] as $key => $where) {
+				$position = ($key >= 0 ? array_search($where["col"], $search_columns, true) : false);
+				$field = idx($fields, $where["col"], array());
+				if (
+					$position !== false && $field["type"] != "enum" // enum uses an array of values
+					&& !is_array($where["val"]) && $where["val"] != "" // an empty value is ignored in a dedicated field
+					&& $where["op"] == (like_bool($field) ? "" : "=") // the operator is given by the position too
+				) {
+					$keys[] = $key;
+					$link .= "&where[$position][val]=" . url_escape($where["val"]);
+				}
+			}
+			if ($keys) {
+				redirect(remove_from_uri("where(%5B|\[)(" . implode("|", $keys) . ")(%5D|\])[^=]*") . $link);
+			}
+		}
 		foreach ((array) $_GET["where"] as $key => $where) {
+			if ($key < 0) { // the column and the operator are given by the position, they are not sent
+				$where["col"] = idx($search_columns, $key, "");
+				$field = idx($fields, $where["col"], array());
+				$where["op"] = ($field && ($field["type"] == "enum" || like_bool($field)) ? "" : "=");
+				$_GET["where"][$key] = $where; // used by the New item link in select.inc.php
+			}
+			// the search box in the database overview sends no operator
+			$where += array("col" => "", "op" => "", "val" => "");
 			$col = $where["col"];
 			$op = $where["op"];
 			$val = $where["val"];
 			if (($key >= 0 && $col != "") || $val != "") {
 				$conds = array();
 				foreach (($col != "" ? array($col => $fields[$col]) : $fields) as $name => $field) {
-					if ($col != "" || is_numeric($val) || !preg_match(number_type(), $field["type"])) {
+					if ($col != "" || is_searchable($field, $where)) {
 						$name = idf_escape($name);
 						if ($col != "" && $field["type"] == "enum") {
 							$in = array();
-							foreach ($val as $val1) {
-								if (preg_match('~val-~', $val1)) {
-									$in[] = q(substr($val1, 4));
-								}
+							foreach (preg_grep('~^val-~', $val) as $val1) {
+								$in[] = q(substr($val1, 4));
 							}
 							$conds[] = (in_array("null", $val) ? "$name IS NULL OR " : "") . ($in ? "$name IN (" . implode(", ", $in) . ")" : "0");
 						} else {
-							$text_type = preg_match('~char|text|enum|set~', $field["type"]);
-							$value = adminer()->processInput($field, (!$op && $text_type && preg_match('~^[^%]+$~', $val) ? "%$val%" : $val));
+							$text_type = preg_match('~' . text_type() . '~', $field["type"]);
+							// the searched value is compared with the value displayed in select, so it is not passed through unconvert_field()
+							$value = q(!$op && $text_type && preg_match('~^[^%]+$~', $val) ? "%$val%" : $val);
 							$conds[] = driver()->convertSearch($name, $where, $field) . ($value == "NULL" ? " IS" . ($op == ">=" ? " NOT" : "") . " $value"
-								: (in_array($op, adminer()->operators()) || $op == "=" ? " $op $value"
+								: (in_array($op, adminer()->operators($tableStatus)) || $op == "=" ? " $op $value"
 								: ($text_type ? " LIKE $value"
 								: " IN (" . ($value[0] == "'" ? str_replace(",", "', '", $value) : $value) . ")"
 							)));
@@ -396,7 +493,7 @@ ORDER BY ORDINAL_POSITION", null, "") as $row
 		return $return;
 	}
 
-	function selectOrderProcess($fields, $indexes) {
+	function selectOrderProcess(array $fields, array $indexes): array {
 		$index_order = $_GET["index_order"];
 		if ($index_order != "") {
 			unset($_GET["order"][1]);
@@ -424,30 +521,35 @@ ORDER BY ORDINAL_POSITION", null, "") as $row
 		return array();
 	}
 
-	function selectLimitProcess() {
+	function selectLimitProcess(): int {
 		return (isset($_GET["limit"]) ? intval($_GET["limit"]) : 50);
 	}
 
-	function selectLengthProcess() {
+	function selectLengthProcess(): string {
 		return "100";
 	}
 
-	function selectEmailProcess($where, $foreignKeys) {
+	function selectEmailProcess(array $where, array $foreignKeys): bool {
 		return false;
 	}
 
-	function selectQueryBuild($select, $where, $group, $order, $limit, $page) {
+	function selectQueryBuild(array $select, array $where, array $group, array $order, int $limit, ?int $page): string {
 		return "";
 	}
 
-	function messageQuery($query, $time, $failed = false) {
-		return " <span class='time'>" . @date("H:i:s") . "</span><!--\n" . str_replace("--", "--><!-- ", $query) . "\n" . ($time ? "($time)\n" : "") . "-->";
+	function messageQuery(string $query, string $time, bool $failed = false): string {
+		return " <span class='time'>" . @date("H:i:s") . "</span>" . sql_comment($query, $time);
 	}
 
-	function editRowPrint($table, $fields, $row, $update) {
+	function error(): string {
+		return error(); // the function defined by the driver, not this method
 	}
 
-	function editFunctions($field) {
+	function editRowPrint(string $table, array $fields, $row, ?bool $update, string $query = '', string $time = ''): void {
+		echo ($query != "" ? sql_comment($query, $time) : "");
+	}
+
+	function editFunctions(array $field): array {
 		$return = array();
 		if ($field["null"] && preg_match('~blob~', $field["type"])) {
 			$return["NULL"] = lang('empty');
@@ -463,7 +565,7 @@ ORDER BY ORDINAL_POSITION", null, "") as $row
 		return $return;
 	}
 
-	function editInput($table, $field, $attrs, $value) {
+	function editInput(?string $table, array $field, string $attrs, $value): string {
 		if ($field["type"] == "enum") {
 			return (isset($_GET["select"]) ? "<label><input type='radio'$attrs value='orig' checked><i>" . lang('original') . "</i></label> " : "")
 				. enum_input("radio", $attrs, $field, $value, lang('empty'))
@@ -471,12 +573,15 @@ ORDER BY ORDINAL_POSITION", null, "") as $row
 		}
 		$options = $this->foreignKeyOptions($table, $field["field"], $value);
 		if ($options !== null) {
+			if (!$field["null"] && is_array($options)) {
+				unset($options[""]); // the column requires a value, the database would reject the empty option
+			}
 			return (is_array($options)
-				? "<select$attrs>" . optionlist($options, $value, true) . "</select>"
+				? "<select$attrs>" . optionlist($options, (string) $value, true) . "</select>"
 				: "<input value='" . h($value) . "'$attrs class='hidden'>"
-					. "<input value='" . h($options) . "' class='jsonly'>"
-					. "<div></div>"
-					. script("qsl('input').oninput = partial(whisper, '" . ME . "script=complete&source=" . urlencode($table) . "&field=" . urlencode($field["field"]) . "&value='); qsl('div').onclick = whisperClick;", "")
+					. "<input value='" . h($options) . "' class='jsonly'"
+						. on('input', 'whisper', ME . "script=complete&source=" . url_escape($table) . "&field=" . url_escape($field["field"]) . "&value=") . ">"
+					. "<div" . on('click', 'whisperClick') . "></div>"
 			);
 		}
 		if (like_bool($field)) {
@@ -498,17 +603,21 @@ ORDER BY ORDINAL_POSITION", null, "") as $row
 		return '';
 	}
 
-	function editHint($table, $field, $value) {
+	function editHint(?string $table, array $field, ?string $value): string {
 		return (preg_match('~\s+(\[.*\])$~', ($field["comment"] != "" ? $field["comment"] : $field["field"]), $match) ? h(" $match[1]") : '');
 	}
 
-	function processInput($field, $value, $function = "") {
+	function processInput(array $field, string $value, ?string $function = ""): string {
 		if ($function == "now") {
 			return "$function()";
 		}
 		$return = $value;
-		if (preg_match('~date|timestamp~', $field["type"]) && preg_match('(^' . str_replace('\$1', '(?P<p1>\d*)', preg_replace('~(\\\\\\$([2-6]))~', '(?P<p\2>\d{1,2})', preg_quote(lang('$1-$3-$5')))) . '(.*))', $value, $match)) {
-			$return = ($match["p1"] != "" ? $match["p1"] : ($match["p2"] != "" ? ($match["p2"] < 70 ? 20 : 19) . $match["p2"] : gmdate("Y"))) . "-$match[p3]$match[p4]-$match[p5]$match[p6]" . end($match);
+		if (
+			preg_match('~date|timestamp~', $field["type"])
+			&& preg_match('(^' . str_replace('\$1', '(?P<p1>\d*)', preg_replace('~(\\\\\\$([2-6]))~', '(?P<p\2>\d{1,2})', preg_quote(lang('$1-$3-$5')))) . '(.*))', $value, $match)
+		) {
+			$return = ($match["p1"] != "" ? $match["p1"] : ($match["p2"] != "" ? ($match["p2"] < 70 ? 20 : 19) . $match["p2"] : gmdate("Y")))
+				. "-$match[p3]$match[p4]-$match[p5]$match[p6]" . end($match);
 		}
 		$return = q($return);
 		if ($value == "" && like_bool($field)) {
@@ -521,22 +630,22 @@ ORDER BY ORDINAL_POSITION", null, "") as $row
 		return unconvert_field($field, $return);
 	}
 
-	function dumpOutput() {
+	function dumpOutput(): array {
 		return array();
 	}
 
-	function dumpFormat() {
+	function dumpFormat(): array {
 		return array('csv' => 'CSV,', 'csv;' => 'CSV;', 'tsv' => 'TSV');
 	}
 
-	function dumpDatabase($db) {
+	function dumpDatabase(string $db): void {
 	}
 
-	function dumpTable($table, $style, $is_view = 0) {
+	function dumpTable(string $table, string $style, int $is_view = 0): void {
 		echo "\xef\xbb\xbf"; // UTF-8 byte order mark
 	}
 
-	function dumpData($table, $style, $query) {
+	function dumpData(string $table, string $style, string $query): void {
 		$result = connection()->query($query, 1); // 1 - MYSQLI_USE_RESULT
 		if ($result) {
 			while ($row = $result->fetch_assoc()) {
@@ -549,30 +658,32 @@ ORDER BY ORDINAL_POSITION", null, "") as $row
 		}
 	}
 
-	function dumpFilename($identifier) {
+	function dumpFilename(string $identifier): string {
 		return friendly_url($identifier);
 	}
 
-	function dumpHeaders($identifier, $multi_table = false) {
+	function dumpHeaders(string $identifier, bool $multi_table = false): string {
 		$ext = "csv";
 		header("Content-Type: text/csv; charset=utf-8");
 		return $ext;
 	}
 
-	function dumpFooter() {
+	function dumpFooter(): void {
 	}
 
-	function importServerPath() {
+	function importServerPath(): string {
+		return '';
 	}
 
-	function homepage() {
+	function homepage(): bool {
 		return true;
 	}
 
-	function navigation($missing) {
+	function navigation(string $missing): void {
 		echo "<h1>" . adminer()->name() . " <span class='version'>" . VERSION;
 		$new_version = $_COOKIE["adminer_version"];
-		echo " <a href='https://www.adminer.org/editor/#download'" . target_blank() . " id='version'>" . (version_compare(VERSION, $new_version) < 0 ? h($new_version) : "") . "</a>";
+		echo " <a href='https://www.adminer.org/editor/#download'" . target_blank() . " id='version'>"
+			. (version_compare(VERSION, $new_version) < 0 ? h($new_version) : "") . version_iframe() . "</a>";
 		echo "</span></h1>\n";
 		switch_lang();
 		if ($missing == "auth") {
@@ -581,8 +692,7 @@ ORDER BY ORDINAL_POSITION", null, "") as $row
 				foreach ($servers[""] as $username => $password) {
 					if ($password !== null) {
 						if ($first) {
-							echo "<ul id='logins'>";
-							echo script("mixin(qs('#logins'), {onmouseover: menuOver, onmouseout: menuOut});");
+							echo "<ul id='logins'" . on('mouseover', 'menuOver') . on('mouseout', 'menuOut') . ">";
 							$first = false;
 						}
 						echo "<li><a href='" . h(auth_url($vendor, "", $username)) . "'>" . ($username != "" ? h($username) : "<i>" . lang('empty') . "</i>") . "</a>\n";
@@ -591,6 +701,8 @@ ORDER BY ORDINAL_POSITION", null, "") as $row
 			}
 		} else {
 			adminer()->databasesPrint($missing);
+			$actions = adminer()->menuActions(array(), $missing);
+			echo ($actions ? "<p class='links'>\n" . implode("\n", $actions) . "\n" : "");
 			if ($missing != "db" && $missing != "ns") {
 				$table_status = table_status('', true);
 				if (!$table_status) {
@@ -602,20 +714,23 @@ ORDER BY ORDINAL_POSITION", null, "") as $row
 		}
 	}
 
-	function syntaxHighlighting($tables) {
+	function syntaxHighlighting(array $tables): void {
 	}
 
-	function databasesPrint($missing) {
+	function databasesPrint(string $missing): void {
 	}
 
-	function tablesPrint($tables) {
-		echo "<ul id='tables'>";
-		echo script("mixin(qs('#tables'), {onmouseover: menuOver, onmouseout: menuOut});");
+	function menuActions(array $actions, string $missing): array {
+		return $actions;
+	}
+
+	function tablesPrint(array $tables): void {
+		echo "<ul id='tables'" . on('mouseover', 'menuOver') . on('mouseout', 'menuOut') . ">";
 		foreach ($tables as $row) {
 			echo '<li>';
 			$name = adminer()->tableName($row);
 			if ($name != "") { // ignore tables without name
-				echo "<a href='" . h(ME) . 'select=' . urlencode($row["Name"]) . "'"
+				echo "<a href='" . h(ME) . 'select=' . url_escape($row["Name"]) . "'"
 					. bold($_GET["select"] == $row["Name"] || $_GET["edit"] == $row["Name"], "select")
 					. " title='" . lang('Select data') . "'>$name</a>\n"
 				;
@@ -624,7 +739,10 @@ ORDER BY ORDINAL_POSITION", null, "") as $row
 		echo "</ul>\n";
 	}
 
-	function _foreignColumn($foreignKeys, $column) {
+	/** Get the foreign key of a column with a description
+	* @return array{string, string, string}|void [table, id, name]
+	*/
+	function _foreignColumn(array $foreignKeys, string $column) {
 		foreach ((array) $foreignKeys[$column] as $foreignKey) {
 			if (count($foreignKey["source"]) == 1) {
 				$name = adminer()->rowDescription($foreignKey["table"]);
@@ -636,7 +754,10 @@ ORDER BY ORDINAL_POSITION", null, "") as $row
 		}
 	}
 
-	private function foreignKeyOptions($table, $column, $value = null) {
+	/** Get options of a foreign key column
+	* @return string[]|string|void options, one description if there are too many rows or nothing if it's not a foreign key
+	*/
+	private function foreignKeyOptions(string $table, string $column, ?string $value = null) {
 		if (list($target, $id, $name) = $this->_foreignColumn(column_foreign_keys($table), $column)) {
 			$return = &$this->values[$target];
 			if ($return === null) {

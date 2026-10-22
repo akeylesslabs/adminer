@@ -10,8 +10,8 @@ if ($_COOKIE["adminer_permanent"]) {
 }
 
 function add_invalid_login(): void {
-	$base = get_temp_dir() . "/adminer.invalid";
-	// adminer.invalid may not be writable by us, try the files with random suffixes
+	$base = get_temp_dir() . "/adminer-invalid";
+	// adminer-invalid may not be writable by us, try the files with random suffixes
 	foreach (glob("$base*") ?: array($base) as $filename) {
 		$fp = file_open_lock($filename);
 		if ($fp) {
@@ -24,7 +24,7 @@ function add_invalid_login(): void {
 	if (!$fp) {
 		return;
 	}
-	$invalids = unserialize(stream_get_contents($fp));
+	$invalids = json_decode(stream_get_contents($fp), true);
 	$time = time();
 	if ($invalids) {
 		foreach ($invalids as $ip => $val) {
@@ -38,30 +38,98 @@ function add_invalid_login(): void {
 		$invalid = array($time + 30*60, 0); // active for 30 minutes
 	}
 	$invalid[1]++;
-	file_write_unlock($fp, serialize($invalids));
+	file_write_unlock($fp, json_encode($invalids));
 }
 
 /** @param string[] $permanent */
 function check_invalid_login(array &$permanent): void {
 	$invalids = array();
-	foreach (glob(get_temp_dir() . "/adminer.invalid*") as $filename) {
+	foreach (glob(get_temp_dir() . "/adminer-invalid*") as $filename) {
 		$fp = file_open_lock($filename);
 		if ($fp) {
-			$invalids = unserialize(stream_get_contents($fp));
+			$invalids = json_decode(stream_get_contents($fp), true);
 			file_unlock($fp);
 			break;
 		}
 	}
+	$key = adminer()->bruteForceKey();
 	/** @var array{int, int} */
-	$invalid = idx($invalids, adminer()->bruteForceKey(), array());
+	$invalid = idx($invalids, $key, array());
 	$next_attempt = ($invalid[1] > 29 ? $invalid[0] - time() : 0); // allow 30 invalid attempts
 	if ($next_attempt > 0) { //! do the same with permanent login
-		auth_error(lang('Too many unsuccessful logins, try again in %d minute(s).', ceil($next_attempt / 60)), $permanent);
+		$error = lang('Too many unsuccessful logins, try again in %d minute(s).', ceil($next_attempt / 60));
+		if ($_SERVER["HTTP_X_FORWARDED_FOR"] != "" && $key == $_SERVER["REMOTE_ADDR"]) {
+			// the requests are proxied but the attempts are grouped by the address of the proxy
+			$error .= '<br>' . lang(
+				'Use the %s <a%s>plugin</a> if Adminer runs behind a reverse proxy.',
+				'<b>login-reverse-proxy</b>',
+				" href='https://www.adminer.org/plugins/?version=" . VERSION . "'" . target_blank()
+			);
+		}
+		auth_error($error, $permanent, false); // the credentials are not verified at all when the attempts are exhausted
 	}
 }
 
+/** Check if the server requires a password, i.e. it doesn't connect without it */
+function password_required(): bool {
+	// call only when the server is known to be reachable, otherwise it looks like a server requiring a password
+	static $return;
+	if ($return === null) {
+		$return = (bool) get_session("password_required"); // assign before credentials() which can call this function again
+		if (!$return) {
+			$credentials = adminer()->credentials();
+			$return = !is_object(Driver::connect($credentials[0], $credentials[1], ""));
+			if ($return) { // we don't remember the opposite - a server can start requiring a password
+				set_session("password_required", true);
+			}
+		}
+	}
+	return $return;
+}
+
+/** Get a link to instructions for protecting Adminer by a password
+* @param ?string $password null to generate a random password
+* @return string HTML code
+*/
+function require_password_link(?string $password): string {
+	$more_options = "<a href='https://www.adminer.org/password/'" . target_blank() . ">" . lang('More options') . "</a>";
+	if (!function_exists('password_hash')) { // PHP 5.5, the compiled file supports 5.3
+		return " $more_options";
+	}
+	$plugin_password = ($password !== null ? $password : base64_encode(substr(pack("H*", rand_string()), 0, 12))); // pack() instead of hex2bin() which is PHP 5.4
+	$hash = password_hash($plugin_password, PASSWORD_DEFAULT);
+	$filename = "adminer-plugins.php";
+	$exists = file_exists("adminer-plugins.php"); // we would overwrite it, it can also hold another sensitive information
+	if ($exists) {
+		$instructions = ($password !== null
+			? lang('Add this line to %s to require the entered password:', "<b>$filename</b>")
+			: lang('Add this line to %s to require the password %s:', "<b>$filename</b>", "<b>$plugin_password</b>")
+		);
+	} else {
+		$filename = "<button name='password_less' value='" . h($hash) . "' class='link'>$filename</button>"; // downloads the file, POST so that a crafted link can't offer the attacker's password
+		$instructions = ($password !== null
+			? lang('Save %s next to Adminer to require the entered password:', $filename)
+			: lang('Save %s next to Adminer to require the password %s:', $filename, "<b>$plugin_password</b>")
+		);
+	}
+	$line = "\t<a>new</a> Adminer\\Password(<span class='jush-apo'>'" . h($hash) . "'</span>),";
+	$return = "<p>$instructions
+<pre><code class='jush'>" . ($exists ? $line : "&lt;?php\n<a>return</a> <a>array</a>(\n$line\n);") . "</code></pre>
+<p>$more_options
+";
+	return " <a href='#password-less' class='toggle'>" . lang('Require a password.') . "</a>
+<div id='password-less' class='hidden'>" . ($exists ? $return : "<form action='' method='post'>\n" . $return . input_token() . "</form>") . "</div>";
+}
+
+if (preg_match('~^[-\w$./]+$~', $_POST["password_less"]) && verify_token()) { // the file offered by require_password_link()
+	header("Content-Type: application/octet-stream");
+	header("Content-Disposition: attachment; filename=adminer-plugins.php");
+	echo "<?php\nreturn array(\n\tnew Adminer\\Password('$_POST[password_less]'),\n);\n";
+	exit;
+}
+
 $auth = $_POST["auth"];
-if ($auth) {
+if ($auth && (!adminer()->verifyLoginToken() || verify_token())) { // the token is verified here because the login is processed before the general check
 	session_regenerate_id(); // defense against session fixation
 	$vendor = $auth["driver"];
 	$server = $auth["server"];
@@ -77,21 +145,25 @@ if ($auth) {
 		cookie("adminer_permanent", implode(" ", $permanent));
 	}
 	if (
-		count($_POST) == 1 // 1 - auth
-		|| DRIVER != $vendor
-		|| SERVER != $server
-		|| $_GET["username"] !== $username // "0" == "00"
-		|| DB != $db
+		!array_diff(array_keys($_POST), array("auth", "token")) // nothing else was posted, so there is no action to perform after the login
+		|| $vendor != DRIVER
+		|| $server != SERVER
+		|| $username !== $_GET["username"] // "0" == "00"
+		|| $db != DB
 	) {
 		redirect(auth_url($vendor, $server, $username, $db));
 	}
 
 } elseif ($_POST["logout"] && (!$_SESSION["token"] || verify_token())) {
+	Driver::disconnect();
 	foreach (array("pwds", "db", "dbs", "queries") as $key) {
 		set_session($key, null);
 	}
 	unset_permanent($permanent);
-	redirect(substr(preg_replace('~\b(username|db|ns)=[^&]*&~', '', ME), 0, -1), lang('Logout successful.') . ' ' . lang('Thanks for using Adminer, consider <a href="https://www.adminer.org/en/donation/">donating</a>.'));
+	redirect(
+		substr(preg_replace('~\b(username|db|ns)=[^&]*&~', '', ME), 0, -1),
+		lang('Logout successful.') . ' ' . lang('Thanks for using Adminer. Consider <a href="https://www.adminer.org/en/donation/">donating</a>.')
+	);
 
 } elseif ($permanent && !$_SESSION["pwds"]) {
 	session_regenerate_id();
@@ -118,26 +190,27 @@ function unset_permanent(array &$permanent): void {
 }
 
 /** Render an error message and a login form
-* @param string $error plain text
+* @param string $error HTML
 * @param string[] $permanent
 * @return never
 */
-function auth_error(string $error, array &$permanent) {
+function auth_error(string $error, array &$permanent, bool $invalid_login = true) {
 	$session_name = session_name();
 	if (isset($_GET["username"])) {
 		header("HTTP/1.1 403 Forbidden"); // 401 requires sending WWW-Authenticate header
 		if (($_COOKIE[$session_name] || $_GET[$session_name]) && !$_SESSION["token"]) {
-			$error = lang('Session expired, please login again.');
-		} else {
+			$error = lang('Session expired. Please log in again.');
+		} elseif ($invalid_login && ($password = get_password()) !== null) { // no credentials means no failed login, any page can send the visitor here by a cross-site request with ?username=
 			restart_session();
 			add_invalid_login();
-			$password = get_password();
-			if ($password !== null) {
-				if ($password === false) {
-					$error .= ($error ? '<br>' : '') . lang('Master password expired. <a href="https://www.adminer.org/en/extension/"%s>Implement</a> %s method to make it permanent.', target_blank(), '<code>permanentLogin()</code>');
-				}
-				set_password(DRIVER, SERVER, $_GET["username"], null);
+			if ($password === false) {
+				$error .= ($error ? '<br>' : '') . lang(
+					'Master password expired. <a href="https://www.adminer.org/en/extension/"%s>Implement</a> the %s method to make it permanent.',
+					target_blank(),
+					'<code>permanentLogin()</code>'
+				);
 			}
+			set_password(DRIVER, SERVER, $_GET["username"], null);
 			unset_permanent($permanent);
 		}
 	}
@@ -152,9 +225,10 @@ function auth_error(string $error, array &$permanent) {
 	page_header(lang('Login'), $error, null);
 	echo "<form action='' method='post'>\n";
 	echo "<div>";
-	if (hidden_fields($_POST, array("auth"))) { // expired session
+	if (hidden_fields($_POST, array("auth", "token"))) { // expired session
 		echo "<p class='message'>" . lang('The action will be performed after successful login with the same credentials.') . "\n";
 	}
+	echo input_token(); // after hidden_fields() which can print the token of the expired session
 	echo "</div>\n";
 	adminer()->loginForm();
 	echo "</form>\n";
@@ -172,10 +246,6 @@ if (isset($_GET["username"]) && !class_exists('Adminer\Db')) {
 
 $connection = '';
 if (isset($_GET["username"]) && is_string(get_password())) {
-	list(, $port) = host_port(SERVER);
-	if (preg_match('~^\s*([-+]?\d+)~', $port, $match) && ($match[1] < 1024 || $match[1] > 65535)) { // is_numeric('80#') would still connect to port 80
-		auth_error(lang('Connecting to privileged ports is not allowed.'), $permanent);
-	}
 	check_invalid_login($permanent);
 	$credentials = adminer()->credentials();
 	$connection = Driver::connect($credentials[0], $credentials[1], $credentials[2]);
@@ -191,12 +261,12 @@ if (isset($_GET["username"]) && is_string(get_password())) {
 $login = null;
 if (!is_object($connection) || ($login = adminer()->login($_GET["username"], get_password())) !== true) {
 	$error = (is_string($connection) ? nl_br(h($connection)) : (is_string($login) ? $login : lang('Invalid credentials.')))
-		. (preg_match('~^ | $~', get_password()) ? '<br>' . lang('There is a space in the input password which might be the cause.') : '');
+		. (preg_match('~^ | $~', get_password()) ? '<br>' . lang('There is a space in the entered password, which might be the cause.') : '');
 	auth_error($error, $permanent);
 }
 
 if ($_POST["logout"] && $_SESSION["token"] && !verify_token()) {
-	page_header(lang('Logout'), lang('Invalid CSRF token. Send the form again.'));
+	page_header(lang('Logout'), lang('Invalid CSRF token. Submit the form again.'));
 	page_footer("db");
 	exit;
 }
@@ -209,30 +279,19 @@ if ($auth && $_POST["token"]) {
 	$_POST["token"] = get_token(); // reset token after explicit login
 }
 
-$error = ''; ///< @var string
+/** @var string */ $error = ''; // HTML
 if ($_POST) {
 	if (!verify_token()) {
-		$ini = "max_input_vars";
-		$max_vars = ini_get($ini);
-		if (extension_loaded("suhosin")) {
-			foreach (array("suhosin.request.max_vars", "suhosin.post.max_vars") as $key) {
-				$val = ini_get($key);
-				if ($val && (!$max_vars || $val < $max_vars)) {
-					$ini = $key;
-					$max_vars = $val;
-				}
-			}
-		}
-		$error = (!$_POST["token"] && $max_vars
-			? lang('Maximum number of allowed fields exceeded. Please increase %s.', "'$ini'")
-			: lang('Invalid CSRF token. Send the form again.') . ' ' . lang('If you did not send this request from Adminer then close this page.')
-		);
+		header("HTTP/1.1 403 Forbidden");
+		$error = lang('Invalid CSRF token. Submit the form again.') . ' ' . lang('If you did not send this request from Adminer, close this page.');
 	}
 
 } elseif ($_SERVER["REQUEST_METHOD"] == "POST") {
 	// posted form with no data means that post_max_size exceeded because Adminer always sends token at least
-	$error = lang('Too big POST data. Reduce the data or increase the %s configuration directive.', "'post_max_size'");
+	// this branch is not reached with display_startup_errors (on by default since PHP 8.0) because printing the PHP warning about it prevents starting the session
+	header("HTTP/1.1 413 Content Too Large");
+	$error = lang('The POST data is too large. Reduce the data or increase the %s configuration directive.', "<b>post_max_size</b>");
 	if (isset($_GET["sql"])) {
-		$error .= ' ' . lang('You can upload a big SQL file via FTP and import it from server.');
+		$error .= ' ' . lang('You can upload a large SQL file via FTP and import it from the server.');
 	}
 }

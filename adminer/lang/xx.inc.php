@@ -2,40 +2,48 @@
 namespace Adminer;
 
 Lang::$translations = array(
-	// label for database system selection (MySQL, SQLite, ...)
-	'System' => 'Xx',
+	'System' => 'Xx', // label for database system selection (MySQL, SQLite, ...)
 	'Server' => 'Xx',
 	'Username' => 'Xx',
 	'Password' => 'Xx',
 	'Permanent login' => 'Xx',
 	'Login' => 'Xx',
 	'Logout' => 'Xx',
-	'Logged as: %s' => 'Xx: %s',
+	'Logged in as: %s' => 'Xx: %s',
 	'Logout successful.' => 'Xx.',
-	'Thanks for using Adminer, consider <a href="https://www.adminer.org/en/donation/">donating</a>.' => 'Xx <a href="https://www.adminer.org/en/donation/">xx</a>.',
+	'Thanks for using Adminer. Consider <a href="https://www.adminer.org/en/donation/">donating</a>.' => 'Xx <a href="https://www.adminer.org/en/donation/">xx</a>.',
 	'hostname[:port] or :socket' => 'xx',
+	'Invalid server.' => 'Xx.',
 	'Invalid credentials.' => 'Xx.',
-	'There is a space in the input password which might be the cause.' => 'Xx.',
-	'Adminer does not support accessing a database without a password, <a href="https://www.adminer.org/en/password/"%s>more information</a>.' => 'Xx, <a href="https://www.adminer.org/en/password/"%s>xx</a>.',
-	'Database does not support password.' => 'Xx.',
+	'There is a space in the entered password, which might be the cause.' => 'Xx.',
+	'Adminer does not support accessing a database without a password.' => 'Xx.',
+	'The database does not support passwords.' => 'Xx.',
+	'The server accepts any password, so filling it in protects nothing.' => 'Xx.',
+	'Require a password.' => 'Xx.',
+	'Save %s next to Adminer to require the entered password:' => 'Xx %s xx:',
+	'Save %s next to Adminer to require the password %s:' => 'Xx %s xx %s:',
+	'Add this line to %s to require the entered password:' => 'Xx %s xx:',
+	'Add this line to %s to require the password %s:' => 'Xx %s xx %s:',
+	'More options' => 'Xx',
+	'Require a password verified by Adminer' => 'Xx',
 	'Too many unsuccessful logins, try again in %d minute(s).' => array('Xx %d.', 'Xx %d.'),
-	'Master password expired. <a href="https://www.adminer.org/en/extension/"%s>Implement</a> %s method to make it permanent.' => 'Xx. <a href="https://www.adminer.org/en/extension/"%s>Xx</a> %s xx.',
+	'Use the %s <a%s>plugin</a> if Adminer runs behind a reverse proxy.' => 'Xx %s <a%s>xx</a> xx.',
+	'Master password expired. <a href="https://www.adminer.org/en/extension/"%s>Implement</a> the %s method to make it permanent.' => 'Xx. <a href="https://www.adminer.org/en/extension/"%s>Xx</a> %s xx.',
 	'Language' => 'Xx',
-	'Invalid CSRF token. Send the form again.' => 'Xx.',
-	'If you did not send this request from Adminer then close this page.' => 'Xx.',
+	'Invalid CSRF token. Submit the form again.' => 'Xx.',
+	'If you did not send this request from Adminer, close this page.' => 'Xx.',
+	'Not found.' => 'Xx.',
 	'No extension' => 'Xx',
-	// %s contains the list of the extensions, e.g. 'mysqli, PDO_MySQL'
-	'None of the supported PHP extensions (%s) are available.' => 'Xx (%s).',
+	'None of the supported PHP extensions (%s) are available.' => 'Xx (%s).', // %s contains the list of the extensions, e.g. 'mysqli, PDO_MySQL'
 	'Connecting to privileged ports is not allowed.' => 'Xx.',
-	'Disable %s or enable %s or %s extensions.' => 'Xx %s xx %s xx %s xx.',
+	'Disable %s or enable the %s or %s extension.' => 'Xx %s xx %s xx %s xx.',
 	'Session support must be enabled.' => 'Xx.',
-	'Session expired, please login again.' => 'Xx.',
+	'Session expired. Please log in again.' => 'Xx.',
 	'The action will be performed after successful login with the same credentials.' => 'Xx.',
 	'%s version: %s through PHP extension %s' => '%s xx: %s xx %s',
 	'Refresh' => 'Xx',
 
-	// text direction - 'ltr' or 'rtl'
-	'ltr' => 'ltr',
+	'ltr' => 'ltr', // text direction - 'ltr' or 'rtl'
 
 	'Privileges' => 'Xx',
 	'Create user' => 'Xx',
@@ -57,18 +65,17 @@ Lang::$translations = array(
 	'Status' => 'Xx',
 
 	'SQL command' => 'Xx',
-	'%d query(s) executed OK.' => array('%d xx.', '%d xx.'),
+	'%d query(ies) executed OK.' => array('%d xx.', '%d xx.'),
 	'Query executed OK, %d row(s) affected.' => array('Xx, %d.', 'Xx, %d.'),
 	'No commands to execute.' => 'Xx.',
 	'Error in query' => 'Xx',
 	'Unknown error.' => 'Xx.',
 	'Warnings' => 'Xx',
-	'ATTACH queries are not supported.' => 'Xx.',
+	'%s queries are not supported.' => '%s xx.',
 	'Execute' => 'Xx',
 	'Stop on error' => 'Xx',
 	'Show only errors' => 'Xx',
-	// sprintf() format for time of the command
-	'%.3f s' => '%.3f xx',
+	'%.3f s' => '%.3f xx', // sprintf() format for time of the command
 	'History' => 'Xx',
 	'Clear' => 'Xx',
 	'Edit all' => 'Xx',
@@ -82,23 +89,26 @@ Lang::$translations = array(
 	'File uploads are disabled.' => 'Xx.',
 	'Unable to upload a file.' => 'Xx.',
 	'Maximum allowed file size is %sB.' => 'Xx %sB.',
-	'Too big POST data. Reduce the data or increase the %s configuration directive.' => 'Xx %s.',
-	'You can upload a big SQL file via FTP and import it from server.' => 'Xx.',
+	'The POST data is too large. Reduce the data or increase the %s configuration directive.' => 'Xx %s.',
+	'You can upload a large SQL file via FTP and import it from the server.' => 'Xx.',
 	'You are offline.' => 'Xx.',
+	'Menu' => 'Xx',
+	'Documentation' => 'Xx',
+	'Database management in a single PHP file' => 'Xx',
 
 	'Export' => 'Xx',
 	'Output' => 'Xx',
 	'open' => 'xx',
 	'save' => 'xx',
-	'Saving' => 'Xx',
+	'Saving…' => 'Xx…',
 	'Format' => 'Xx',
 	'Data' => 'Xx',
 
 	'Database' => 'Xx',
 	'DB' => 'XX',
+	'System%s' => 'Xx%s', // group of system databases or schemas in the menu, %s is always empty
 	'Use' => 'Xx',
 	'Select database' => 'Xx',
-	'Invalid database.' => 'Xx.',
 	'Database has been dropped.' => 'Xx.',
 	'Databases have been dropped.' => 'Xx.',
 	'Database has been created.' => 'Xx.',
@@ -108,11 +118,9 @@ Lang::$translations = array(
 	'Create database' => 'Xx',
 	'Database schema' => 'Xx',
 
-	// link to current database schema layout
-	'Permanent link' => 'Xx',
+	'Permanent link' => 'Xx', // link to current database schema layout
 
-	// thousands separator - must contain single byte
-	',' => 'x',
+	'#,##0' => '#x##0', // digit grouping in the CLDR number pattern without the decimals, '#,##,##0' formats 1234567 as 12,34,567
 	'0123456789' => 'xxxxxxxxxx',
 	'Engine' => 'Xx',
 	'Collation' => 'Xx',
@@ -128,7 +136,7 @@ Lang::$translations = array(
 	'Repair' => 'Xx',
 	'Truncate' => 'Xx',
 	'Tables have been truncated.' => 'Xx.',
-	'Move to other database' => 'Xx',
+	'Move to another database' => 'Xx',
 	'Move' => 'Xx',
 	'Tables have been moved.' => 'Xx.',
 	'Copy' => 'Xx',
@@ -163,6 +171,7 @@ Lang::$translations = array(
 
 	'Tables' => 'Xx',
 	'Tables and views' => 'Xx',
+	'All' => 'Xx', // checkbox selecting all tables and views
 	'Table' => 'Xx',
 	'No tables.' => 'Xx.',
 	'Alter table' => 'Xx',
@@ -189,8 +198,6 @@ Lang::$translations = array(
 	'Are you sure?' => 'Xx?',
 	'Size' => 'Xx',
 	'Compute' => 'Xx',
-	'Move up' => 'Xx',
-	'Move down' => 'Xx',
 	'Remove' => 'Xx',
 	'Maximum number of allowed fields exceeded. Please increase %s.' => 'Xx %s.',
 
@@ -200,6 +207,7 @@ Lang::$translations = array(
 	'Values' => 'Xx',
 	'Inherits from' => 'Xx',
 	'Inherited by' => 'Xx',
+	'Shadow tables' => 'Xx',
 
 	'View' => 'Xx',
 	'Materialized view' => 'Xx',
@@ -215,11 +223,11 @@ Lang::$translations = array(
 	'Add next' => 'Xx',
 	'Index Type' => 'Xx',
 	'length' => 'xx',
+	'operator class' => 'xx',
 	'Algorithm' => 'Xx',
 	'Condition' => 'Xx',
 
 	'Foreign keys' => 'Xx',
-	'Foreign key' => 'Xx',
 	'Foreign key has been dropped.' => 'Xx.',
 	'Foreign key has been altered.' => 'Xx.',
 	'Foreign key has been created.' => 'Xx.',
@@ -229,13 +237,13 @@ Lang::$translations = array(
 	'Target' => 'Xx',
 	'Add column' => 'Xx',
 	'Alter' => 'Xx',
-	'Add foreign key' => 'Xx',
+	'Alter foreign key' => 'Xx',
+	'Create foreign key' => 'Xx',
 	'ON DELETE' => 'Xx',
 	'ON UPDATE' => 'Xx',
-	'Source and target columns must have the same data type, there must be an index on the target columns and referenced data must exist.' => 'Xx.',
+	'Source and target columns must have the same data type, there must be an index on the target columns and the referenced data must exist.' => 'Xx.',
 
 	'Triggers' => 'Xx',
-	'Add trigger' => 'Xx',
 	'Trigger has been dropped.' => 'Xx.',
 	'Trigger has been altered.' => 'Xx.',
 	'Trigger has been created.' => 'Xx.',
@@ -260,15 +268,14 @@ Lang::$translations = array(
 	'Text length' => 'Xx',
 	'Action' => 'Xx',
 	'Full table scan' => 'Xx',
-	'Unable to select the table' => 'Xx',
+	'Unable to select the table.' => 'Xx.',
 	'No rows.' => 'Xx.',
-	// used in SQL query limit and it is followed by another number, e.g. '10 / 50 rows' meaning 10 of 50 rows
-	'%d / ' => '%d / ',
+	'%d / ' => '%d / ', // used in SQL query limit and it is followed by another number, e.g. '10 / 50 rows' meaning 10 of 50 rows
 	'%d row(s)' => array('%d xx', '%d xx'),
 	'Page' => 'Xx',
 	'last' => 'xx',
 	'Load more data' => 'Xx',
-	'Loading' => 'Xx',
+	'Loading…' => 'Xx…',
 	'Whole result' => 'Xx',
 	'%d byte(s)' => array('%d xx', '%d xx'),
 
@@ -276,25 +283,23 @@ Lang::$translations = array(
 	'%d row(s) have been imported.' => array('%d xx.', '%d xx.'),
 	'File must be in UTF-8 encoding.' => 'Xx.',
 
-	// in-place editing in select
-	'Modify' => 'Xx',
+	'All rows on this page' => 'Xx',
+	'Modify' => 'Xx', // in-place editing in select
 	'Ctrl+click on a value to modify it.' => 'Xx.',
-	'Use edit link to modify this value.' => 'Xx.',
+	'Use the edit link to modify this value.' => 'Xx.',
 
-	// %s can contain auto-increment value, e.g. ' 123'
-	'Item%s has been inserted.' => 'Xx%s.',
+	'Item%s has been inserted.' => 'Xx%s.', // %s can contain auto-increment value, e.g. ' 123'
 	'Item has been deleted.' => 'Xx.',
 	'Item has been updated.' => 'Xx.',
 	'%d item(s) have been affected.' => array('%d xx.', '%d xx.'),
 	'New item' => 'Xx',
 	'original' => 'xx',
-	// label for value '' in enum data type
-	'empty' => 'xx',
+	'empty' => 'xx', // label for value '' in enum data type
 	'edit' => 'xx',
 	'Edit' => 'Xx',
 	'Insert' => 'Xx',
 	'Save' => 'Xx',
-	'Save and continue edit' => 'Xx',
+	'Save and continue editing' => 'Xx',
 	'Save and insert next' => 'Xx',
 	'Selected' => 'Xx',
 	'Clone' => 'Xx',
@@ -309,22 +314,20 @@ Lang::$translations = array(
 	'Lists' => 'Xx',
 	'Network' => 'Xx',
 	'Geometry' => 'Xx',
+	'Ranges' => 'Xx',
 	'Relations' => 'Xx',
 
 	'Editor' => 'Xx',
-	// date format in Editor: $1 yyyy, $2 yy, $3 mm, $4 m, $5 dd, $6 d
-	'$1-$3-$5' => 'xx',
-	// hint for date format - use language equivalents for day, month and year shortcuts
-	'[yyyy]-mm-dd' => 'xx',
-	// hint for time format - use language equivalents for hour, minute and second shortcuts
-	'HH:MM:SS' => 'Xx',
+	'Data editing in a single PHP file' => 'Xx',
+	'$1-$3-$5' => 'xx', // date format in Editor: $1 yyyy, $2 yy, $3 mm, $4 m, $5 dd, $6 d
+	'[yyyy]-mm-dd' => 'xx', // hint for date format - use language equivalents for day, month and year shortcuts
+	'HH:MM:SS' => 'Xx', // hint for time format - use language equivalents for hour, minute and second shortcuts
 	'now' => 'xx',
 	'yes' => 'xx',
 	'no' => 'xx',
 
-	// general SQLite error in create, drop or rename database
-	'File exists.' => 'Xx.',
-	'Please use one of the extensions %s.' => 'Xx %s.',
+	'File exists.' => 'Xx.', // general SQLite error in create, drop or rename database
+	'Please use one of these file extensions: %s.' => 'Xx %s.',
 
 	// PostgreSQL and MS SQL schema support
 	'Alter schema' => 'Xx',
@@ -333,7 +336,6 @@ Lang::$translations = array(
 	'Schema has been created.' => 'Xx.',
 	'Schema has been altered.' => 'Xx.',
 	'Schema' => 'Xx',
-	'Invalid schema.' => 'Xx.',
 
 	// PostgreSQL sequences support
 	'Sequences' => 'Xx',
@@ -343,12 +345,17 @@ Lang::$translations = array(
 	'Sequence has been altered.' => 'Xx.',
 	'Alter sequence' => 'Xx',
 
-	// PostgreSQL user types support
+	// PostgreSQL user-defined types support
 	'User types' => 'Xx',
 	'Create type' => 'Xx',
 	'Type has been dropped.' => 'Xx.',
 	'Type has been created.' => 'Xx.',
+	'Type has been altered.' => 'Xx.',
 	'Alter type' => 'Xx',
+
+	// PostgreSQL extensions
+	'Extensions' => 'Xx',
+	'Version' => 'Xx',
 
 	// Table check constraints
 	'Checks' => 'Xx',
@@ -361,6 +368,7 @@ Lang::$translations = array(
 	'Loaded plugins' => 'Xx',
 	'%s must <a%s>return an array</a>.' => '%s xx <a%s>xx</a>.',
 	'<a%s>Configure</a> %s in %s.' => '<a%s>Xx</a> %s xx %s.',
+	'Every plugin must <a%s>be an object</a>.' => 'Xx <a%s>xx</a>.',
 	'screenshot' => 'xx',
 );
 

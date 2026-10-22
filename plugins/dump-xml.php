@@ -1,6 +1,6 @@
 <?php
 
-/** Dump to XML format in structure <database name=""><table name=""><column name="">value
+/** Dump to XML format with the structure <database name=""><table name=""><column name="">value
 * @link https://www.adminer.org/plugins/#use
 * @author Jakub Vrana, https://www.vrana.cz/
 * @license https://www.apache.org/licenses/LICENSE-2.0 Apache License, Version 2.0
@@ -19,13 +19,16 @@ class AdminerDumpXml extends Adminer\Plugin {
 		}
 	}
 
-	function dumpData($table, $style, $query) {
+	function dumpData($table, $style, $query, $select = array(), $where = array(), $group = array(), $order = array()) {
 		if ($_POST["format"] == "xml") {
 			if (!$this->database) {
 				$this->database = true;
 				echo "<database name='" . Adminer\h(Adminer\DB) . "'>\n";
 			}
-			$result = Adminer\connection()->query($query, 1);
+			$result = ($query != ""
+				? Adminer\connection()->query($query, 1) // 1 - MYSQLI_USE_RESULT
+				: Adminer\driver()->select($table, ($select ?: array("*")), $where, $group, $order, 0) // 0 - all rows
+			);
 			if ($result) {
 				while ($row = $result->fetch_assoc()) {
 					echo "\t<table name='" . Adminer\h($table) . "'>\n";
@@ -54,9 +57,12 @@ class AdminerDumpXml extends Adminer\Plugin {
 
 	protected $translations = array(
 		'cs' => array('' => 'Export do formátu XML ve struktuře <database name=""><table name=""><column name="">value'),
-		'de' => array('' => 'Export im XML-Format in der Struktur <database name="><table name=""><column name="">value'),
+		'de' => array('' => 'Export im XML-Format in der Struktur <database name=""><table name=""><column name="">value'),
+		'hr' => array('' => 'Izvoz u XML format u strukturi <database name=""><table name=""><column name="">vrijednost'),
+		'ja' => array('' => '構造化 XML 形式でエクスポート <database name=""><table name=""><column name="">value'),
 		'pl' => array('' => 'Zrzut do formatu XML w strukturze <database name=""><table name=""><column name="">value'),
 		'ro' => array('' => 'Dump în format XML în structura <database name=""><table name=""><column name="">value'),
-		'ja' => array('' => '構造化 XML 形式でエクスポート <database name=""><table name=""><column name="">value'),
+		'sk' => array('' => 'Export do formátu XML v štruktúre <database name=""><table name=""><column name="">value'), // Claude Opus 5
+		'zh' => array('' => '导出为 XML 格式，结构为 <database name=""><table name=""><column name="">值'), // Claude Opus 5
 	);
 }

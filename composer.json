@@ -30,14 +30,59 @@
         "GPL-2.0-only"
     ],
     "require": {
-        "php": ">=7.4"
+        "php": ">=7.4",
+        "ext-json": "*",
+        "ext-session": "*"
+    },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "4.0.4",
+        "slevomat/coding-standard": "8.31.1",
+        "phpcompatibility/php-compatibility": "dev-develop#299a472",
+        "phpstan/phpstan": "2.2.15",
+        "phpstan/phpstan-strict-rules": "2.0.12"
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
     },
     "scripts": {
+        "post-install-cmd": "@submodules",
+        "post-update-cmd": "@submodules",
+        "submodules": "@php -r \"passthru('git submodule update --init --recursive'); if (getenv('COMPOSER_DEV_MODE') !== '0') { passthru('npm install --no-save --prefix . eslint @eslint/js globals @playwright/test'); }\"",
         "check": [
-            "phpcs",
-            "phpstan analyse -c phpstan.neon"
+            "phpcs --standard=conf/phpcs.xml",
+            "phpstan analyse -c conf/phpstan.neon",
+            "npx eslint -c conf/eslint.config.mjs"
+        ],
+        "test": [
+            "@php tests/unit/compress.php",
+            "@php tests/unit/format_number.php",
+            "@php tests/unit/highlight.php",
+            "@php tests/unit/json_exact.php",
+            "@php tests/unit/parse_server.php",
+            "@php tests/unit/shorten.php",
+            "@php tests/unit/url.php"
+        ],
+        "compat": [
+            "@php compile.php",
+            "@php compile.php editor",
+            "phpcs --standard=conf/phpcompat.xml"
+        ],
+        "e2e": [
+            "Composer\\Config::disableProcessTimeout",
+            "node tests/run.js"
         ],
         "compile": "@php compile.php",
-        "clean": "rm -f adminer*.php editor*.php"
+        "clean": "@php -r \"array_map('unlink', array_merge(glob('adminer*.php'), glob('editor*.php'), glob('drivers/*.php'))); @rmdir('drivers');\""
+    },
+    "scripts-descriptions": {
+        "submodules": "Initializes the git submodules and installs the npm packages",
+        "check": "Checks the code by phpcs, phpstan and eslint",
+        "test": "Runs the unit tests in tests/unit/",
+        "compat": "Compiles the single files and checks them for APIs missing in the oldest supported PHP",
+        "e2e": "Runs the end-to-end tests by Playwright (see tests/README.md)",
+        "compile": "Compiles Adminer with all drivers and languages into adminer.php",
+        "clean": "Removes the compiled adminer*.php, editor*.php and drivers/"
     }
 }

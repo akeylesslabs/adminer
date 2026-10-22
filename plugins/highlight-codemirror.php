@@ -1,6 +1,6 @@
 <?php
 
-/** Use CodeMirror 5 for syntax highlighting and <textarea> including type-ahead of keywords and tables
+/** Use CodeMirror 5 for syntax highlighting and the <textarea>, including type-ahead of keywords and tables
 * @link https://codemirror.net/5/
 * @link https://www.adminer.org/plugins/#use
 * @author Jakub Vrana, https://www.vrana.cz/
@@ -28,7 +28,12 @@ class AdminerHighlightCodemirror extends Adminer\Plugin {
 		echo Adminer\script_src("$this->root/addon/runmode/runmode$this->minified.js", true);
 		echo Adminer\script_src("$this->root/addon/hint/show-hint$this->minified.js", true);
 		echo Adminer\script_src("$this->root/mode/javascript/javascript$this->minified.js", true);
-		$tables = array_fill_keys(array_keys($tableStatuses), array());
+		$tables = array();
+		foreach ($tableStatuses as $table => $status) {
+			if (!$status["dependent"]) {
+				$tables[$table] = array();
+			}
+		}
 		if (Adminer\support("sql")) {
 			echo Adminer\script_src("$this->root/mode/sql/sql$this->minified.js", true);
 			echo Adminer\script_src("$this->root/addon/hint/sql-hint$this->minified.js", true);
@@ -104,8 +109,12 @@ addEventListener('DOMContentLoaded', () => {
 
 	protected $translations = array(
 		'cs' => array('' => 'Použít CodeMirror 5 pro zvýrazňování syntaxe a <textarea> včetně našeptávání klíčových slov a tabulek'),
-		'de' => array('' => 'CodeMirror 5 verwenden für die Syntaxhervorhebung und <textarea> einschließlich der Überschrift von Schlüsselwörtern und Tabellen'),
-		'ja' => array('' => 'CodeMirror 5 を用い、キーワードやテーブルを含む構文や <textarea> を強調表示'),
-		'pl' => array('' => 'Użyj CodeMirror 5 do podświetlania składni i <textarea>, uwzględniając wcześniejsze wpisywanie słów kluczowych i tabel'),
+		'de' => array('' => 'CodeMirror 5 verwenden für die Syntaxhervorhebung und <textarea> einschließlich Autovervollständigung von Schlüsselwörtern und Tabellen'), // Claude Opus 5
+		'hr' => array('' => 'Koristi CodeMirror 5 za isticanje sintakse i <textarea>, uključujući dovršavanje ključnih riječi i tablica'),
+		'ja' => array('' => 'CodeMirror 5 を用い、キーワードやテーブル名の補完を含む構文強調表示と <textarea> を提供'), // Claude Opus 5
+		'pl' => array('' => 'Użyj CodeMirror 5 do podświetlania składni i <textarea>, wraz z podpowiadaniem słów kluczowych i nazw tabel'), // Claude Opus 5
+		'ro' => array('' => 'Folosiți CodeMirror 5 pentru evidențierea sintaxei și <textarea>, inclusiv sugestii pentru cuvinte cheie și tabele'), // Claude Opus 5
+		'sk' => array('' => 'Použije CodeMirror 5 na zvýrazňovanie syntaxe a <textarea> vrátane napovedania kľúčových slov a tabuliek'), // Claude Opus 5
+		'zh' => array('' => '使用 CodeMirror 5 实现语法高亮和 <textarea>，包含关键字和表名的输入提示'), // Claude Opus 5
 	);
 }

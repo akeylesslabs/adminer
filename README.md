@@ -6,21 +6,21 @@
 
 ## Features
 - **Supports:** MySQL, MariaDB, PostgreSQL, CockroachDB, SQLite, MS SQL, Oracle
-- **Plugins for:** Elasticsearch, SimpleDB, MongoDB, Firebird, ClickHouse, IMAP
+- **Plugins for:** Elasticsearch, OpenSearch, SimpleDB, MongoDB, Redis, Firebird, ClickHouse, IGDB, IMAP
 - **Requirements:** PHP 5.3+ (compiled file), PHP 7.4+ (source codes)
 
 ## Screenshot
 ![Table structure](https://www.adminer.org/static/screenshots/table.png)
 
 ## Installation
-If downloaded from Git then run: `git submodule update --init`
+If downloaded from Git then run: `git submodule update --init` (or `composer install`)
 
 - `adminer/index.php` - Run development version of Adminer
-- `editor/index.php` - Run development version of Adminer Editor
+- `editor/index.php` - Run development version of Adminer Editor, needs `adminer/` next to it
 - `editor/example.php` - Example customization
 - `compile.php` - Create a single file version
 - `lang.php` - Update translations
-- `tests/*.html` - Katalon Recorder test suites
+- `tests/*.spec.js` - Playwright end-to-end tests
 
 ## Plugins
 There are several plugins distributed with Adminer, as well as many user-contributed plugins listed on the [Adminer Plugins page](https://www.adminer.org/plugins/).

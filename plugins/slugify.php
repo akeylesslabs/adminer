@@ -1,6 +1,6 @@
 <?php
 
-/** Prefill field containing "_slug" with slugified value of a previous field (JavaScript)
+/** Prefill a field containing "_slug" with the slugified value of the previous field (JavaScript)
 * @link https://www.adminer.org/plugins/#use
 * @author Jakub Vrana, https://www.vrana.cz/
 * @license https://www.apache.org/licenses/LICENSE-2.0 Apache License, Version 2.0
@@ -19,7 +19,7 @@ class AdminerSlugify extends Adminer\Plugin {
 	}
 
 	function editInput($table, $field, $attrs, $value) {
-		static $slugify;
+		static $slugify, $printed;
 		if (!$_GET["select"] && !$_GET["where"] && $table) {
 			if ($slugify === null) {
 				$slugify = array();
@@ -33,16 +33,23 @@ class AdminerSlugify extends Adminer\Plugin {
 			}
 			$slug = $slugify[$field["field"]];
 			if ($slug !== null) {
-				return "<input value='" . Adminer\h($value) . "' data-maxlength='$field[length]' size='40'$attrs>"
-					. Adminer\script("qsl('input').onchange = function () {
-	const find = '$this->from';
-	const repl = '$this->to';
-	this.form['fields[$slug]'].value = this.value.toLowerCase()
+				$script = "";
+				if (!$printed) {
+					$printed = true;
+					$script = Adminer\script("
+function slugifyChange(slug, length) {
+	const find = '" . Adminer\js_escape($this->from) . "';
+	const repl = '" . Adminer\js_escape($this->to) . "';
+	this.form['fields[' + slug + ']'].value = this.value.toLowerCase()
 		.replace(new RegExp('[' + find + ']', 'g'), function (str) { return repl[find.indexOf(str)]; })
 		.replace(/[^a-z0-9_]+/g, '-')
 		.replace(/^-|-\$/g, '')
-		.substr(0, $field[length]);
-};");
+		.slice(0, length || undefined); // no length means no truncation
+}", "");
+				}
+				$maxlength = (int) $field["length"]; // the length of enum and set is the list of the values
+				return "<input value='" . Adminer\h($value) . "'" . ($maxlength ? " data-maxlength='$maxlength'" : "") . " size='40'$attrs"
+					. Adminer\on('change', 'slugifyChange', $slug, $maxlength) . ">" . $script;
 			}
 		}
 	}
@@ -50,8 +57,11 @@ class AdminerSlugify extends Adminer\Plugin {
 	protected $translations = array(
 		'cs' => array('' => 'Předvyplní políčko obsahující "_slug" URLizovanou hodnotou předchozího políčka (JavaScript)'),
 		'de' => array('' => 'Feld, das "_slug" enthält, mit dem Slugified-Wert eines vorherigen Felds vorab füllen (JavaScript)'),
-		'pl' => array('' => 'Wstępnie wypełnij pole zawierające "_slug" osłabioną wartością poprzedniego pola (JavaScript)'),
-		'ro' => array('' => 'Precompletați câmpul care conține "_slug" cu valoarea slugificată a unui câmp anterior (JavaScript)'),
+		'hr' => array('' => 'Popunjava polje koje sadrži "_slug" slugificiranom vrijednošću prethodnog polja (JavaScript)'),
 		'ja' => array('' => '列名に "_slug" を含む列を、前列の URL 化された値でプレフィル (JavaScript)'),
+		'pl' => array('' => 'Wstępnie wypełnij pole zawierające "_slug" wartością poprzedniego pola przekształconą w slug (JavaScript)'), // Claude Opus 5
+		'ro' => array('' => 'Precompletați câmpul care conține "_slug" cu valoarea slugificată a unui câmp anterior (JavaScript)'),
+		'sk' => array('' => 'Predvyplní políčko obsahujúce "_slug" URLizovanou hodnotou predchádzajúceho políčka (JavaScript)'), // Claude Opus 5
+		'zh' => array('' => '用上一个字段的 slug 值预填包含 "_slug" 的字段（JavaScript）'), // Claude Opus 5
 	);
 }

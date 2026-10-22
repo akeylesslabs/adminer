@@ -4,14 +4,21 @@ namespace Adminer;
 $TABLE = $_GET["dump"];
 
 if ($_POST && !$error) {
+	$default = array("auto_increment" => '');
+	foreach (array("type", "routine", "event", "trigger") as $support) {
+		if (support($support)) {
+			$default[$support . "s"] = '';
+		}
+	}
 	save_settings(
-		array_intersect_key($_POST, array_flip(array("output", "format", "db_style", "types", "routines", "events", "table_style", "auto_increment", "triggers", "data_style"))),
+		array_intersect_key($_POST + $default, array_flip(array("output", "format", "db_style", "schema_style", "table_style", "data_style")) + $default),
 		"adminer_export"
 	);
+	$all = (DB == "" || $_GET["ns"] === ""); // all tables of the selected databases or schemas, set_schema() changes $_GET["ns"]
 	$tables = array_flip((array) $_POST["tables"]) + array_flip((array) $_POST["data"]);
 	$ext = dump_headers(
 		(count($tables) == 1 ? key($tables) : DB),
-		(DB == "" || count($tables) > 1)
+		($all || count($tables) > 1)
 	);
 	$is_sql = preg_match('~sql~', $_POST["format"]);
 
@@ -41,93 +48,145 @@ SET foreign_key_checks = 0;
 	foreach ((array) $databases as $db) {
 		adminer()->dumpDatabase($db);
 		if (connection()->select_db($db)) {
-			if ($is_sql) {
-				if ($style) {
-					echo use_sql($db, $style) . ";\n\n";
-				}
-				$out = "";
-
-				if ($_POST["types"]) {
-					foreach (types() as $id => $type) {
-						$enums = type_values($id);
-						if ($enums) {
-							$out .= ($style != 'DROP+CREATE' ? "DROP TYPE IF EXISTS " . idf_escape($type) . ";;\n" : "") . "CREATE TYPE " . idf_escape($type) . " AS ENUM ($enums);\n\n";
-						} else {
-							//! https://github.com/postgres/postgres/blob/REL_17_4/src/bin/pg_dump/pg_dump.c#L10846
-							$out .= "-- Could not export type $type\n\n";
-						}
-					}
-				}
-
-				if ($_POST["routines"]) {
-					foreach (routines() as $row) {
-						$name = $row["ROUTINE_NAME"];
-						$routine = $row["ROUTINE_TYPE"];
-						$create = create_routine($routine, array("name" => $name) + routine($row["SPECIFIC_NAME"], $routine));
-						set_utf8mb4($create);
-						$out .= ($style != 'DROP+CREATE' ? "DROP $routine IF EXISTS " . idf_escape($name) . ";;\n" : "") . "$create;\n\n";
-					}
-				}
-
-				if ($_POST["events"]) {
-					foreach (get_rows("SHOW EVENTS", null, "-- ") as $row) {
-						$create = remove_definer(get_val("SHOW CREATE EVENT " . idf_escape($row["Name"]), 3));
-						set_utf8mb4($create);
-						$out .= ($style != 'DROP+CREATE' ? "DROP EVENT IF EXISTS " . idf_escape($row["Name"]) . ";;\n" : "") . "$create;;\n\n";
-					}
-				}
-
-				echo ($out && JUSH == 'sql' ? "DELIMITER ;;\n\n$out" . "DELIMITER ;\n\n" : $out);
+			if ($is_sql && $style) {
+				echo use_sql($db, $style) . ";\n\n";
 			}
 
-			if ($_POST["table_style"] || $_POST["data_style"]) {
-				$views = array();
-				foreach (table_status('', true) as $name => $table_status) {
-					$table = (DB == "" || in_array($name, (array) $_POST["tables"]));
-					$data = (DB == "" || in_array($name, (array) $_POST["data"]));
-					if ($table || $data) {
-						$tmp_file = null;
-						if ($ext == "tar") {
-							$tmp_file = new TmpFile;
-							ob_start(array($tmp_file, 'write'), 1e5);
-						}
+			foreach (($_GET["ns"] === "" ? (array) $_POST["schemas"] : (DB != "" || !support("scheme") ? array("") : adminer()->schemas())) as $schema) {
+				if ($schema != "") {
+					if (DB == "" && information_schema(DB, $schema)) {
+						continue;
+					}
+					set_schema($schema);
+				}
+				if ($is_sql && $_POST["schema_style"] && function_exists('Adminer\use_schema_sql')) {
+					echo use_schema_sql($_GET["ns"], $_POST["schema_style"]) . ";\n\n";
+				}
 
-						adminer()->dumpTable($name, ($table ? $_POST["table_style"] : ""), (is_view($table_status) ? 2 : 0));
-						if (is_view($table_status)) {
-							$views[] = $name;
-						} elseif ($data) {
-							$fields = fields($name);
-							adminer()->dumpData($name, $_POST["data_style"], "SELECT *" . convert_fields($fields, $fields) . " FROM " . table($name));
-						}
-						if ($is_sql && $_POST["triggers"] && $table && ($triggers = trigger_sql($name))) {
-							echo "\nDELIMITER ;;\n$triggers\nDELIMITER ;\n";
-						}
-
-						if ($ext == "tar") {
-							ob_end_flush();
-							tar_file((DB != "" ? "" : "$db/") . "$name.csv", $tmp_file);
-						} elseif ($is_sql) {
-							echo "\n";
-						}
+				$statuses = ($_POST["table_style"] || $_POST["data_style"] ? table_status('', true) : array());
+				$exported = array(); // tables and views whose structure is exported
+				$data_tables = array(); // tables and views whose data is exported
+				foreach ($statuses as $name => $table_status) {
+					if ($all || in_array($name, (array) $_POST["tables"])) {
+						$exported[$name] = $table_status;
+					}
+					if ($all || in_array($name, (array) $_POST["data"])) {
+						$data_tables[$name] = $table_status;
 					}
 				}
 
-				// add FKs after creating tables (except in MySQL which uses SET FOREIGN_KEY_CHECKS=0)
-				if (function_exists('Adminer\foreign_keys_sql')) {
-					foreach (table_status('', true) as $name => $table_status) {
-						$table = (DB == "" || in_array($name, (array) $_POST["tables"]));
-						if ($table && !is_view($table_status)) {
-							echo foreign_keys_sql($name);
+				if ($is_sql) {
+					// the tables are dropped before the types and routines they use
+					if ($_POST["table_style"] == "DROP+CREATE" && function_exists('Adminer\drop_sql')) {
+						echo drop_sql($exported);
+					}
+					if ($_POST["data_style"] == "TRUNCATE+INSERT" && function_exists('Adminer\truncate_all_sql')) {
+						$truncated = array();
+						foreach ($data_tables as $name => $table_status) {
+							// tables re-created below are empty, the others exist in the database and can hold data
+							if (!is_view($table_status) && !($_POST["table_style"] == "DROP+CREATE" && isset($exported[$name]))) {
+								$truncated[] = $name;
+							}
+						}
+						echo truncate_all_sql($truncated);
+					}
+					$out = "";
+
+					if ($_POST["types"]) {
+						//! types are exported in alphabetical order, not in the order of their dependencies
+						foreach (types() as $id => $type) {
+							$definition = type_definition($id);
+							$object = ($definition["kind"] == 'd' ? "DOMAIN" : "TYPE");
+							if ($definition["definition"]) {
+								$out .= ($style != 'DROP+CREATE' ? "DROP $object IF EXISTS " . table($type) . ";;\n" : "")
+									. "CREATE $object " . table($type) . " $definition[definition];\n\n";
+							} else {
+								$out .= "-- Could not export type " . preg_replace('~[\r\n]+~', ' ', $type) . "\n\n"; // a line break in the name would end the comment
+							}
 						}
 					}
+
+					if ($_POST["routines"]) {
+						foreach (routines() as $row) {
+							$name = $row["ROUTINE_NAME"];
+							$routine = $row["ROUTINE_TYPE"];
+							$info = routine($row["SPECIFIC_NAME"], $routine);
+							if ($info["definition"] != "") { // empty if only the definer and privileged users can see it, CREATE without it would be invalid
+								$create = create_routine($routine, array("name" => $name) + $info);
+								set_utf8mb4($create);
+								$out .= ($style != 'DROP+CREATE' ? "DROP $routine IF EXISTS " . table($name) . ";;\n" : "") . "$create;\n\n";
+							} else {
+								$out .= "-- Could not export " . strtolower($routine) . " " . preg_replace('~[\r\n]+~', ' ', $name) . "\n\n"; // a line break in the name would end the comment
+							}
+						}
+					}
+
+					if ($_POST["events"]) {
+						foreach (get_rows("SHOW EVENTS", null, "-- ") as $row) {
+							$create = remove_definer(get_val("SHOW CREATE EVENT " . idf_escape($row["Name"]), 3));
+							set_utf8mb4($create);
+							$out .= ($style != 'DROP+CREATE' ? "DROP EVENT IF EXISTS " . idf_escape($row["Name"]) . ";;\n" : "") . "$create;;\n\n";
+						}
+					}
+
+					echo ($out && JUSH == 'sql' ? "DELIMITER ;;\n\n$out" . "DELIMITER ;\n\n" : $out);
 				}
 
-				foreach ($views as $view) {
-					adminer()->dumpTable($view, $_POST["table_style"], 1);
-				}
+				if ($_POST["table_style"] || $_POST["data_style"]) {
+					$views = array();
+					foreach ($statuses as $name => $table_status) {
+						$table = array_key_exists($name, $exported);
+						$data = array_key_exists($name, $data_tables);
+						if ($table || $data) {
+							$tmp_file = null;
+							if ($ext == "tar") {
+								$tmp_file = new TmpFile;
+								ob_start(array($tmp_file, 'write'), 1e5);
+							}
 
-				if ($ext == "tar") {
-					echo pack("x512");
+							adminer()->dumpTable($name, ($table ? $_POST["table_style"] : ""), (is_view($table_status) ? 2 : 0));
+							if (is_view($table_status)) {
+								$views[] = $name;
+							} elseif ($data) {
+								$fields = fields($name);
+								$select = array("*");
+								$convert_fields = convert_fields($fields, $fields);
+								if ($convert_fields) {
+									$select[] = substr($convert_fields, 2); // 2 - strlen(", ")
+								}
+								adminer()->dumpData($name, $_POST["data_style"], "", $select); // empty query - the driver selects the rows
+							}
+							if ($is_sql && $_POST["triggers"] && $table && ($triggers = trigger_sql($name))) {
+								echo "\nDELIMITER ;;\n$triggers\nDELIMITER ;\n";
+							}
+
+							if ($ext == "tar") {
+								ob_end_flush();
+								tar_file((DB != "" ? "" : "$db/") . "$name.csv", $tmp_file);
+							} elseif ($is_sql) {
+								echo "\n";
+							}
+						}
+					}
+
+					// add FKs after creating tables (except in MySQL which uses SET FOREIGN_KEY_CHECKS=0)
+					if ($is_sql && $_POST["table_style"] && function_exists('Adminer\foreign_keys_sql')) {
+						foreach ($exported as $name => $table_status) {
+							if (!is_view($table_status)) {
+								echo foreign_keys_sql($name);
+							}
+						}
+					}
+
+					if ($is_sql) { // views are exported by the loop above in other formats
+						foreach ($views as $view) {
+							adminer()->dumpTable($view, $_POST["table_style"], 1);
+						}
+					}
+
+					if ($ext == "tar") {
+						echo pack("x1024"); // TAR ends with two zero blocks
+					}
 				}
 			}
 		}
@@ -144,6 +203,7 @@ page_header(lang('Export'), $error, ($_GET["export"] != "" ? array("table" => $_
 <table class="layout">
 <?php
 $db_style = array('', 'USE', 'DROP+CREATE', 'CREATE');
+$schema_style = (JUSH == "mssql" ? array('', 'DROP+CREATE', 'CREATE') : $db_style); // MS SQL has nothing like search_path
 $table_style = array('', 'DROP+CREATE', 'CREATE');
 $data_style = array('', 'TRUNCATE+INSERT', 'INSERT');
 if (JUSH == "sql") { //! use insertUpdate() in all drivers
@@ -151,11 +211,7 @@ if (JUSH == "sql") { //! use insertUpdate() in all drivers
 }
 $row = get_settings("adminer_export");
 if (!$row) {
-	$row = array("output" => "text", "format" => "sql", "db_style" => (DB != "" ? "" : "CREATE"), "table_style" => "DROP+CREATE", "data_style" => "INSERT");
-}
-if (!isset($row["events"])) { // backwards compatibility
-	$row["routines"] = $row["events"] = ($_GET["dump"] == "");
-	$row["triggers"] = $row["table_style"];
+	$row = array("output" => "text", "format" => "sql", "db_style" => (DB != "" ? "" : "CREATE"), "schema_style" => "", "table_style" => "DROP+CREATE", "data_style" => "INSERT");
 }
 
 echo "<tr><th>" . lang('Output') . "<td>" . html_radios("output", adminer()->dumpOutput(), $row["output"]) . "\n";
@@ -168,6 +224,8 @@ echo (JUSH == "sqlite" ? "" : "<tr><th>" . lang('Database') . "<td>" . html_sele
 	. (support("event") ? checkbox("events", 1, $row["events"], lang('Events')) : "")
 );
 
+echo (function_exists('Adminer\use_schema_sql') ? "<tr><th>" . lang('Schema') . "<td>" . html_select('schema_style', $schema_style, $row["schema_style"]) : "");
+
 echo "<tr><th>" . lang('Tables') . "<td>" . html_select('table_style', $table_style, $row["table_style"])
 	. checkbox("auto_increment", 1, $row["auto_increment"], lang('Auto Increment'))
 	. (support("trigger") ? checkbox("triggers", 1, $row["triggers"], lang('Triggers')) : "")
@@ -176,19 +234,31 @@ echo "<tr><th>" . lang('Tables') . "<td>" . html_select('table_style', $table_st
 echo "<tr><th>" . lang('Data') . "<td>" . html_select('data_style', $data_style, $row["data_style"]);
 ?>
 </table>
-<p><input type="submit" value="<?php echo lang('Export'); ?>">
+<?php adminer()->dumpPrint(); ?>
+<p><input type='submit' value='<?php echo lang('Export'); ?>'>
 <?php echo input_token(); ?>
 
-<table>
+<table<?php echo on('click', 'dumpClick'); ?>>
 <?php
-echo script("qsl('table').onclick = dumpClick;");
 $prefixes = array();
-if (DB != "") {
+if ($_GET["ns"] === "" && support("scheme")) { // a driver without schemas has none to list even with an empty ns in the URL
+	echo "<thead><tr><th style='text-align: left;'>";
+	echo "<label class='block'><input type='checkbox' id='check-schemas' checked class='jsonly' title='" . lang('All') . "'"
+		. on('click', 'formCheck', '^schemas\[') . ">" . lang('Schema') . "</label>";
+	echo "<tbody>\n";
+	foreach (adminer()->schemas() as $schema) {
+		if (!information_schema(DB, $schema)) {
+			echo "<tr><td>" . checkbox("schemas[]", $schema, true, $schema, "", "block") . "\n";
+		}
+	}
+} elseif (DB != "") {
 	$checked = ($TABLE != "" ? "" : " checked");
 	echo "<thead><tr>";
-	echo "<th style='text-align: left;'><label class='block'><input type='checkbox' id='check-tables'$checked>" . lang('Tables') . "</label>" . script("qs('#check-tables').onclick = partial(formCheck, /^tables\\[/);", "");
-	echo "<th style='text-align: right;'><label class='block'>" . lang('Data') . "<input type='checkbox' id='check-data'$checked></label>" . script("qs('#check-data').onclick = partial(formCheck, /^data\\[/);", "");
-	echo "</thead>\n";
+	echo "<th style='text-align: left;'><label class='block'><input type='checkbox' id='check-tables'$checked class='jsonly' title='" . lang('All') . "'"
+		. on('click', 'formCheck', '^tables\[') . ">" . lang('Table') . "</label>";
+	echo "<th style='text-align: right;'><label class='block'>" . lang('Data') . "<input type='checkbox' id='check-data'$checked class='jsonly' title='" . lang('All') . "'"
+		. on('click', 'formCheck', '^data\[') . "></label>";
+	echo "<tbody>\n";
 
 	$views = "";
 	$tables_list = tables_list();
@@ -210,11 +280,16 @@ if (DB != "") {
 	}
 
 } else {
-	echo "<thead><tr><th style='text-align: left;'>";
-	echo "<label class='block'><input type='checkbox' id='check-databases'" . ($TABLE == "" ? " checked" : "") . ">" . lang('Database') . "</label>";
-	echo script("qs('#check-databases').onclick = partial(formCheck, /^databases\\[/);", "");
-	echo "</thead>\n";
 	$databases = adminer()->databases();
+	echo "<thead><tr><th style='text-align: left;'>";
+	echo "<label class='block'>"
+		. ($databases
+			? "<input type='checkbox' id='check-databases'" . ($TABLE == "" ? " checked" : "") . " class='jsonly' title='" . lang('All') . "'" . on('click', 'formCheck', '^databases\[') . ">"
+			: "")
+		. lang('Database')
+		. "</label>"
+	;
+	echo "<tbody>\n";
 	if ($databases) {
 		foreach ($databases as $db) {
 			if (!information_schema($db)) {
@@ -234,7 +309,7 @@ if (DB != "") {
 $first = true;
 foreach ($prefixes as $key => $val) {
 	if ($key != "" && $val > 1) {
-		echo ($first ? "<p>" : " ") . "<a href='" . h(ME) . "dump=" . urlencode("$key%") . "'>" . h($key) . "</a>";
+		echo ($first ? "<p>" : " ") . "<a href='" . h(ME) . "dump=" . url_escape("$key%") . "'>" . h($key) . "</a>";
 		$first = false;
 	}
 }

@@ -2,16 +2,24 @@
 namespace Adminer;
 
 $PROCEDURE = ($_GET["name"] ?: $_GET["call"]);
-page_header(lang('Call') . ": " . h($PROCEDURE), $error);
+$routine_type = (isset($_GET["callf"]) ? "FUNCTION" : "PROCEDURE");
+$routine = routine($_GET["call"], $routine_type);
+$is_trigger = (idx($routine["returns"], "type") == "trigger"); // PostgreSQL calls a trigger function only from a trigger
 
-$routine = routine($_GET["call"], (isset($_GET["callf"]) ? "FUNCTION" : "PROCEDURE"));
+page_header(($is_trigger ? lang('Triggers') : lang('Call')) . ": " . h($PROCEDURE), $error, "#routines", "", !$routine, (isset($_GET["callf"]) ? "" : doc_link(array( // a function is called by SELECT
+	'sql' => "call.html",
+	'pgsql' => "sql-call.html",
+	'cockroach' => "call",
+	'mssql' => "t-sql/language-elements/execute-transact-sql",
+))));
+
 $in = array();
 $out = array();
 foreach ($routine["fields"] as $i => $field) {
 	if (substr($field["inout"], -3) == "OUT" && JUSH == 'sql') {
 		$out[$i] = "@" . idf_escape($field["field"]) . " AS " . idf_escape($field["field"]);
 	}
-	if (!$field["inout"] || substr($field["inout"], 0, 2) == "IN") {
+	if (!$field["inout"] || preg_match('~^(IN|OUTPUT)~', $field["inout"])) { // T-SQL accepts a constant for an OUTPUT parameter, it only doesn't return the value
 		$in[] = $i;
 	}
 }
@@ -36,14 +44,18 @@ if (!$error && $_POST) {
 		}
 	}
 
-	$query = (isset($_GET["callf"]) ? "SELECT " : "CALL ") . (idx($routine["returns"], "type") == "record" ? "* FROM " : "") . table($PROCEDURE) . "(" . implode(", ", $call) . ")";
+	$args = implode(", ", $call);
+	$query = (isset($_GET["callf"]) || JUSH != "mssql"
+		? (isset($_GET["callf"]) ? "SELECT " : "CALL ") . (idx($routine["returns"], "type") == "record" ? "* FROM " : "") . table($PROCEDURE) . "($args)"
+		: "EXEC " . table($PROCEDURE) . ($args != "" ? " $args" : "") // T-SQL calls a procedure by EXEC without parentheses
+	);
 	$start = microtime(true);
 	$result = connection()->multi_query($query);
 	$affected = connection()->affected_rows; // getting warnings overwrites this
 	echo adminer()->selectQuery($query, $start, !$result);
 
 	if (!$result) {
-		echo "<p class='error'>" . error() . "\n";
+		echo "<p class='error'>" . adminer()->error() . "\n";
 	} else {
 		$connection2 = connect();
 		if ($connection2) {
@@ -66,8 +78,24 @@ if (!$error && $_POST) {
 		}
 	}
 }
-?>
 
+if ($is_trigger) {
+	$triggers = driver()->routineTriggers($_GET["call"]);
+	if ($triggers) {
+		echo "<table>\n";
+		foreach ($triggers as $row) {
+			$link = preg_replace('~&ns=[^&]*~', "&ns=" . url_escape($row["ns"]), ME);
+			echo "<tr><th>" . h($row["trigger"])
+				. "<td><a href='" . h($link . "table=" . url_escape($row["table"]) . "#triggers") . "'>"
+				. ($row["ns"] != $_GET["ns"] ? "<b>" . h($row["ns"]) . "</b>." : "") . h($row["table"]) . "</a>"
+				. "<td class='hover'><a href='" . h($link . "trigger=" . url_escape($row["table"]) . "&name=" . url_escape($row["trigger"])) . "'>" . lang('Alter') . "</a>\n"
+			;
+		}
+		echo "</table>\n";
+	}
+
+} else {
+?>
 <form action="" method="post">
 <?php
 if ($in) {
@@ -89,32 +117,9 @@ if ($in) {
 }
 ?>
 <p>
-<input type="submit" value="<?php echo lang('Call'); ?>">
+<input type='submit' value='<?php echo lang('Call'); ?>'>
 <?php echo input_token(); ?>
 </form>
+<?php } ?>
 
-<pre>
-<?php
-/** Format string as table row
-* @return string HTML
-*/
-function pre_tr(string $s): string {
-	return preg_replace('~^~m', '<tr>', preg_replace('~\|~', '<td>', preg_replace('~\|$~m', "", rtrim($s))));
-}
-
-$table = '(\+--[-+]+\+\n)';
-$row = '(\| .* \|\n)';
-echo preg_replace_callback(
-	"~^$table?$row$table?($row*)$table?~m",
-	function ($match) {
-		$first_row = pre_tr($match[2]);
-		return "<table>\n" . ($match[1] ? "<thead>$first_row</thead>\n" : $first_row) . pre_tr($match[4]) . "\n</table>";
-	},
-	preg_replace(
-		'~(\n(    -|mysql)&gt; )(.+)~',
-		"\\1<code class='jush-sql'>\\3</code>",
-		preg_replace('~(.+)\n---+\n~', "<b>\\1</b>\n", h($routine['comment']))
-	)
-);
-?>
-</pre>
+<?php echo adminer()->commentValue($routine_type, $routine['comment']); ?>

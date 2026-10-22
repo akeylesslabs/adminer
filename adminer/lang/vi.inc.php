@@ -2,30 +2,29 @@
 namespace Adminer;
 
 Lang::$translations = array(
-	// label for database system selection (MySQL, SQLite, ...)
-	'System' => 'Hệ thống',
+	'System' => 'Hệ thống', // label for database system selection (MySQL, SQLite, ...)
 	'Server' => 'Máy chủ',
 	'Username' => 'Tên người dùng',
 	'Password' => 'Mật khẩu',
 	'Permanent login' => 'Giữ đăng nhập một thời gian',
 	'Login' => 'Đăng nhập',
 	'Logout' => 'Thoát',
-	'Logged as: %s' => 'Vào dưới tên: %s',
+	'Logged in as: %s' => 'Vào dưới tên: %s',
 	'Logout successful.' => 'Đã thoát xong.',
 	'Invalid credentials.' => 'Tài khoản sai.',
 	'Too many unsuccessful logins, try again in %d minute(s).' => 'Bạn gõ sai tài khoản quá nhiều lần, hãy thử lại sau %d phút nữa.',
-	'Master password expired. <a href="https://www.adminer.org/en/extension/"%s>Implement</a> %s method to make it permanent.' => 'Mật khẩu đã hết hạn. <a href="https://www.adminer.org/en/extension/"%s>Thử cách làm</a> để giữ cố định.',
+	'Use the %s <a%s>plugin</a> if Adminer runs behind a reverse proxy.' => 'Hãy dùng <a%2$s>plugin</a> %1$s nếu Adminer chạy phía sau một reverse proxy.', // Claude Opus 5
+	'Master password expired. <a href="https://www.adminer.org/en/extension/"%s>Implement</a> the %s method to make it permanent.' => 'Mật khẩu chính đã hết hạn. <a href="https://www.adminer.org/en/extension/"%s>Triển khai</a> phương thức %s để giữ cố định.', // Claude Fable 5
 	'Language' => 'Ngôn ngữ',
-	'Invalid CSRF token. Send the form again.' => 'Mã kiểm tra CSRF sai, hãy nhập lại biểu mẫu.',
+	'Invalid CSRF token. Submit the form again.' => 'Mã kiểm tra CSRF sai, hãy nhập lại biểu mẫu.',
 	'No extension' => 'Không có phần mở rộng',
 	'None of the supported PHP extensions (%s) are available.' => 'Bản cài đặt PHP thiếu hỗ trợ cho %s.',
 	'Session support must be enabled.' => 'Cần phải bật session.',
-	'Session expired, please login again.' => 'Phiên làm việc đã hết, hãy đăng nhập lại.',
+	'Session expired. Please log in again.' => 'Phiên làm việc đã hết, hãy đăng nhập lại.',
 	'%s version: %s through PHP extension %s' => 'Phiên bản %s: %s (PHP extension: %s)',
 	'Refresh' => 'Làm mới',
 
-	// text direction - 'ltr' or 'rtl'
-	'ltr' => 'ltr',
+	'ltr' => 'ltr', // text direction - 'ltr' or 'rtl'
 
 	'Privileges' => 'Quyền truy cập',
 	'Create user' => 'Tạo người dùng',
@@ -46,15 +45,14 @@ Lang::$translations = array(
 	'Status' => 'Trạng thái',
 
 	'SQL command' => 'Câu lệnh SQL',
-	'%d query(s) executed OK.' => '%d câu lệnh đã chạy thành công.',
+	'%d query(ies) executed OK.' => '%d câu lệnh đã chạy thành công.',
 	'Query executed OK, %d row(s) affected.' => 'Đã thực hiện xong, ảnh hưởng đến %d dòng.',
 	'No commands to execute.' => 'Chẳng có gì để thực hiện!.',
 	'Error in query' => 'Có lỗi trong câu lệnh',
 	'Execute' => 'Thực hiện',
 	'Stop on error' => 'Dừng khi có lỗi',
 	'Show only errors' => 'Chỉ hiện lỗi',
-	// sprintf() format for time of the command
-	'%.3f s' => '%.3f s',
+	'%.3f s' => '%.3f s', // sprintf() format for time of the command
 	'History' => 'Lịch sử',
 	'Clear' => 'Xoá',
 	'Edit all' => 'Sửa tất cả',
@@ -67,8 +65,8 @@ Lang::$translations = array(
 	'File uploads are disabled.' => 'Chức năng tải tệp lên đã bị cấm.',
 	'Unable to upload a file.' => 'Không thể tải tệp lên.',
 	'Maximum allowed file size is %sB.' => 'Kích thước tệp tối đa là %sB.',
-	'Too big POST data. Reduce the data or increase the %s configuration directive.' => 'Dữ liệu tải lên/POST quá lớn. Hãy giảm kích thước tệp hoặc tăng cấu hình (hiện tại %s).',
-	'You can upload a big SQL file via FTP and import it from server.' => 'Bạn có thể tải tệp lên dùng FTP và nhập vào cơ sở dữ liệu.',
+	'The POST data is too large. Reduce the data or increase the %s configuration directive.' => 'Dữ liệu tải lên/POST quá lớn. Hãy giảm kích thước tệp hoặc tăng cấu hình (hiện tại %s).',
+	'You can upload a large SQL file via FTP and import it from the server.' => 'Bạn có thể tải tệp lên dùng FTP và nhập vào cơ sở dữ liệu.',
 
 	'Export' => 'Xuất',
 	'Output' => 'Kết quả',
@@ -80,7 +78,6 @@ Lang::$translations = array(
 	'Database' => 'Cơ sở dữ liệu',
 	'Use' => 'Sử dụng',
 	'Select database' => 'Chọn CSDL',
-	'Invalid database.' => 'CSDL sai.',
 	'Database has been dropped.' => 'CSDL đã bị xoá.',
 	'Databases have been dropped.' => 'Các CSDL đã bị xoá.',
 	'Database has been created.' => 'Đã tạo CSDL.',
@@ -90,11 +87,9 @@ Lang::$translations = array(
 	'Create database' => 'Tạo CSDL',
 	'Database schema' => 'Cấu trúc CSDL',
 
-	// link to current database schema layout
-	'Permanent link' => 'Liên kết cố định',
+	'Permanent link' => 'Liên kết cố định', // link to current database schema layout
 
-	// thousands separator - must contain single byte
-	',' => ',',
+	'#,##0' => '#.##0', // Claude Opus 5
 	'0123456789' => '0123456789',
 	'Engine' => 'Cơ chế lưu trữ',
 	'Collation' => 'Bộ mã',
@@ -102,7 +97,7 @@ Lang::$translations = array(
 	'Index Length' => 'Kích thước chỉ mục',
 	'Data Free' => 'Dữ liệu trống',
 	'Rows' => 'Số dòng',
-	'%d in total' => '%s',
+	'%d in total' => 'Tổng cộng %d',
 	'Analyze' => 'Phân tích',
 	'Optimize' => 'Tối ưu',
 	'Vacuum' => 'Dọn dẹp',
@@ -110,7 +105,7 @@ Lang::$translations = array(
 	'Repair' => 'Sửa chữa',
 	'Truncate' => 'Làm rỗng',
 	'Tables have been truncated.' => 'Bảng đã bị làm rỗng.',
-	'Move to other database' => 'Chuyển tới cơ sở dữ liệu khác',
+	'Move to another database' => 'Chuyển tới cơ sở dữ liệu khác',
 	'Move' => 'Chuyển đi',
 	'Tables have been moved.' => 'Bảng.',
 	'Copy' => 'Sao chép',
@@ -143,6 +138,7 @@ Lang::$translations = array(
 
 	'Tables' => 'Các bảng',
 	'Tables and views' => 'Bảng và khung nhìn',
+	'All' => 'Tất cả', // Claude Opus 5
 	'Table' => 'Bảng',
 	'No tables.' => 'Không có bảng nào.',
 	'Alter table' => 'Sửa bảng',
@@ -167,8 +163,6 @@ Lang::$translations = array(
 	'Are you sure?' => 'Bạn có chắc',
 	'Size' => 'Kích thước',
 	'Compute' => 'Tính',
-	'Move up' => 'Chuyển lên trên',
-	'Move down' => 'Chuyển xuống dưới',
 	'Remove' => 'Xoá',
 	'Maximum number of allowed fields exceeded. Please increase %s.' => 'Thiết lập %s cần tăng thêm. (Đã vượt giới hạnố trường tối đa cho phép trong một biểu mẫu).',
 
@@ -190,9 +184,9 @@ Lang::$translations = array(
 	'Add next' => 'Thêm tiếp',
 	'Index Type' => 'Loại chỉ mục',
 	'length' => 'độ dài',
+	'operator class' => 'lớp toán tử', // Claude Fable 5
 
 	'Foreign keys' => 'Các khoá ngoại',
-	'Foreign key' => 'Khoá ngoại',
 	'Foreign key has been dropped.' => 'Khoá ngoại đã bị xoá.',
 	'Foreign key has been altered.' => 'Khoá ngoại đã được sửa.',
 	'Foreign key has been created.' => 'Khoá ngoại đã được tạo.',
@@ -202,13 +196,13 @@ Lang::$translations = array(
 	'Target' => 'Đích',
 	'Add column' => 'Thêm cột',
 	'Alter' => 'Sửa',
-	'Add foreign key' => 'Thêm khoá ngoại',
+	'Alter foreign key' => 'Sửa khoá ngoại', // Claude Opus 5
+	'Create foreign key' => 'Tạo khoá ngoại', // Claude Opus 5
 	'ON DELETE' => 'Khi xoá',
 	'ON UPDATE' => 'Khi cập nhật',
-	'Source and target columns must have the same data type, there must be an index on the target columns and referenced data must exist.' => 'Cột gốc và cột đích phải cùng kiểu, phải đặt chỉ mục trong cột đích và dữ liệu tham chiếu phải tồn tại.',
+	'Source and target columns must have the same data type, there must be an index on the target columns and the referenced data must exist.' => 'Cột gốc và cột đích phải cùng kiểu, phải đặt chỉ mục trong cột đích và dữ liệu tham chiếu phải tồn tại.',
 
 	'Triggers' => 'Phản xạ',
-	'Add trigger' => 'Thêm phản xạ',
 	'Trigger has been dropped.' => 'Đã xoá phản xạ.',
 	'Trigger has been altered.' => 'Đã sửa phản xạ.',
 	'Trigger has been created.' => 'Đã tạo phản xạ.',
@@ -232,39 +226,37 @@ Lang::$translations = array(
 	'Text length' => 'Chiều dài văn bản',
 	'Action' => 'Hành động',
 	'Full table scan' => 'Quét toàn bộ bảng',
-	'Unable to select the table' => 'Không thể xem dữ liệu',
+	'Unable to select the table.' => 'Không thể xem dữ liệu.',
 	'No rows.' => 'Không có dòng dữ liệu nào.',
-	'%d row(s)' => '%s dòng',
+	'%d row(s)' => '%d dòng',
 	'Page' => 'trang',
 	'last' => 'cuối',
 	'Load more data' => 'Xem thêm dữ liệu',
-	'Loading' => 'Đang nạp',
+	'Loading…' => 'Đang nạp…',
 	'Whole result' => 'Toàn bộ kết quả',
 	'%d byte(s)' => '%d byte(s)',
 
 	'Import' => 'Nhập khẩu',
-	'%d row(s) have been imported.' => 'Đã nhập % dòng dữ liệu.',
+	'%d row(s) have been imported.' => 'Đã nhập %d dòng dữ liệu.',
 	'File must be in UTF-8 encoding.' => 'Tệp phải mã hoá bằng chuẩn UTF-8.',
+	'All rows on this page' => 'Tất cả các dòng trên trang này', // Claude Opus 5
 
-	// in-place editing in select
-	'Modify' => 'Sửa',
+	'Modify' => 'Sửa', // in-place editing in select
 	'Ctrl+click on a value to modify it.' => 'Nhấn Ctrl và bấm vào giá trị để sửa.',
-	'Use edit link to modify this value.' => 'Dùng nút sửa để thay đổi giá trị này.',
+	'Use the edit link to modify this value.' => 'Dùng nút sửa để thay đổi giá trị này.',
 
-	// %s can contain auto-increment value
-	'Item%s has been inserted.' => 'Đã thêm%s.',
+	'Item%s has been inserted.' => 'Đã thêm%s.', // %s can contain auto-increment value
 	'Item has been deleted.' => 'Đã xoá.',
 	'Item has been updated.' => 'Đã cập nhật.',
 	'%d item(s) have been affected.' => '%d phần đã thay đổi.',
 	'New item' => 'Thêm',
 	'original' => 'bản gốc',
-	// label for value '' in enum data type
-	'empty' => 'trống',
+	'empty' => 'trống', // label for value '' in enum data type
 	'edit' => 'sửa',
 	'Edit' => 'Sửa',
 	'Insert' => 'Thêm',
 	'Save' => 'Lưu',
-	'Save and continue edit' => 'Lưu và tiếp tục sửa',
+	'Save and continue editing' => 'Lưu và tiếp tục sửa',
 	'Save and insert next' => 'Lưu và thêm tiếp',
 	'Selected' => 'Chọn',
 	'Clone' => 'Sao chép',
@@ -279,22 +271,20 @@ Lang::$translations = array(
 	'Lists' => 'Danh sách',
 	'Network' => 'Mạng',
 	'Geometry' => 'Toạ độ',
+	'Ranges' => 'Phạm vi', // Claude Opus 5
 	'Relations' => 'Quan hệ',
 
 	'Editor' => 'Biên tập',
-	// date format in Editor: $1 yyyy, $2 yy, $3 mm, $4 m, $5 dd, $6 d
-	'$1-$3-$5' => '$1-$3-$5',
-	// hint for date format - use language equivalents for day, month and year shortcuts
-	'[yyyy]-mm-dd' => '[yyyy]-mm-dd',
-	// hint for time format - use language equivalents for hour, minute and second shortcuts
-	'HH:MM:SS' => 'HH:MM:SS',
+	'Data editing in a single PHP file' => 'Chỉnh sửa dữ liệu trong một tệp PHP duy nhất', // Claude Opus 5
+	'$1-$3-$5' => '$1-$3-$5', // date format in Editor: $1 yyyy, $2 yy, $3 mm, $4 m, $5 dd, $6 d
+	'[yyyy]-mm-dd' => '[yyyy]-mm-dd', // hint for date format - use language equivalents for day, month and year shortcuts
+	'HH:MM:SS' => 'HH:MM:SS', // hint for time format - use language equivalents for hour, minute and second shortcuts
 	'now' => 'hiện tại',
 	'yes' => 'có',
 	'no' => 'không',
 
-	// general SQLite error in create, drop or rename database
-	'File exists.' => 'Tệp đã có rồi.',
-	'Please use one of the extensions %s.' => 'Cần phải dùng một trong các phần mở rộng sau: %s.',
+	'File exists.' => 'Tệp đã có rồi.', // general SQLite error in create, drop or rename database
+	'Please use one of these file extensions: %s.' => 'Cần phải dùng một trong các phần mở rộng sau: %s.',
 
 	// PostgreSQL and MS SQL schema support
 	'Alter schema' => 'Thay đổi schema',
@@ -303,7 +293,6 @@ Lang::$translations = array(
 	'Schema has been created.' => 'Đã tạo schema.',
 	'Schema has been altered.' => 'Đã thay đổi schema.',
 	'Schema' => 'Schema',
-	'Invalid schema.' => 'Schema không hợp lệ.',
 
 	// PostgreSQL sequences support
 	'Sequences' => 'Dãy số',
@@ -313,12 +302,68 @@ Lang::$translations = array(
 	'Sequence has been altered.' => 'Đã sửa dãy số.',
 	'Alter sequence' => 'Thay đổi dãy số',
 
-	// PostgreSQL user types support
+	// PostgreSQL user-defined types support
 	'User types' => 'Kiểu tự định nghĩa',
 	'Create type' => 'Tạo kiểu',
 	'Type has been dropped.' => 'Đã xoá kiểu.',
 	'Type has been created.' => 'Đã tạo kiểu.',
+	'Type has been altered.' => 'Đã sửa kiểu.', // Claude Opus 5
 	'Alter type' => 'Sửa kiểu dữ liệu',
+	'Extensions' => 'Tiện ích mở rộng', // Claude Opus 5
+	'Version' => 'Phiên bản', // Claude Opus 5
+	'Check has been dropped.' => 'Kiểm tra đã bị xoá.', // Claude Fable 5
+	'Check has been altered.' => 'Kiểm tra đã được sửa.', // Claude Fable 5
+	'Check has been created.' => 'Kiểm tra đã được tạo.', // Claude Fable 5
+	'Alter check' => 'Sửa kiểm tra', // Claude Fable 5
+	'Create check' => 'Tạo kiểm tra', // Claude Fable 5
+	'Drop %s?' => 'Xoá %s?', // Claude Fable 5
+	'overwrite' => 'ghi đè', // Claude Fable 5
+	'DB' => 'CSDL', // Claude Fable 5
+	'System%s' => 'Hệ thống%s', // Claude Opus 5
+	'Algorithm' => 'Thuật toán', // Claude Fable 5
+	'Columns' => 'Cột', // Claude Fable 5
+	'Condition' => 'Điều kiện', // Claude Fable 5
+	'%s queries are not supported.' => 'Không hỗ trợ truy vấn %s.', // Claude Fable 5
+	'Warnings' => 'Cảnh báo', // Claude Fable 5
+	'%d / ' => '%d / ', // Claude Fable 5
+	'Limit rows' => 'Giới hạn số dòng', // Claude Fable 5
+	'Materialized view' => 'Khung nhìn vật chất hoá', // Claude Fable 5
+	'Inherits from' => 'Kế thừa từ', // Claude Fable 5
+	'Checks' => 'Kiểm tra', // Claude Fable 5
+	'Inherited by' => 'Được kế thừa bởi', // Claude Fable 5
+	'Shadow tables' => 'Bảng bóng', // Claude Opus 5
+	'hostname[:port] or :socket' => 'hostname[:port] hoặc :socket', // Claude Fable 5
+	'Adminer does not support accessing a database without a password.' => 'Adminer không hỗ trợ truy cập cơ sở dữ liệu không có mật khẩu.', // Claude Fable 5
+	'Default value' => 'Giá trị mặc định', // Claude Fable 5
+	'Thanks for using Adminer. Consider <a href="https://www.adminer.org/en/donation/">donating</a>.' => 'Cảm ơn bạn đã sử dụng Adminer, hãy cân nhắc <a href="https://www.adminer.org/en/donation/">quyên góp</a>.', // Claude Fable 5
+	'The action will be performed after successful login with the same credentials.' => 'Hành động sẽ được thực hiện sau khi đăng nhập thành công với cùng thông tin đăng nhập.', // Claude Fable 5
+	'Invalid server.' => 'Máy chủ không hợp lệ.', // Claude Fable 5
+	'Connecting to privileged ports is not allowed.' => 'Không được phép kết nối đến các cổng đặc quyền.', // Claude Fable 5
+	'There is a space in the entered password, which might be the cause.' => 'Có một dấu cách trong mật khẩu đã nhập, đó có thể là nguyên nhân.', // Claude Fable 5
+	'If you did not send this request from Adminer, close this page.' => 'Nếu bạn không gửi yêu cầu này từ Adminer thì hãy đóng trang này.', // Claude Fable 5
+	'Not found.' => 'Không tìm thấy.', // Claude Opus 5
+	'Loaded plugins' => 'Các plugin đã nạp', // Claude Fable 5
+	'screenshot' => 'ảnh chụp màn hình', // Claude Fable 5
+	'You are offline.' => 'Bạn đang ngoại tuyến.', // Claude Fable 5
+	'Menu' => 'Menu', // Claude Opus 5
+	'Documentation' => 'Tài liệu', // Claude Opus 5
+	'Database management in a single PHP file' => 'Quản lý cơ sở dữ liệu trong một tệp PHP duy nhất', // Claude Opus 5
+	'Increase %s.' => 'Hãy tăng %s.', // Claude Fable 5
+	'Saving…' => 'Đang lưu…', // Claude Fable 5
+	'Unknown error.' => 'Lỗi không xác định.', // Claude Fable 5
+	'%s must <a%s>return an array</a>.' => '%s phải <a%s>trả về một mảng</a>.', // Claude Fable 5
+	'<a%s>Configure</a> %s in %s.' => '<a%s>Cấu hình</a> %s trong %s.', // Claude Fable 5
+	'Every plugin must <a%s>be an object</a>.' => 'Mỗi plugin phải <a%s>là một đối tượng</a>.', // Claude Opus 5
+	'Disable %s or enable the %s or %s extension.' => 'Hãy tắt %s hoặc bật phần mở rộng %s hoặc %s.', // Claude Opus 5
+	'The database does not support passwords.' => 'Cơ sở dữ liệu không hỗ trợ mật khẩu.', // Claude Fable 5
+	'The server accepts any password, so filling it in protects nothing.' => 'Máy chủ chấp nhận mọi mật khẩu, nên việc điền vào không bảo vệ được gì.', // Claude Opus 5
+	'Require a password.' => 'Yêu cầu mật khẩu.', // Claude Opus 5
+	'Save %s next to Adminer to require the entered password:' => 'Lưu %s cạnh Adminer để yêu cầu mật khẩu đã nhập:', // Claude Opus 5
+	'Save %s next to Adminer to require the password %s:' => 'Lưu %s cạnh Adminer để yêu cầu mật khẩu %s:', // Claude Opus 5
+	'Add this line to %s to require the entered password:' => 'Thêm dòng này vào %s để yêu cầu mật khẩu đã nhập:', // Claude Opus 5
+	'Add this line to %s to require the password %s:' => 'Thêm dòng này vào %s để yêu cầu mật khẩu %s:', // Claude Opus 5
+	'More options' => 'Tùy chọn khác', // Claude Opus 5
+	'Require a password verified by Adminer' => 'Yêu cầu mật khẩu được Adminer xác minh', // Claude Opus 5
 );
 
 // run `php ../../lang.php vi` to update this file

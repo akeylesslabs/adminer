@@ -1,6 +1,6 @@
 <?php
 
-/** Display links to tables referencing current row, same as in Adminer Editor
+/** Display links to tables referencing the current row, same as in Adminer Editor
 * @link https://www.adminer.org/plugins/#use
 * @author Jakub Vrana, https://www.vrana.cz/
 * @license https://www.apache.org/licenses/LICENSE-2.0 Apache License, Version 2.0
@@ -11,29 +11,52 @@ class AdminerBackwardKeys extends Adminer\Plugin {
 
 	function backwardKeys($table, $tableName) {
 		$return = array();
-		// we couldn't use the same query in MySQL and PostgreSQL because unique_constraint_name is not table-specific in MySQL and referenced_table_name is not available in PostgreSQL
-		foreach (
-			Adminer\get_rows("SELECT s.table_name table_name, s.constraint_name constraint_name, s.column_name column_name, " . (Adminer\JUSH == "sql" ? "referenced_column_name" : "t.column_name") . " referenced_column_name
+		if (Adminer\JUSH == "pgsql") { // information_schema is very slow in PostgreSQL with many tables
+			$query = "SELECT n.nspname AS ns, r.relname AS table_name, c.conname AS constraint_name, a.attname AS column_name, t.attname AS referenced_column_name
+FROM (
+	SELECT conrelid, confrelid, conname, conkey, confkey, generate_subscripts(conkey, 1) AS i
+	FROM pg_constraint
+	WHERE contype = 'f' AND confrelid = " . Adminer\driver()->tableOid($table) . "
+) c
+JOIN pg_class r ON r.oid = c.conrelid
+JOIN pg_namespace n ON n.oid = r.relnamespace
+JOIN pg_attribute a ON a.attrelid = c.conrelid AND a.attnum = c.conkey[c.i]
+JOIN pg_attribute t ON t.attrelid = c.confrelid AND t.attnum = c.confkey[c.i]
+ORDER BY n.nspname, r.relname, c.conname, c.i";
+		} else {
+			// we couldn't use the same query in MySQL and MS SQL because unique_constraint_name is not table-specific in MySQL and referenced_table_name is not available in MS SQL
+			$query = "SELECT s.table_name table_name, s.constraint_name constraint_name, s.column_name column_name,
+	" . (Adminer\JUSH == "sql" ? "referenced_column_name" : "t.column_name") . " referenced_column_name, s.table_schema " . (Adminer\JUSH == "sql" ? "db" : "ns") . "
 FROM information_schema.key_column_usage s" . (Adminer\JUSH == "sql" ? "
-WHERE table_schema = " . Adminer\q(Adminer\DB) . "
-AND referenced_table_schema = " . Adminer\q(Adminer\DB) . "
+WHERE referenced_table_schema = " . Adminer\q(Adminer\DB) . "
 AND referenced_table_name" : "
 JOIN information_schema.referential_constraints r USING (constraint_catalog, constraint_schema, constraint_name)
 JOIN information_schema.key_column_usage t ON r.unique_constraint_catalog = t.constraint_catalog
 	AND r.unique_constraint_schema = t.constraint_schema
 	AND r.unique_constraint_name = t.constraint_name
 	AND r.constraint_catalog = t.constraint_catalog
-	AND r.constraint_schema = t.constraint_schema
 	AND r.unique_constraint_name = t.constraint_name
 	AND s.position_in_unique_constraint = t.ordinal_position
 WHERE t.table_catalog = " . Adminer\q(Adminer\DB) . " AND t.table_schema = " . Adminer\q("$_GET[ns]") . "
 AND t.table_name") . " = " . Adminer\q($table) . "
-ORDER BY s.ordinal_position", null, "") as $row
-		) {
-			$return[$row["table_name"]]["keys"][$row["constraint_name"]][$row["column_name"]] = $row["referenced_column_name"];
+ORDER BY
+	s.table_schema,
+	s.table_name,
+	s.constraint_name,
+	s.ordinal_position";
+		}
+		foreach (Adminer\get_rows($query, null, "") as $row) {
+			$db = ($row["db"] != "" && $row["db"] != Adminer\DB ? $row["db"] : ""); // db is selected only in MySQL
+			$ns = ($row["ns"] != $_GET["ns"] ? $row["ns"] : ""); // ns is not selected in MySQL
+			$key = Adminer\idf_escape($db) . "." . Adminer\idf_escape($ns) . "." . Adminer\idf_escape($row["table_name"]); // the same table name can be in several databases or schemas
+			$return[$key]["table"] = $row["table_name"];
+			$return[$key]["db"] = $db;
+			$return[$key]["ns"] = $ns;
+			$return[$key]["keys"][$row["constraint_name"]][$row["column_name"]] = $row["referenced_column_name"];
 		}
 		foreach ($return as $key => $val) {
-			$name = Adminer\adminer()->tableName(Adminer\table_status1($key, true));
+			// table_status1() looks only in the current database and schema
+			$name = Adminer\adminer()->tableName($val["db"] != "" || $val["ns"] != "" ? array("Name" => $val["table"]) : Adminer\table_status1($val["table"], true));
 			if ($name != "") {
 				$search = preg_quote($tableName);
 				$separator = '(:|\s*-)?\s+';
@@ -46,9 +69,16 @@ ORDER BY s.ordinal_position", null, "") as $row
 	}
 
 	function backwardKeysPrint($backwardKeys, $row) {
-		foreach ($backwardKeys as $table => $backwardKey) {
+		foreach ($backwardKeys as $backwardKey) {
+			$table = $backwardKey["table"];
+			$db = $backwardKey["db"];
+			$ns = $backwardKey["ns"];
+			$me = ($db != "" ? preg_replace('~&db=[^&]*~', "&db=" . Adminer\url_escape($db), Adminer\ME) : Adminer\ME);
+			if ($ns != "") {
+				$me = preg_replace('~&ns=[^&]*~', "&ns=" . Adminer\url_escape($ns), $me);
+			}
 			foreach ($backwardKey["keys"] as $cols) {
-				$link = Adminer\ME . 'select=' . urlencode($table);
+				$link = $me . 'select=' . Adminer\url_escape($table);
 				$i = 0;
 				foreach ($cols as $column => $val) {
 					if (!isset($row[$val])) {
@@ -56,12 +86,16 @@ ORDER BY s.ordinal_position", null, "") as $row
 					}
 					$link .= Adminer\where_link($i++, $column, $row[$val]);
 				}
-				echo "<a href='" . Adminer\h($link) . "'>" . Adminer\h(preg_replace('(^' . preg_quote($_GET["select"]) . (substr($_GET["select"], -1) == 's' ? '?' : '') . '_)', '_', $backwardKey["name"])) . "</a>";
-				$link = Adminer\ME . 'edit=' . urlencode($table);
+				echo "<a href='" . Adminer\h($link) . "' title='" . Adminer\h(implode(", ", array_keys($cols))) . "'>"
+					. ($db != "" ? "<b>" . Adminer\h($db) . "</b>." : "")
+					. ($ns != "" ? "<b>" . Adminer\h($ns) . "</b>." : "")
+					. Adminer\h(preg_replace('(^' . preg_quote($_GET["select"]) . (substr($_GET["select"], -1) == 's' ? '?' : '') . '_)', '_', $backwardKey["name"]))
+					. "</a>";
+				$link = $me . 'edit=' . Adminer\url_escape($table);
 				foreach ($cols as $column => $val) {
-					$link .= "&set" . urlencode("[" . Adminer\bracket_escape($column) . "]") . "=" . urlencode($row[$val]);
+					$link .= "&set[" . Adminer\url_escape(Adminer\bracket_escape($column)) . "]=" . Adminer\url_escape($row[$val]);
 				}
-				echo "<a href='" . Adminer\h($link) . "' title='" . Adminer\lang('New item') . "'>+</a> ";
+				echo "<a href='" . Adminer\h($link) . "' title='" . $this->lang('New item') . "'>+</a> ";
 			}
 		}
 	}
@@ -71,9 +105,35 @@ ORDER BY s.ordinal_position", null, "") as $row
 	}
 
 	protected $translations = array(
-		'cs' => array('' => 'Zobrazí odkazy na tabulky odkazující aktuální řádek, stejně jako Adminer Editor'),
-		'de' => array('' => 'Links zu Tabellen anzeigen die auf die aktuelle Zeile verweisen, wie im Adminer Editor'),
-		'ja' => array('' => 'Adminer Editor と同様に、カレント行を参照しているテーブルへのリンクを表示'),
-		'pl' => array('' => 'Wyświetlaj linki do tabel odnoszących się do bieżącego wiersza, tak samo jak w Edytorze administratora'),
+		'cs' => array(
+			'' => 'Zobrazí odkazy na tabulky odkazující na aktuální řádek, stejně jako Adminer Editor',
+			'New item' => 'Nová položka',
+		),
+		'de' => array(
+			'' => 'Links zu Tabellen anzeigen die auf die aktuelle Zeile verweisen, wie im Adminer Editor',
+			'New item' => 'Neuer Datensatz',
+		),
+		'hr' => array(
+			'' => 'Prikazuje veze na tablice koje referenciraju trenutni redak, kao u Adminer Editoru',
+			'New item' => 'Nova stavka',
+		),
+		'ja' => array(
+			'' => 'Adminer Editor と同様に、カレント行を参照しているテーブルへのリンクを表示',
+			'New item' => '新規レコードを挿入',
+		),
+		'pl' => array(
+			'' => 'Wyświetlaj linki do tabel odnoszących się do bieżącego wiersza, tak samo jak w Adminer Editorze', // Claude Opus 5
+			'New item' => 'Nowy rekord',
+		),
+		'ro' => array(
+			'' => 'Afișează link-uri către tabelele care fac referire la rândul curent, la fel ca în Adminer Editor', // Claude Opus 5
+		),
+		'sk' => array(
+			'' => 'Zobrazí odkazy na tabuľky odkazujúce na aktuálny riadok, rovnako ako Adminer Editor', // Claude Opus 5
+		),
+		'zh' => array(
+			'' => '显示引用当前行的表的链接，与 Adminer Editor 中相同', // Claude Opus 5
+			'New item' => '新建数据', // Claude Opus 5
+		),
 	);
 }

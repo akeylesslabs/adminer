@@ -1,3 +1,4 @@
+/* Adminer design mancave */
 /*
 
   VERSION: adminer-theme-mancave2-2.1.alpha
@@ -81,7 +82,8 @@ sup{
 /* js tooltip
    ----------------------------------------------------------------------- */
 
-.js .column {
+.column {
+	display: flex;
 	position: absolute;
 	padding: 0;
 	margin-top: 0;
@@ -91,11 +93,7 @@ sup{
 	width: 100%;
 }
 
-.js .column:not(.hidden){
-	display: flex;
-}
-
-.js .column a{
+.column a{
 	text-align: center;
 	color: black;
 	font-weight: bold;
@@ -107,7 +105,7 @@ sup{
 	font-weight: normal;
 }
 
-.js .column a:hover{
+.column a:hover{
 	background-color: #F1E5B3;
 	color: black;
 }
@@ -134,7 +132,7 @@ sup{
 	background-color: gold;
 }
 
-#help, .js .column{
+#help{
 	display: none;
 }
 
@@ -296,6 +294,7 @@ table{
 	margin-bottom: 20px;
 	/*border: 0;*/
     border-color:#777;
+	border-width: 1px 0 0 1px; /* default.css doesn't set the table border anymore */
 	border-collapse: collapse;
 	font-size: 13px;
 	width: 100%;
@@ -365,6 +364,10 @@ th{
 	border-left: 5px solid #777;
 	border-bottom: 1px solid #777;
 	color: #eee;
+}
+
+th:first-child{
+	border-left-width: 5px; /* default.css narrows the first column to 1px */
 }
 
 .checkable td:first-child{
@@ -508,8 +511,8 @@ td input[type='radio']{
 }
 
 
-td input + a,
-td input + a:visited
+td a.edit,
+td a.edit:visited
 {
 	margin-left: 5px;
 	/*color: #F1E5B3;*/
@@ -517,7 +520,7 @@ td input + a:visited
 	font-weight: normal;
 }
 
-td input + a:hover{
+td a.edit:hover{
 	color: red !important;
     text-decoration:underline;
 }
@@ -1119,7 +1122,7 @@ body > form{
 
 .jush-sql {padding: 2px 4px; margin-right: 4px; font-size: 9pt;background-color:#49526D;}
 .jush { color: white; }
-.jush-htm_com, .jush-com, .jush-com_code, .jush-one, .jush-php_doc, .jush-php_com, .jush-php_one, .jush-js_one, .jush-js_doc { color: #E0E0E0; }
+.jush-htm_com, .jush-com, .jush-com_code, .jush-com_nest, .jush-one, .jush-php_doc, .jush-php_com, .jush-php_one, .jush-js_one, .jush-js_doc { color: #E0E0E0; }
 .jush-php, .jush-php_new, .jush-php_fun { color: #CCDAFF; background-color: #F0F0F0; }
 .jush-php_quo, .jush-quo, .jush-quo_one, .jush-php_eot, .jush-apo, .jush-sql_apo, .jush-sqlite_apo, .jush-sql_quo, .jush-sql_eot { color: #D3FFDC; }
 .jush-php_apo { color: #D3FFDC; }
@@ -1185,7 +1188,7 @@ p#tables a.select::before {
 }
 
 /* edit row */
-html/*\*/>/*/*/body table input + a[href*="&edit="][href*="&where"] {
+html/*\*/>/*/*/body table a.edit {
     content: '';
     width:18px;
     vertical-align:middle;

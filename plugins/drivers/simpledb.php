@@ -10,15 +10,15 @@ if (isset($_GET["simpledb"])) {
 		class Db extends SqlDb {
 			public $extension = "SimpleXML", $server_info = '2009-04-15', $timeout, $next;
 
-			function attach($server, $username, $password): string {
+			function attach(array $server, string $username, string $password): string {
 				return '';
 			}
 
-			function select_db($database) {
+			function select_db(string $database): bool {
 				return ($database == "domain");
 			}
 
-			function query($query, $unbuffered = false) {
+			function query(string $query, bool $unbuffered = false) {
 				$params = array('SelectExpression' => $query, 'ConsistentRead' => 'true');
 				if ($this->next) {
 					$params['NextToken'] = $this->next;
@@ -41,7 +41,7 @@ if (isset($_GET["simpledb"])) {
 				return new Result($result);
 			}
 
-			function quote($string): string {
+			function quote(string $string): string {
 				return "'" . str_replace("'", "''", $string) . "'";
 			}
 		}
@@ -50,7 +50,7 @@ if (isset($_GET["simpledb"])) {
 			public $num_rows;
 			private $rows = array(), $offset = 0;
 
-			function __construct($result) {
+			function __construct(array $result) {
 				foreach ($result as $item) {
 					$row = array();
 					if ($item->Name != '') { // SELECT COUNT(*)
@@ -103,7 +103,7 @@ if (isset($_GET["simpledb"])) {
 
 			function fetch_field(): \stdClass {
 				$keys = array_keys($this->rows[0]);
-				return (object) array('name' => $keys[$this->offset++], 'type' => 15, 'charsetnr' => 0);
+				return (object) array('name' => $keys[$this->offset++]);
 			}
 		}
 	}
@@ -113,23 +113,32 @@ if (isset($_GET["simpledb"])) {
 	class Driver extends SqlDriver {
 		static $extensions = array("SimpleXML + allow_url_fopen");
 		static $jush = "simpledb";
+		static $passwords = false;
 
-		public $operators = array("=", "<", ">", "<=", ">=", "!=", "LIKE", "LIKE %%", "IN", "IS NULL", "NOT LIKE", "IS NOT NULL");
+		static $serverSchemes = array("http", "https");
+
 		public $grouping = array("count");
 
 		public $primary = "itemName()";
 
-		static function connect($server, $username, $password) {
-			if (!preg_match('~^(https?://)?[-a-z\d.]+(:\d+)?$~', $server)) {
-				return lang('Invalid server.');
-			}
-			if ($password != "") {
-				return lang('Database does not support password.');
-			}
-			return parent::connect($server, $username, $password);
+		function operators(?array $tableStatus): array {
+			return array("=", "<", ">", "<=", ">=", "!=", "LIKE", "LIKE %%", "IN", "IS NULL", "NOT LIKE", "IS NOT NULL");
 		}
 
-		private function chunkRequest($ids, $action, $params, $expand = array()) {
+		/** Get the JUSH module inlined in the released driver by the release script */
+		static function jushModule(): string {
+			return ""; // the repository and the source archive load adminer/static/jush/modules/jush-simpledb.js
+		}
+
+		static function jushAutocomplete(array $tables, ?array $statements): string {
+			return ""; // the queries are only a select expression and the columns are not known
+		}
+
+		function hasEstimatedRows(): bool {
+			return true; // DomainMetadata returns ItemCount with the time when it was calculated
+		}
+
+		private function chunkRequest(array $ids, string $action, array $params, array $expand = array()): bool {
 			foreach (array_chunk($ids, 25) as $chunk) {
 				$params2 = $params;
 				foreach ($chunk as $i => $id) {
@@ -142,11 +151,11 @@ if (isset($_GET["simpledb"])) {
 					return false;
 				}
 			}
-			connection()->affected_rows = count($ids);
+			$this->conn->affected_rows = count($ids);
 			return true;
 		}
 
-		private function extractIds($table, $queryWhere, $limit) {
+		private function extractIds(string $table, string $queryWhere, int $limit): array {
 			$return = array();
 			if (preg_match_all("~itemName\(\) = (('[^']*+')+)~", $queryWhere, $matches)) {
 				$return = array_map('Adminer\idf_unescape', $matches[1]);
@@ -158,14 +167,15 @@ if (isset($_GET["simpledb"])) {
 			return $return;
 		}
 
-		function select($table, array $select, array $where, array $group, array $order = array(), $limit = 1, $page = 0, $print = false) {
-			connection()->next = $_GET["next"];
+		function select(string $table, array $select, array $where, array $group, array $order = array(), int $limit = 1, ?int $page = 0, bool $print = false) {
+			$this->conn->next = $_GET["next"];
+			$_GET["next"] = ""; // set by sdb_request_all() if there is a following page
 			$return = parent::select($table, $select, $where, $group, $order, $limit, $page, $print);
-			connection()->next = 0;
+			$this->conn->next = 0;
 			return $return;
 		}
 
-		function delete($table, $queryWhere, $limit = 0) {
+		function delete(string $table, string $queryWhere, int $limit = 0) {
 			return $this->chunkRequest(
 				$this->extractIds($table, $queryWhere, $limit),
 				'BatchDeleteAttributes',
@@ -173,7 +183,7 @@ if (isset($_GET["simpledb"])) {
 			);
 		}
 
-		function update($table, array $set, $queryWhere, $limit = 0, $separator = "\n") {
+		function update(string $table, array $set, string $queryWhere, int $limit = 0, string $separator = "\n") {
 			$delete = array();
 			$insert = array();
 			$i = 0;
@@ -182,7 +192,7 @@ if (isset($_GET["simpledb"])) {
 			unset($set["`itemName()`"]);
 			foreach ($set as $key => $val) {
 				$key = idf_unescape($key);
-				if ($val == "NULL" || ($id != "" && array($id) != $ids)) {
+				if ($val == "NULL" || ($id != "" && $ids != array($id))) {
 					$delete["Attribute." . count($delete) . ".Name"] = $key;
 				}
 				if ($val != "NULL") {
@@ -202,7 +212,7 @@ if (isset($_GET["simpledb"])) {
 			;
 		}
 
-		function insert($table, array $set) {
+		function insert(string $table, array $set) {
 			$params = array("DomainName" => $table);
 			$i = 0;
 			foreach ($set as $name => $value) {
@@ -222,7 +232,7 @@ if (isset($_GET["simpledb"])) {
 			return sdb_request('PutAttributes', $params);
 		}
 
-		function insertUpdate($table, array $rows, array $primary) {
+		function insertUpdate(string $table, array $rows, array $primary) {
 			//! use one batch request
 			foreach ($rows as $set) {
 				if (!$this->update($table, $set, "WHERE `itemName()` = " . q($set["`itemName()`"]))) {
@@ -244,7 +254,7 @@ if (isset($_GET["simpledb"])) {
 			return false;
 		}
 
-		function slowQuery($query, $timeout) {
+		function slowQuery(string $query, int $timeout) {
 			$this->conn->timeout = $timeout;
 			return $query;
 		}
@@ -252,38 +262,38 @@ if (isset($_GET["simpledb"])) {
 
 
 
-	function support($feature) {
-		return preg_match('~sql~', $feature);
+	function support(string $feature): bool {
+		return preg_match('~^(cursor|sql)$~', $feature);
 	}
 
-	function logged_user() {
+	function logged_user(): string {
 		$credentials = adminer()->credentials();
 		return $credentials[1];
 	}
 
-	function get_databases($flush) {
+	function get_databases(bool $flush): array {
 		return array("domain");
 	}
 
-	function collations() {
+	function collations(): array {
 		return array();
 	}
 
-	function db_collation($db, $collations) {
+	function db_collation(string $db, array $collations) {
 	}
 
-	function tables_list() {
+	function tables_list(): array {
 		$return = array();
 		foreach (sdb_request_all('ListDomains', 'DomainName') as $table) {
 			$return[(string) $table] = 'table';
 		}
 		if (connection()->error && defined('Adminer\PAGE_HEADER')) {
-			echo "<p class='error'>" . error() . "\n";
+			echo "<p class='error'>" . adminer()->error() . "\n";
 		}
 		return $return;
 	}
 
-	function table_status($name = "", $fast = false) {
+	function table_status(string $name = "", bool $fast = false): array {
 		$return = array();
 		foreach (($name != "" ? array($name => true) : tables_list()) as $table => $type) {
 			$row = array("Name" => $table, "Auto_increment" => "");
@@ -307,54 +317,66 @@ if (isset($_GET["simpledb"])) {
 		return $return;
 	}
 
-	function explain($connection, $query) {
+	function explain(Db $connection, string $query) {
 	}
 
-	function error() {
+	function error(): string {
 		return h(connection()->error);
 	}
 
-	function information_schema($db) {
+	function information_schema(string $db): bool {
+		return false;
 	}
 
-	function indexes($table, $connection2 = null) {
+	function indexes(string $table, ?Db $connection2 = null): array {
 		return array(
 			array("type" => "PRIMARY", "columns" => array("itemName()")),
 		);
 	}
 
-	function fields($table) {
+	function fields(string $table): array {
 		return fields_from_edit();
 	}
 
-	function foreign_keys($table) {
+	function foreign_keys(string $table): array {
 		return array();
 	}
 
-	function table($idf) {
+	function table(string $idf): string {
 		return idf_escape($idf);
 	}
 
-	function idf_escape($idf) {
+	function idf_escape(string $idf): string {
 		return "`" . str_replace("`", "``", $idf) . "`";
 	}
 
-	function limit($query, $where, $limit, $offset = 0, $separator = " ") {
+	function limit(string $query, string $where, int $limit, int $offset = 0, string $separator = " "): string {
 		return " $query$where" . ($limit ? $separator . "LIMIT $limit" : "");
 	}
 
-	function unconvert_field($field, $return) {
+	function limit1(string $table, string $query, string $where, string $separator = "\n"): string {
+		return limit($query, $where, 1, 0, $separator);
+	}
+
+	function convert_field(array $field) {
+	}
+
+	function unconvert_field(array $field, string $return): string {
 		return $return;
 	}
 
-	function fk_support($table_status) {
+	function is_view(array $table_status): bool {
+		return false;
 	}
 
-	function alter_table($table, $name, $fields, $foreign, $comment, $engine, $collation, $auto_increment, $partitioning) {
+	function fk_support(array $table_status) {
+	}
+
+	function alter_table(string $table, string $name, array $fields, array $foreign, ?string $comment, string $engine, string $collation, string $auto_increment, ?array $partitioning) {
 		return ($table == "" && sdb_request('CreateDomain', array('DomainName' => $name)));
 	}
 
-	function drop_tables($tables) {
+	function drop_tables(array $tables) {
 		foreach ($tables as $table) {
 			if (!sdb_request('DeleteDomain', array('DomainName' => $table))) {
 				return false;
@@ -363,21 +385,24 @@ if (isset($_GET["simpledb"])) {
 		return true;
 	}
 
-	function count_tables($databases) {
+	function count_tables(array $databases) {
 		foreach ($databases as $db) {
 			return array($db => count(tables_list()));
 		}
 	}
 
-	function found_rows($table_status, $where) {
+	function found_rows(array $table_status, array $where) {
 		return ($where ? null : $table_status["Rows"]);
 	}
 
 	function last_id($result) {
 	}
 
-	function sdb_request($action, $params = array()) {
+	function sdb_request(string $action, array $params = array()) {
 		list($host, $params['AWSAccessKeyId'], $secret) = adminer()->credentials();
+		if ($host == "") {
+			$host = "sdb.amazonaws.com";
+		}
 		$params['Action'] = $action;
 		$params['Timestamp'] = gmdate('Y-m-d\TH:i:s+00:00');
 		$params['Version'] = '2009-04-15';
@@ -390,7 +415,7 @@ if (isset($_GET["simpledb"])) {
 		}
 		$query = str_replace('%7E', '~', substr($query, 1));
 		$query .= "&Signature=" . urlencode(base64_encode(hash_hmac('sha1', "POST\n" . preg_replace('~^https?://~', '', $host) . "\n/\n$query", $secret, true)));
-		$file = @file_get_contents((preg_match('~^https?://~', $host) ? $host : "http://$host"), false, stream_context_create(array('http' => array(
+		list($file) = get_url((preg_match('~^https?://~', $host) ? $host : "http://$host"), stream_context_create(array('http' => array(
 			'method' => 'POST', // may not fit in URL with GET
 			'content' => $query,
 			'ignore_errors' => 1,
@@ -419,7 +444,7 @@ if (isset($_GET["simpledb"])) {
 		return ($xml->$tag ?: true);
 	}
 
-	function sdb_request_all($action, $tag, $params = array(), $timeout = 0) {
+	function sdb_request_all(string $action, string $tag, array $params = array(), $timeout = 0) {
 		$return = array();
 		$start = ($timeout ? microtime(true) : 0);
 		$limit = (preg_match('~LIMIT\s+(\d+)\s*$~i', $params['SelectExpression'], $match) ? $match[1] : 0);
@@ -432,7 +457,7 @@ if (isset($_GET["simpledb"])) {
 				$return[] = $element;
 			}
 			if ($limit && count($return) >= $limit) {
-				$_GET["next"] = $xml->NextToken;
+				$_GET["next"] = (string) $xml->NextToken;
 				break;
 			}
 			if ($timeout && microtime(true) - $start > $timeout) {

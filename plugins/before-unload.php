@@ -1,6 +1,6 @@
 <?php
 
-/** Display confirmation before unloading page if a form field was changed
+/** Display a confirmation before leaving the page if a form field was changed
 * @link https://www.adminer.org/plugins/#use
 * @author Jakub Vrana, https://www.vrana.cz/
 * @license https://www.apache.org/licenses/LICENSE-2.0 Apache License, Version 2.0
@@ -16,7 +16,9 @@ class AdminerBeforeUnload extends Adminer\Plugin {
 
 addEvent(document, 'change', event => {
 	const el = event.target;
-	if (el.form && /post/i.test(el.form.method)) {
+	// isTrusted - fire() dispatches change to run the delegated handlers, which is not a change by the user
+	// auth[ - browsers pre-fill the login form, there's nothing to lose there anyway
+	if (event.isTrusted !== false && el.form && /post/i.test(el.form.method) && !/^auth\[/.test(el.name)) {
 		editChanged = true;
 	}
 });
@@ -32,9 +34,13 @@ onbeforeunload = () => editChanged;
 	}
 
 	protected $translations = array(
-		'cs' => array('' => 'Zobrazí potvrzení před odnahráním stránky, pokud bylo změněno formulářové políčko'),
-		'de' => array('' => 'Zeigt eine Bestätigung an bevor die Seite neu geladen wird, wenn ein Formularfeld geändert wurde'),
-		'ja' => array('' => 'フォームの列が変更された時、ページを再読込みする前に確認を表示'),
-		'pl' => array('' => 'Wyświetlaj potwierdzenie przed rozładowaniem strony, jeśli pole formularza zostało zmienione'),
+		'cs' => array('' => 'Zobrazí potvrzení před opuštěním stránky, pokud bylo změněno formulářové políčko'),
+		'de' => array('' => 'Zeigt eine Bestätigung an, bevor die Seite verlassen wird, wenn ein Formularfeld geändert wurde'),
+		'hr' => array('' => 'Prikazuje potvrdu prije napuštanja stranice ako je polje obrasca promijenjeno'),
+		'ja' => array('' => 'フォームの項目が変更されている場合、ページを離れる前に確認を表示'), // Claude Opus 5
+		'pl' => array('' => 'Wyświetlaj potwierdzenie przed opuszczeniem strony, jeśli pole formularza zostało zmienione'), // Claude Opus 5
+		'ro' => array('' => 'Afișează o confirmare înainte de părăsirea paginii dacă un câmp din formular a fost modificat'), // Claude Opus 5
+		'sk' => array('' => 'Zobrazí potvrdenie pred opustením stránky, pokiaľ bolo zmenené formulárové políčko'), // Claude Opus 5
+		'zh' => array('' => '表单字段被修改后，离开页面前显示确认'), // Claude Opus 5
 	);
 }

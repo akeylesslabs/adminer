@@ -10,7 +10,7 @@ class AdminerSqlLog extends Adminer\Plugin {
 	protected $filename;
 
 	/**
-	* @param string $filename defaults to "$database.sql"
+	* @param string $filename defaults to "adminer-$database.sql" in the temp directory
 	*/
 	function __construct($filename = "") {
 		$this->filename = $filename;
@@ -26,21 +26,26 @@ class AdminerSqlLog extends Adminer\Plugin {
 
 	private function log($query) {
 		if ($this->filename == "") {
-			$this->filename = Adminer\adminer()->database() . ($_GET["ns"] != "" ? ".$_GET[ns]" : "") . ".sql"; // no database goes to ".sql" to avoid collisions
+			// the directory of the script should not be writable by the web server at all and a relative name would create the log there, where anyone could download it
+			// no database goes to "adminer-.sql" to avoid collisions
+			$this->filename = Adminer\get_temp_dir() . "/adminer-" . urlencode(Adminer\adminer()->database() . ($_GET["ns"] != "" ? ".$_GET[ns]" : "")) . ".sql";
 		}
-		$fp = fopen($this->filename, "a");
-		flock($fp, LOCK_EX);
-		fwrite($fp, $query);
-		fwrite($fp, "\n\n");
-		flock($fp, LOCK_UN);
-		fclose($fp);
+		$fp = Adminer\file_open_lock($this->filename); // it also refuses a symlink and doesn't make the file readable by everyone
+		if ($fp) {
+			fseek($fp, 0, SEEK_END);
+			fwrite($fp, "$query\n\n");
+			Adminer\file_unlock($fp);
+		}
 	}
 
 	protected $translations = array(
 		'cs' => array('' => 'Zaznamenává všechny příkazy do souboru SQL'),
 		'de' => array('' => 'Protokollieren Sie alle Abfragen in einer SQL-Datei'),
+		'hr' => array('' => 'Bilježi sve upite u SQL datoteku'),
+		'ja' => array('' => '全クエリを SQL ファイルに記録'),
 		'pl' => array('' => 'Rejestruj wszystkie zapytania do pliku SQL'),
 		'ro' => array('' => 'Logați toate interogările în fișierul SQL'),
-		'ja' => array('' => '全クエリを SQL ファイルに記録'),
+		'sk' => array('' => 'Zaznamenáva všetky príkazy do súboru SQL'), // Claude Opus 5
+		'zh' => array('' => '把所有查询记录到 SQL 文件'), // Claude Opus 5
 	);
 }

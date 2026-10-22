@@ -19,7 +19,7 @@ class AdminerDumpJson extends Adminer\Plugin {
 		}
 	}
 
-	function dumpData($table, $style, $query) {
+	function dumpData($table, $style, $query, $select = array(), $where = array(), $group = array(), $order = array()) {
 		if ($_POST["format"] == "json") {
 			if ($this->database) {
 				echo ",\n";
@@ -27,7 +27,10 @@ class AdminerDumpJson extends Adminer\Plugin {
 				$this->database = true;
 				echo "{\n";
 			}
-			$result = Adminer\connection()->query($query, 1);
+			$result = ($query != ""
+				? Adminer\connection()->query($query, 1) // 1 - MYSQLI_USE_RESULT
+				: Adminer\driver()->select($table, ($select ?: array("*")), $where, $group, $order, 0) // 0 - all rows
+			);
 			if ($result) {
 				echo '"' . addcslashes($table, "\r\n\"\\") . "\": [\n";
 				$first = true;
@@ -61,8 +64,11 @@ class AdminerDumpJson extends Adminer\Plugin {
 	protected $translations = array(
 		'cs' => array('' => 'Export do formátu JSON'),
 		'de' => array('' => 'Export im JSON-Format'),
+		'hr' => array('' => 'Izvoz u JSON format'),
+		'ja' => array('' => 'JSON 形式でエクスポート'),
 		'pl' => array('' => 'Zrzuć do formatu JSON'),
 		'ro' => array('' => 'Dump în format JSON'),
-		'ja' => array('' => 'JSON 形式でエクスポート'),
+		'sk' => array('' => 'Export do formátu JSON'), // Claude Opus 5
+		'zh' => array('' => '导出为 JSON 格式'), // Claude Opus 5
 	);
 }

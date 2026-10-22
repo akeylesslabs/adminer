@@ -1,7 +1,7 @@
 <?php
 namespace Adminer;
 
-add_driver("clickhouse", "ClickHouse (alpha)");
+add_driver("clickhouse", "ClickHouse");
 
 if (isset($_GET["clickhouse"])) {
 	define('Adminer\DRIVER', "clickhouse");
@@ -11,13 +11,18 @@ if (isset($_GET["clickhouse"])) {
 			public $extension = "JSON";
 			public $_db = 'default';
 			private $url;
+			private $authorization;
 
-			function rootQuery($db, $query) {
-				$file = @file_get_contents("$this->url/?database=$db", false, stream_context_create(array('http' => array(
+			function rootQuery(string $db, string $query) {
+				$this->error = '';
+				$this->errno = 0;
+				$this->affected_rows = 0;
+				list($file, $status, $headers, $error) = get_url($this->url . "/?database=" . rawurlencode($db), stream_context_create(array('http' => array(
 					'method' => 'POST',
 					'content' => $query,
 					'header' => array(
-						'Content-Type: application/x-www-form-urlencoded',
+						'Authorization: Basic ' . $this->authorization,
+						'Content-Type: text/plain; charset=UTF-8',
 						'X-ClickHouse-Format: JSONCompact',
 					),
 					'ignore_errors' => 1,
@@ -25,103 +30,151 @@ if (isset($_GET["clickhouse"])) {
 					'max_redirects' => 0,
 				))));
 
-				if ($file === false || preg_match('~^HTTP/[0-9.]+ 403~i', $http_response_header[0])) {
+				if ($status == 401 || $status == 403) {
 					$this->error = lang('Invalid credentials.');
+					$this->errno = $status;
 					return false;
 				}
-				$return = json_decode($file, true);
-				if ($return === null) {
-					if (!$this->isQuerySelectLike($query) && $file === '') {
-						return true;
-					}
+				if ($file === false) {
+					$this->error = ($error ?: 'Unable to connect to the ClickHouse server.');
+					return false;
+				}
 
-					$this->errno = json_last_error();
-					if (function_exists('json_last_error_msg')) {
-						$this->error = json_last_error_msg();
-					} else {
-						$constants = get_defined_constants(true);
-						foreach ($constants['json'] as $name => $value) {
-							if ($value == $this->errno && preg_match('~^JSON_ERROR_~', $name)) {
-								$this->error = $name;
-								break;
-							}
-						}
+				$exception = null;
+				foreach ($headers as $header) {
+					if (preg_match('~^X-ClickHouse-Exception-Code:\s*(\d+)~i', $header, $match)) { // ClickHouse sends this header in the errors created by itself
+						$exception = (int) $match[1];
+					}
+					// the header repeats with progress, the last one is final; it is missing for some commands
+					if (preg_match('~^X-ClickHouse-Summary:\s*(.+)~i', $header, $match)) {
+						$this->affected_rows = (int) idx((array) json_decode($match[1], true), 'written_rows', 0);
 					}
 				}
-				// 400 == Syntax error
-				// 404 == Unknown expression identifier
-				// 500 == Column 'x' is not under aggregate function and not in GROUP BY keys
-				if (preg_match('~^HTTP/[0-9.]+ [45]~i', $http_response_header[0])) {
-					$this->error = $return['exception'];
+
+				if ($status < 200 || $status >= 300) {
+					$this->errno = ($exception ?: (int) $status);
+					$this->error = ($exception === null // the response of a server which is not ClickHouse is never printed
+						? lang('Invalid server or credentials.') . " HTTP $status"
+						: (trim($file) ?: "ClickHouse HTTP error $status.")
+					);
+					return false;
+				}
+
+				if (trim($file) === '') {
+					return true;
+				}
+
+				$return = json_decode_exact($file); // json_decode() would round e.g. UInt64 or Decimal and they would be saved rounded
+				if (!is_object($return) || !isset($return->data) || !isset($return->meta)) {
+					$this->errno = json_last_error();
+					$this->error = ($this->errno && function_exists('json_last_error_msg')
+						? json_last_error_msg()
+						: 'Unexpected response returned by ClickHouse.'
+					);
 					return false;
 				}
 				return new Result($return);
 			}
 
-			function isQuerySelectLike($query) {
-				return (bool) preg_match('~^\s*(select|show|with)~i', $query);
-			}
-
-			function query($query, $unbuffered = false) {
+			function query(string $query, bool $unbuffered = false) {
+				if (preg_match('~^\s*USE\s+(?:`((?:``|[^`])+)`|([A-Za-z_][A-Za-z0-9_]*))\s*;?\s*$~i', $query, $match)) {
+					$this->_db = str_replace("``", "`", ($match[1] !== '' ? $match[1] : $match[2]));
+					return true;
+				}
 				return $this->rootQuery($this->_db, $query);
 			}
 
-			function attach($server, $username, $password): string {
-				preg_match('~^(https?://)?(.*)~', $server, $match);
-				$this->url = ($match[1] ?: "http://") . urlencode($username) . ":" . urlencode($password) . "@$match[2]";
-				$return = $this->query('SELECT 1');
-				return ($return ? '' : $this->error);
+			function attach(array $server, string $username, string $password): string {
+				$scheme = ($server["scheme"] ?: "http");
+				// the path is used by a reverse proxy
+				$this->url = "$scheme://" . url_host($server["host"]) . ":" . ($server["port"] ?: ($scheme == "https" ? 8443 : 8123)) . rtrim($server["path"], "/");
+				$this->authorization = base64_encode("$username:$password");
+				$return = $this->query('SELECT version()');
+				if (!$return) {
+					return $this->error;
+				}
+				$row = $return->fetch_row();
+				$this->server_info = ($row ? $row[0] : '');
+				return '';
 			}
 
-			function select_db($database) {
+			function select_db(string $database): bool {
 				$this->_db = $database;
 				return true;
 			}
 
-			function quote($string): string {
-				return "'" . addcslashes($string, "\\'") . "'";
+			/** @var string[] */ static $escapes = array( // escape sequences in a string literal, unconvert_field() reverts them
+				"\\" => "\\\\",
+				"'" => "\\'",
+				"\0" => "\\0",
+				"\x08" => "\\b", // PHP has no \b
+				"\f" => "\\f",
+				"\n" => "\\n",
+				"\r" => "\\r",
+				"\t" => "\\t",
+			);
+
+			function quote(string $string): string {
+				return "'" . strtr($string, self::$escapes) . "'";
 			}
 		}
 
 		class Result {
 			public $num_rows, $columns, $meta;
-			private $rows = array(), $offset = 0;
+			private $rows = array(), $rowOffset = 0, $fieldOffset = 0;
 
-			function __construct($result) {
-				foreach ($result['data'] as $item) {
+			function __construct(\stdClass $result) {
+				$this->meta = array_map('get_object_vars', $result->meta);
+				foreach ((array) $result->data as $item) {
 					$row = array();
-					foreach ($item as $key => $val) {
-						$row[$key] = is_scalar($val) ? $val : json_encode($val, 256); // 256 - JSON_UNESCAPED_UNICODE
+					foreach ((array) $item as $key => $val) {
+						$type = (isset($this->meta[$key]['type']) ? $this->meta[$key]['type'] : '');
+						$row[$key] = ($val === null || is_scalar($val)
+							? $this->normalizeValue(json_scalar($val), $type)
+							: json_encode_exact($val, 256 | 64) // JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES available since PHP 5.4
+						);
 					}
 					$this->rows[] = $row;
 				}
-				$this->num_rows = $result['rows'];
-				$this->meta = $result['meta'];
-				$this->columns = array_column($this->meta, 'name');
-				reset($this->rows);
+				$this->num_rows = count($this->rows);
+				$this->columns = array_map(function ($column) {
+					return $column['name'];
+				}, $this->meta); // array_column() is available since PHP 5.5
+			}
+
+			private function normalizeValue($value, string $type) {
+				// FixedString is NUL-padded to its declared width. The padding is
+				// storage detail rather than user data and breaks Adminer links and
+				// form controls if it is allowed through to the HTML response.
+				if (is_string($value) && preg_match('~(?:^|\()FixedString\(\d+\)~', $type)) {
+					return rtrim($value, "\0");
+				}
+				return $value;
 			}
 
 			function fetch_assoc() {
-				$row = current($this->rows);
-				next($this->rows);
-				return $row === false ? false : array_combine($this->columns, $row);
+				if (!isset($this->rows[$this->rowOffset])) {
+					return false;
+				}
+				return array_combine($this->columns, $this->rows[$this->rowOffset++]);
 			}
 
 			function fetch_row() {
-				$row = current($this->rows);
-				next($this->rows);
-				return $row;
+				return (isset($this->rows[$this->rowOffset]) ? $this->rows[$this->rowOffset++] : false);
 			}
 
 			function fetch_field(): \stdClass {
-				$column = $this->offset++;
+				$column = $this->fieldOffset++;
 				$return = new \stdClass;
 				if ($column < count($this->columns)) {
 					$return->name = $this->meta[$column]['name'];
-					$return->type = $this->meta[$column]['type']; //! map to MySQL numbers
-					$return->charsetnr = 0;
+					$return->native_type = $this->meta[$column]['type'];
 				}
 				return $return;
+			}
+
+			function seek($offset) {
+				$this->rowOffset = max(0, (int) $offset);
 			}
 		}
 	}
@@ -130,39 +183,101 @@ if (isset($_GET["clickhouse"])) {
 		static $extensions = array("allow_url_fopen");
 		static $jush = "clickhouse";
 
-		public $operators = array("=", "<", ">", "<=", ">=", "!=", "~", "!~", "LIKE", "LIKE %%", "IN", "IS NULL", "NOT LIKE", "NOT IN", "IS NOT NULL", "SQL");
-		public $grouping = array("avg", "count", "count distinct", "max", "min", "sum");
+		static $serverSchemes = array("http", "https");
+		static $serverPorts = array(80, 443);
+		static $serverPath = true;
 
-		static function connect($server, $username, $password) {
-			if (!preg_match('~^(https?://)?[-a-z\d.]+(:\d+)?$~', $server)) {
-				return lang('Invalid server.');
+		public $functions = array("length", "lower", "round", "toDate", "toDateTime", "toString", "upper");
+		public $grouping = array("avg", "count", "count distinct", "max", "min", "sum");
+		public $insertFunctions = array("Date|DateTime" => "now");
+		public $editFunctions = array(
+			"Int|UInt|Float|Decimal" => "+/-",
+			"String|FixedString" => "concat",
+		);
+		public $generated = array("MATERIALIZED", "ALIAS", "EPHEMERAL");
+
+		function operators(?array $tableStatus): array {
+			return array("=", "<", ">", "<=", ">=", "!=", "LIKE", "LIKE %%", "ILIKE", "ILIKE %%", "IN", "IS NULL", "NOT LIKE", "NOT ILIKE", "NOT IN", "IS NOT NULL", "SQL");
+		}
+
+		/** Get the JUSH module inlined in the released driver by the release script */
+		static function jushModule(): string {
+			return ""; // the repository and the source archive load adminer/static/jush/modules/jush-clickhouse.js
+		}
+
+		function hasCStyleEscapes(): bool {
+			return true;
+		}
+
+		function supportsAlterIndex(array $table_status): bool {
+			return false; // indexes are listed for information only, altering them requires ClickHouse specific syntax
+		}
+
+		function slowQuery(string $query, int $timeout) {
+			// readonly = 1 forbids changing any setting, the query would fail
+			return (get_val("SELECT value FROM system.settings WHERE name = 'readonly'") == 1 ? $query : "$query SETTINGS max_execution_time = $timeout");
+		}
+
+		function md5(string $column, array $field) {
+			// not FixedString, its rendered value lacks the NUL padding
+			if (preg_match('~^(LowCardinality\()?(Nullable\()?String\b~', $field["full_type"])) {
+				return "lower(hex(MD5($column)))";
 			}
-			return parent::connect($server, $username, $password);
+			// json_decode_exact() renders a geometry with the numbers of the server; not Array, Map, Tuple or JSON, the server escapes / in their strings
+			if (preg_match('~^(Point|Ring|MultiPoint|(Multi)?LineString|(Multi)?Polygon)$~', $field["type"])) {
+				return "lower(hex(MD5(toJSONString($column))))";
+			}
 		}
 
 		function __construct(Db $connection) {
 			parent::__construct($connection);
-			$this->types = array( //! arrays
+			$this->types = array(
 				lang('Numbers') => array(
-					"Int8" => 3, "Int16" => 5, "Int32" => 10, "Int64" => 19,
-					"UInt8" => 3, "UInt16" => 5, "UInt32" => 10, "UInt64" => 20,
-					"Float32" => 7, "Float64" => 16,
-					'Decimal' => 38, 'Decimal32' => 9, 'Decimal64' => 18, 'Decimal128' => 38,
+					"Int8" => 3, "Int16" => 5, "Int32" => 10, "Int64" => 19, "Int128" => 39, "Int256" => 78,
+					"UInt8" => 3, "UInt16" => 5, "UInt32" => 10, "UInt64" => 20, "UInt128" => 39, "UInt256" => 78,
+					"Float32" => 14, "Float64" => 23, "BFloat16" => 7,
+					"Bool" => 1,
+					"Decimal" => 76, "Decimal32" => 9, "Decimal64" => 18, "Decimal128" => 38, "Decimal256" => 76,
 				),
-				lang('Date and time') => array("Date" => 13, "DateTime" => 20),
-				lang('Strings') => array("String" => 0),
-				lang('Binary') => array("FixedString" => 0),
+				lang('Date and time') => array("Date" => 10, "Date32" => 10, "DateTime" => 19, "DateTime64" => 29, "Time" => 9, "Time64" => 19),
+				lang('Strings') => array("String" => 0, "FixedString" => 0, "UUID" => 36, "JSON" => 0),
+				lang('Lists') => array("Enum8" => 0, "Enum16" => 0, "Array" => 0, "Map" => 0, "Tuple" => 0, "Nested" => 0),
+				lang('Network') => array("IPv4" => 15, "IPv6" => 39),
+				lang('Geometry') => array("Point" => 0, "Ring" => 0, "LineString" => 0, "MultiLineString" => 0, "MultiPoint" => 0, "Polygon" => 0, "MultiPolygon" => 0),
+				lang('Other') => array("LowCardinality" => 0, "AggregateFunction" => 0, "SimpleAggregateFunction" => 0, "Variant" => 0, "Dynamic" => 0),
 			);
 		}
 
-		function delete($table, $queryWhere, $limit = 0) {
+		function engines(): array {
+			$engines = get_vals("SELECT name FROM system.table_engines ORDER BY name");
+			return ($engines ?: array("MergeTree", "ReplacingMergeTree", "Memory", "Log", "TinyLog"));
+		}
+
+		function allFields(): array {
+			$return = array();
+			$rows = get_rows(
+				"SELECT c." . idf_escape('table') . " AS " . idf_escape('table')
+				. ", c.name, c.type, c.default_kind, c.default_expression, c.comment, "
+				. "c.is_in_primary_key, c.is_in_sorting_key, c.is_in_partition_key, t.engine AS table_engine "
+				. "FROM system.columns AS c LEFT JOIN system.tables AS t "
+				. "ON c.database = t.database AND c." . idf_escape('table') . " = t.name "
+				. "WHERE c.database = " . q($this->conn->_db)
+				. " ORDER BY c." . idf_escape('table') . ", c.position"
+			);
+			foreach ($rows as $row) {
+				$return[$row['table']][] = clickhouse_field($row);
+			}
+			return $return;
+		}
+
+		function delete(string $table, string $queryWhere, int $limit = 0) {
 			if ($queryWhere === '') {
 				$queryWhere = 'WHERE 1=1';
 			}
 			return queries("ALTER TABLE " . table($table) . " DELETE $queryWhere");
 		}
 
-		function update($table, array $set, $queryWhere, $limit = 0, $separator = "\n") {
+		function update(string $table, array $set, string $queryWhere, int $limit = 0, string $separator = "\n") {
 			$values = array();
 			foreach ($set as $key => $val) {
 				$values[] = "$key = $val";
@@ -170,201 +285,544 @@ if (isset($_GET["clickhouse"])) {
 			$query = $separator . implode(",$separator", $values);
 			return queries("ALTER TABLE " . table($table) . " UPDATE $query$queryWhere");
 		}
+
+		function insert(string $table, array $set) {
+			if (!$set) {
+				$this->conn->error = 'ClickHouse does not support DEFAULT VALUES without an explicit column list.';
+				return false;
+			}
+			return parent::insert($table, $set);
+		}
 	}
 
-	function idf_escape($idf) {
+	function idf_escape(string $idf): string {
 		return "`" . str_replace("`", "``", $idf) . "`";
 	}
 
-	function table($idf) {
+	function table(string $idf): string {
 		return idf_escape($idf);
 	}
 
-	function explain($connection, $query) {
-		return '';
+	function clickhouse_qualified(string $database, string $name): string {
+		return idf_escape($database) . "." . idf_escape($name);
 	}
 
-	function found_rows($table_status, $where) {
-		$rows = get_vals("SELECT COUNT(*) FROM " . idf_escape($table_status["Name"]) . ($where ? " WHERE " . implode(" AND ", $where) : ""));
-		return empty($rows) ? false : $rows[0];
+	function clickhouse_type_info(string $fullType): array {
+		$fullType = trim($fullType);
+		$type = $fullType;
+		$nullable = false;
+		if (preg_match('~^Nullable\((.*)\)$~s', $type, $match)) {
+			$nullable = true;
+			$type = $match[1];
+		}
+		if (preg_match('~^([A-Za-z][A-Za-z0-9_]*)(?:\((.*)\))?$~s', $type, $match)) {
+			return array($match[1], isset($match[2]) ? $match[2] : '', $nullable);
+		}
+		return array($type, '', $nullable);
 	}
 
-	function alter_table($table, $name, $fields, $foreign, $comment, $engine, $collation, $auto_increment, $partitioning) {
-		$alter = $order = array();
+	function clickhouse_default_value(string $expression): string {
+		if (preg_match("~^'(.*)'$~s", $expression, $match)) {
+			return stripcslashes(str_replace("''", "'", $match[1]));
+		}
+		return $expression;
+	}
+
+	function clickhouse_field(array $row): array {
+		list($type, $length, $nullable) = clickhouse_type_info($row['type']);
+		$defaultKind = strtoupper(trim($row['default_kind']));
+		$generated = (in_array($defaultKind, array("MATERIALIZED", "ALIAS", "EPHEMERAL"), true)
+			? $defaultKind
+			: ''
+		);
+		$engine = (isset($row['table_engine']) ? $row['table_engine'] : '');
+		$isView = preg_match('~View$~', $engine);
+		$privileges = array("select" => 1, "where" => 1, "order" => 1);
+		if (!$generated && !$isView) {
+			$privileges["insert"] = 1;
+		}
+		if (!$generated && preg_match('~MergeTree$~', $engine) && !$row['is_in_sorting_key'] && !$row['is_in_partition_key']) { // ALTER TABLE UPDATE can't change a key column
+			$privileges["update"] = 1;
+		}
+		return array(
+			"field" => trim($row['name']),
+			"full_type" => trim($row['type']),
+			"type" => $type,
+			"length" => $length,
+			"default" => ($defaultKind ? clickhouse_default_value(trim($row['default_expression'])) : null),
+			"null" => $nullable,
+			"auto_increment" => false,
+			"on_update" => "",
+			"collation" => "",
+			"privileges" => $privileges,
+			"comment" => trim($row['comment']),
+			"primary" => false, // ClickHouse primary keys do not guarantee uniqueness.
+			"generated" => $generated,
+		);
+	}
+
+	function clickhouse_field_definition(array $parts): string {
+		$name = $parts[0];
+		$type = trim($parts[1]);
+		if (isset($parts[2]) && trim($parts[2]) === "NULL" && strpos($type, 'Nullable(') !== 0) {
+			$type = "Nullable($type)";
+		}
+		$default = (isset($parts[3]) ? $parts[3] : '');
+		if (preg_match('~^\s*GENERATED ALWAYS AS \((.*)\)\s+(MATERIALIZED|ALIAS|EPHEMERAL)\s*$~s', $default, $match)) {
+			$default = " $match[2] $match[1]";
+		}
+		$comment = (isset($parts[5]) && preg_match('~^\s*COMMENT\b~i', $parts[5])
+			? $parts[5]
+			: (isset($parts[4]) && preg_match('~^\s*COMMENT\b~i', $parts[4]) ? $parts[4] : '')
+		);
+		return "$name $type$default$comment";
+	}
+
+	function explain(Db $connection, string $query) {
+		return $connection->query("EXPLAIN $query");
+	}
+
+	function found_rows(array $table_status, array $where) {
+		return ($where ? null : $table_status["Rows"]); // total_rows is exact, null in views; select.inc.php counts the filtered rows itself
+	}
+
+	function alter_table(string $table, string $name, array $fields, array $foreign, ?string $comment, string $engine, string $collation, string $auto_increment, ?array $partitioning) {
+		if ($table === "") {
+			$definitions = array();
+			foreach ($fields as $field) {
+				if (!empty($field[1])) {
+					$definitions[] = clickhouse_field_definition($field[1]);
+				}
+			}
+			$engine = ($engine ?: "MergeTree");
+			if (!preg_match('~^[A-Za-z][A-Za-z0-9_]*$~', $engine)) {
+				connection()->error = 'Invalid ClickHouse table engine.';
+				return false;
+			}
+			$status = " ENGINE = $engine";
+			if (preg_match('~MergeTree$~', $engine)) {
+				$status .= " ORDER BY tuple()";
+			}
+			$result = queries("CREATE TABLE " . table($name) . " (\n" . implode(",\n", $definitions) . "\n)$status");
+			if ($result && $comment !== null && $comment !== '') {
+				$result = queries("ALTER TABLE " . table($name) . " MODIFY COMMENT " . q($comment));
+			}
+			return $result;
+		}
+
+		if ($foreign) {
+			connection()->error = 'ClickHouse does not support foreign keys.';
+			return false;
+		}
+		if ($engine !== '') {
+			connection()->error = 'ClickHouse cannot change a table engine with ALTER TABLE.';
+			return false;
+		}
+		if ($collation !== '' || $auto_increment !== '') {
+			connection()->error = 'ClickHouse does not support table collations or auto-increment values.';
+			return false;
+		}
+
+		if ($table !== $name) {
+			if (!queries("RENAME TABLE " . table($table) . " TO " . table($name))) {
+				return false;
+			}
+			$table = $name;
+		}
+
+		$result = true;
 		foreach ($fields as $field) {
-			if ($field[1][2] === " NULL") {
-				$field[1][1] = " Nullable({$field[1][1]})";
-			} elseif ($field[1][2] === ' NOT NULL') {
-				$field[1][2] = '';
+			if (empty($field[1])) {
+				$result = queries("ALTER TABLE " . table($table) . " DROP COLUMN " . idf_escape($field[0]));
+				if (!$result) {
+					return false;
+				}
+				continue;
 			}
 
-			if ($field[1][3]) {
-				$field[1][3] = '';
+			$newName = $field[1][0];
+			if ($field[0] !== "" && idf_escape($field[0]) !== $newName) {
+				if (!queries("ALTER TABLE " . table($table) . " RENAME COLUMN " . idf_escape($field[0]) . " TO $newName")) {
+					return false;
+				}
+			}
+			$operation = ($field[0] === "" ? "ADD COLUMN" : "MODIFY COLUMN");
+			$order = (isset($field[2]) ? $field[2] : '');
+			$result = queries("ALTER TABLE " . table($table) . " $operation " . clickhouse_field_definition($field[1]) . $order);
+			if (!$result) {
+				return false;
 			}
 
-			$alter[] = ($field[1]
-				? ($table != "" ? ($field[0] != "" ? "MODIFY COLUMN " : "ADD COLUMN ") : " ") . implode($field[1])
-				: "DROP COLUMN " . idf_escape($field[0])
-			);
-
-			$order[] = $field[1][0];
-		}
-
-		$alter = array_merge($alter, $foreign);
-		$status = ($engine ? " ENGINE " . $engine : "");
-		if ($table == "") {
-			return queries("CREATE TABLE " . table($name) . " (\n" . implode(",\n", $alter) . "\n)$status$partitioning" . ' ORDER BY (' . implode(',', $order) . ')');
-		}
-		if ($table != $name) {
-			$result = queries("RENAME TABLE " . table($table) . " TO " . table($name));
-			if ($alter) {
-				$table = $name;
-			} else {
-				return $result;
+			if ($field[0] != "" && $field[1][3] == "" && min_version("20.10")) {
+				// MODIFY COLUMN without DEFAULT keeps the original default value, $newName is used because the column is already renamed
+				if (!queries("ALTER TABLE " . table($table) . " MODIFY COLUMN $newName REMOVE DEFAULT")) {
+					return false;
+				}
 			}
 		}
-		if ($status) {
-			$alter[] = ltrim($status);
+
+		if ($comment !== null) {
+			$result = queries("ALTER TABLE " . table($table) . " MODIFY COMMENT " . q($comment));
 		}
-		return ($alter || $partitioning ? queries("ALTER TABLE " . table($table) . "\n" . implode(",\n", $alter) . $partitioning) : true);
+		return $result;
 	}
 
-	function truncate_tables($tables) {
+	function truncate_tables(array $tables): bool {
 		return apply_queries("TRUNCATE TABLE", $tables);
 	}
 
-	function drop_views($views) {
-		return drop_tables($views);
+	function drop_views(array $views) {
+		return apply_queries("DROP VIEW", $views);
 	}
 
-	function drop_tables($tables) {
+	function drop_tables(array $tables) {
 		return apply_queries("DROP TABLE", $tables);
 	}
 
-	function get_databases($flush) {
-		$result = get_rows('SHOW DATABASES');
-
-		$return = array();
-		foreach ($result as $row) {
-			$return[] = $row['name'];
+	function get_databases(bool $flush): array {
+		$return = get_session("dbs");
+		if ($flush || $return === null) {
+			$return = get_vals("SELECT name FROM system.databases ORDER BY name");
+			restart_session();
+			set_session("dbs", $return);
+			stop_session();
 		}
-		sort($return);
 		return $return;
 	}
 
-	function limit($query, $where, $limit, $offset = 0, $separator = " ") {
-		return " $query$where" . ($limit ? $separator . "LIMIT " . ($offset ? "$offset, " : "") . $limit : "");
+	function limit(string $query, string $where, int $limit, int $offset = 0, string $separator = " "): string {
+		return " $query$where" . ($limit ? $separator . "LIMIT $limit" . ($offset ? " OFFSET $offset" : "") : "");
 	}
 
-	function limit1($table, $query, $where, $separator = "\n") {
+	function limit1(string $table, string $query, string $where, string $separator = "\n"): string {
 		return limit($query, $where, 1, 0, $separator);
 	}
 
-	function db_collation($db, $collations) {
+	function db_collation(string $db, array $collations) {
+		return null;
 	}
 
-	function logged_user() {
-		$credentials = adminer()->credentials();
-		return $credentials[1];
+	function logged_user(): string {
+		return get_val("SELECT currentUser()");
 	}
 
-	function tables_list() {
-		$result = get_rows('SHOW TABLES');
+	function tables_list(): array {
+		$result = get_rows(
+			"SELECT name, engine FROM system.tables WHERE database = " . q(connection()->_db) . " ORDER BY name"
+		);
 		$return = array();
 		foreach ($result as $row) {
-			$return[$row['name']] = 'table';
+			$return[$row['name']] = ($row['engine'] === 'View' ? 'VIEW' : 'TABLE');
 		}
-		ksort($return);
 		return $return;
 	}
 
-	function count_tables($databases) {
-		return array();
+	function count_tables(array $databases): array {
+		$return = array_fill_keys($databases, 0);
+		if (!$databases) {
+			return $return;
+		}
+		$quoted = array_map('Adminer\q', $databases);
+		foreach (
+			get_rows(
+				"SELECT database, count() AS tables FROM system.tables "
+				. "WHERE database IN (" . implode(", ", $quoted) . ") GROUP BY database"
+			) as $row
+		) {
+			$return[$row['database']] = $row['tables'];
+		}
+		return $return;
 	}
 
-	function table_status($name = "", $fast = false) {
+	function table_status(string $name = "", bool $fast = false): array {
 		$return = array();
-		$tables = get_rows("SELECT name, engine FROM system.tables WHERE database = " . q(connection()->_db) . ($name != "" ? " AND name = " . q($name) : ""));
-		foreach ($tables as $table) {
-			$return[$table['name']] = array(
-				'Name' => $table['name'],
-				'Engine' => $table['engine'],
+		$tables = get_rows(
+			"SELECT name, engine, total_rows, total_bytes, comment, sorting_key "
+			. "FROM system.tables WHERE database = " . q(connection()->_db)
+			. ($name != "" ? " AND name = " . q($name) : " ORDER BY name")
+		);
+		foreach ($tables as $row) {
+			$return[$row['name']] = array(
+				'Name' => $row['name'],
+				'Engine' => $row['engine'],
+				'Comment' => $row['comment'],
+				'Rows' => $row['total_rows'],
+				'Data_length' => $row['total_bytes'],
+				'Index_length' => 0,
+				'Data_free' => 0,
+				'Auto_increment' => '',
+				'Collation' => '',
+				'Create_options' => ($row['sorting_key'] ? "ORDER BY $row[sorting_key]" : ''),
 			);
 		}
 		return $return;
 	}
 
-	function is_view($table_status) {
+	function is_view(array $table_status): bool {
+		// Adminer's generic editor can safely replace ordinary views. Materialized
+		// views need ClickHouse-specific ENGINE/TO clauses, so expose them as tables.
+		return $table_status['Engine'] === 'View';
+	}
+
+	function fk_support(array $table_status): bool {
 		return false;
 	}
 
-	function fk_support($table_status) {
-		return false;
+	function convert_field(array $field) {
 	}
 
-	function convert_field($field) {
-	}
-
-	function unconvert_field($field, $return) {
-		if (in_array($field['type'], array("Int8", "Int16", "Int32", "Int64", "UInt8", "UInt16", "UInt32", "UInt64", "Float32", "Float64"))) {
-			return "to$field[type]($return)";
+	function unconvert_field(array $field, string $return): string {
+		if ($return !== "NULL" && preg_match('~^(Array|Map|Tuple|Point|Ring|MultiPoint|(Multi)?LineString|(Multi)?Polygon)$~', $field['type'])) { // CAST can't parse their JSON
+			$type = $field['full_type'];
+			if (preg_match('~\bDecimal~', $type) && preg_match("~^'(.*)'\$~s", $return, $match)) {
+				// JSONExtract() reads an unquoted number as a float which rounds a decimal, it parses a quoted one exactly
+				$json = strtr($match[1], array_flip(Db::$escapes));
+				$return = q(preg_replace('~"(?:[^"\\\\]|\\\\.)*+"(*SKIP)(*FAIL)|-?\d[-+.\deE]*+~', '"$0"', $json));
+			}
+			// JSONExtract() supports only the String keys of Map, CAST converts them
+			$string_keys = preg_replace("~\\bMap\\([A-Za-z]\\w*(?:\\((?:[^()']|'(?:[^'\\\\]|\\\\.)*'|\\([^()]*\\))*\\))?, ~", 'Map(String, ', $type);
+			return ($string_keys != $type ? "CAST(JSONExtract($return, " . q($string_keys) . ") AS $type)" : "JSONExtract($return, " . q($type) . ")");
+		}
+		if ($return !== "NULL" && $field['full_type'] !== "String") {
+			return "CAST($return AS $field[full_type])";
 		}
 		return $return;
 	}
 
-	function fields($table) {
+	function fields(string $table): array {
 		$return = array();
-		$result = get_rows("SELECT name, type, default_expression FROM system.columns WHERE " . idf_escape('table') . " = " . q($table));
+		$result = get_rows(
+			"SELECT c.name, c.type, c.default_kind, c.default_expression, c.comment, "
+			. "c.is_in_primary_key, c.is_in_sorting_key, c.is_in_partition_key, t.engine AS table_engine "
+			. "FROM system.columns AS c LEFT JOIN system.tables AS t "
+			. "ON c.database = t.database AND c." . idf_escape('table') . " = t.name "
+			. "WHERE c.database = " . q(connection()->_db)
+			. " AND c." . idf_escape('table') . " = " . q($table)
+			. " ORDER BY c.position"
+		);
 		foreach ($result as $row) {
-			$type = trim($row['type']);
-			$nullable = strpos($type, 'Nullable(') === 0;
-			$return[trim($row['name'])] = array(
-				"field" => trim($row['name']),
-				"full_type" => $type,
-				"type" => $type,
-				"default" => trim($row['default_expression']),
-				"null" => $nullable,
-				"auto_increment" => '0',
-				"privileges" => array("insert" => 1, "select" => 1, "update" => 0, "where" => 1, "order" => 1),
-			);
+			$return[trim($row['name'])] = clickhouse_field($row);
 		}
-
 		return $return;
 	}
 
-	function indexes($table, $connection2 = null) {
-		return array();
+	function indexes(string $table, ?Db $connection2 = null): array {
+		$conn = connection($connection2);
+		$return = array();
+		$rows = get_rows(
+			"SELECT primary_key, sorting_key FROM system.tables "
+			. "WHERE database = " . q($conn->_db) . " AND name = " . q($table),
+			$connection2
+		);
+		if ($rows) {
+			$row = $rows[0];
+			// the types are not PRIMARY so that unique_array() doesn't identify rows by them, ClickHouse keys are not unique
+			if ($row["primary_key"] !== "") {
+				$return["PRIMARY KEY"] = clickhouse_index("PRIMARY KEY", $row["primary_key"]);
+			}
+			if ($row["sorting_key"] !== "" && $row["sorting_key"] !== $row["primary_key"]) {
+				$return["SORTING KEY"] = clickhouse_index("SORTING KEY", $row["sorting_key"]);
+			}
+		}
+
+		static $skipping; // the answer is the same for the whole request, indexes() is called for each table in the schema
+		if ($skipping === null) {
+			$skipping = (bool) get_val("EXISTS TABLE system.data_skipping_indices", 0, $connection2);
+		}
+		if ($skipping) {
+			$rows = get_rows(
+				"SELECT name, expr, type_full, granularity FROM system.data_skipping_indices "
+				. "WHERE database = " . q($conn->_db) . " AND " . idf_escape('table') . " = " . q($table)
+				. " ORDER BY name",
+				$connection2
+			);
+			foreach ($rows as $row) {
+				$definition = "$row[expr] TYPE $row[type_full] GRANULARITY $row[granularity]";
+				$return[$row["name"]] = clickhouse_index("INDEX", $definition);
+			}
+		}
+		return $return;
 	}
 
-	function foreign_keys($table) {
-		return array();
+	function clickhouse_index(string $type, string $definition): array {
+		return array(
+			"type" => $type,
+			"columns" => array($definition),
+			"lengths" => array(null),
+			"descs" => array(null),
+			"algorithm" => "",
+			"partial" => "",
+		);
 	}
 
-	function collations() {
-		return array();
-	}
-
-	function information_schema($db) {
+	function alter_indexes(string $table, $alter) {
+		// the page is not linked anywhere, see Driver::supportsAlterIndex()
+		connection()->error = 'ClickHouse indexes cannot be altered by Adminer. Use the SQL command page.';
 		return false;
 	}
 
-	function error() {
+	function foreign_keys(string $table): array {
+		return array();
+	}
+
+	function view(string $name): array {
+		$create = get_val(
+			"SELECT create_table_query FROM system.tables WHERE database = " . q(connection()->_db)
+			. " AND name = " . q($name)
+		);
+		if (preg_match('~\s+AS\s+(?=(?:SELECT|WITH)\b)~i', $create, $match, PREG_OFFSET_CAPTURE)) {
+			$offset = $match[0][1] + strlen($match[0][0]);
+			return array("select" => substr($create, $offset));
+		}
+		return array("select" => "");
+	}
+
+	function collations(): array {
+		return array();
+	}
+
+	function information_schema(string $db): bool {
+		return in_array($db, array("system", "information_schema", "INFORMATION_SCHEMA"), true);
+	}
+
+	function error(): string {
 		return h(connection()->error);
+	}
+
+	function create_database(string $db, string $collation) {
+		$return = queries("CREATE DATABASE " . idf_escape($db));
+		if ($return) {
+			restart_session();
+			set_session("dbs", null);
+		}
+		return $return;
+	}
+
+	function drop_databases(array $databases): bool {
+		$return = apply_queries("DROP DATABASE", $databases, 'Adminer\idf_escape');
+		restart_session();
+		set_session("dbs", null);
+		return $return;
+	}
+
+	function rename_database(string $name, string $collation): bool {
+		$return = queries("RENAME DATABASE " . idf_escape(connection()->_db) . " TO " . idf_escape($name));
+		if ($return) {
+			connection()->_db = $name;
+			restart_session();
+			set_session("dbs", null);
+		}
+		return (bool) $return;
+	}
+
+	function move_tables(array $tables, array $views, string $target): bool {
+		$source = connection()->_db;
+		foreach (array_merge($tables, $views) as $name) {
+			if (
+				!queries(
+					"RENAME TABLE " . clickhouse_qualified($source, $name)
+					. " TO " . clickhouse_qualified($target, $name)
+				)
+			) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	function copy_tables(array $tables, array $views, string $target): bool {
+		$source = connection()->_db;
+		$overwrite = !empty($_POST["overwrite"]);
+		foreach ($tables as $name) {
+			$destination = clickhouse_qualified($target, $name);
+			if (
+				($overwrite && !queries("DROP TABLE IF EXISTS $destination"))
+				|| !queries("CREATE TABLE $destination AS " . clickhouse_qualified($source, $name))
+				|| !queries("INSERT INTO $destination SELECT * FROM " . clickhouse_qualified($source, $name))
+			) {
+				return false;
+			}
+		}
+		foreach ($views as $name) {
+			$destination = clickhouse_qualified($target, $name);
+			$definition = view($name);
+			if (
+				($overwrite && !queries("DROP VIEW IF EXISTS $destination"))
+				|| !$definition["select"]
+				|| !queries("CREATE VIEW $destination AS $definition[select]")
+			) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	function create_sql(string $table, ?bool $auto_increment, string $style): string {
+		return get_val(
+			"SELECT create_table_query FROM system.tables WHERE database = " . q(connection()->_db)
+			. " AND name = " . q($table)
+		);
+	}
+
+	function truncate_sql(string $table): string {
+		return "TRUNCATE TABLE " . table($table);
+	}
+
+	function use_sql(string $database, string $style = ""): string {
+		$name = idf_escape($database);
+		$return = "";
+		if (preg_match('~CREATE~', $style)) {
+			if ($style === "DROP+CREATE") {
+				$return .= "DROP DATABASE IF EXISTS $name;\n";
+			}
+			$return .= "CREATE DATABASE IF NOT EXISTS $name;\n";
+		}
+		return $return . "USE $name";
+	}
+
+	function show_variables(): array {
+		return get_rows(
+			"SELECT name, value, changed, description FROM system.settings ORDER BY name"
+		);
+	}
+
+	function show_status(): array {
+		return get_rows(
+			"SELECT metric AS name, toString(value) AS value, description "
+			. "FROM system.metrics ORDER BY metric"
+		);
+	}
+
+	function process_list(): array {
+		return get_rows(
+			"SELECT query_id AS pid, user, address, elapsed, read_rows, read_bytes, "
+			. "written_rows, written_bytes, memory_usage, query "
+			. "FROM system.processes ORDER BY elapsed DESC"
+		);
+	}
+
+	function kill_process(string $id) {
+		return queries("KILL QUERY WHERE query_id = " . q($id) . " SYNC");
+	}
+
+	function max_connections(): string {
+		$value = get_val("SELECT value FROM system.settings WHERE name = 'max_concurrent_queries'");
+		return ($value === false ? "0" : $value);
 	}
 
 	function types(): array {
 		return array();
 	}
 
-	function auto_increment() {
+	function auto_increment(): string {
 		return '';
 	}
 
-	function last_id($result) {
-		return 0; // ClickHouse doesn't have it
+	function last_id($result): string {
+		return '0'; // ClickHouse doesn't have it
 	}
 
-	function support($feature) {
-		return preg_match("~^(columns|sql|status|table|drop_col)$~", $feature);
+	function support(string $feature): bool {
+		return preg_match('~^(columns|comment|copy|database|drop_col|dump|indexes|kill|move_col|processlist|sql|status|table|variables|view)$~', $feature);
 	}
 }

@@ -2,17 +2,17 @@
 function adminer_object() {
 	class AdminerCds extends Adminer\Adminer {
 
-		function name() {
+		function name(): string {
 			// custom name in title and heading
 			return 'CDs';
 		}
 
-		function credentials() {
+		function credentials(): array {
 			// ODBC user with password ODBC on localhost
 			return array('localhost', 'ODBC', 'ODBC');
 		}
 
-		function database() {
+		function database(): ?string {
 			// will be escaped by Adminer
 			return 'adminer_test';
 		}
@@ -22,12 +22,12 @@ function adminer_object() {
 			return ($login == 'admin');
 		}
 
-		function tableName($tableStatus) {
+		function tableName($tableStatus): string {
 			// tables without comments would return empty string and will be ignored by Adminer
 			return Adminer\h($tableStatus["Comment"]);
 		}
 
-		function fieldName($field, $order = 0) {
+		function fieldName($field, $order = 0): string {
 			if ($order && preg_match('~_(md5|sha1)$~', $field["field"])) {
 				return ""; // hide hashes in select
 			}
