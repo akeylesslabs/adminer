@@ -47,11 +47,6 @@ function q(string $string): string {
 	return connection()->quote($string);
 }
 
-/** Escape string to use inside '' */
-function escape_string(string $val): string {
-	return substr(q($val), 1, -1);
-}
-
 /** Get a possibly missing item from a possibly missing array
 * idx($row, $key) is better than $row[$key] ?? null because PHP will report error for undefined $row
 * @param ?mixed[] $array
@@ -115,6 +110,13 @@ function min_version($version, $maria_db = "", ?Db $connection2 = null): bool {
 /** Get connection charset */
 function charset(Db $connection): string {
 	return (min_version("5.5.3", 0, $connection) ? "utf8mb4" : "utf8"); // SHOW CHARSET would require an extra query
+}
+
+/** Set PHP ini value if ini_set() is not disabled
+* @return string|false false on failure
+*/
+function ini_set(string $option, string $value) {
+	return (function_exists('ini_set') ? \ini_set($option, $value) : false);
 }
 
 /** Get INI boolean value */
@@ -273,7 +275,7 @@ function where(array $where, array $fields = array()): string {
 		$field_type = $field["type"];
 		$return[] = $column
 			. (JUSH == "sql" && $field_type == "json" ? " = CAST(" . q($val) . " AS JSON)"
-				: (JUSH == "pgsql" && preg_match('~^json~', $field_type) ? "::jsonb = " . q($val) . "::jsonb"
+				: (JUSH == "pgsql" && preg_match('~^jsonb?$~', $field["full_type"]) ? "::jsonb = " . q($val) . "::jsonb"
 				: (JUSH == "sql" && is_numeric($val) && preg_match('~\.~', $val) ? " LIKE " . q($val) // LIKE because of floats but slow with ints
 				: (JUSH == "mssql" && strpos($field_type, "datetime") === false ? " LIKE " . q(preg_replace('~[_%[]~', '[\0]', $val)) // LIKE because of text but it does not work with datetime
 				: " = " . unconvert_field($field, q($val))))))
@@ -324,6 +326,11 @@ function convert_fields(array $columns, array $fields, array $select = array()):
 	return $return;
 }
 
+/** Get path for a cookie */
+function cookie_path(): string {
+	return strtr(preg_replace('~\?.*~', '', $_SERVER["REQUEST_URI"]), array(";" => "%3B", "," => "%2C"));
+}
+
 /** Set cookie valid on current path
 * @param int $lifetime number of seconds, 0 for session cookie, 2592000 - 30 days
 */
@@ -331,10 +338,25 @@ function cookie(string $name, ?string $value, int $lifetime = 2592000): void {
 	header(
 		"Set-Cookie: $name=" . rawurlencode($value)
 			. ($lifetime ? "; expires=" . gmdate("D, d M Y H:i:s", time() + $lifetime) . " GMT" : "")
-			. "; path=" . preg_replace('~\?.*~', '', $_SERVER["REQUEST_URI"])
+			. "; path=" . cookie_path()
 			. (HTTPS ? "; secure" : "")
 			. "; HttpOnly; SameSite=lax",
 		false
+	);
+}
+
+/** Get contents from URL
+* @param resource $context
+* @return array{0: string, 1: string} [$contents, $status]
+*/
+function get_url(string $url, $context): array {
+	$return = @file_get_contents($url, false, $context);
+	if (function_exists('http_get_last_response_headers')) {
+		$http_response_header = http_get_last_response_headers();
+	}
+	return array(
+		$return,
+		(preg_match('~^HTTP/[\d.]+ (\d+)~', $http_response_header[0], $match) ? $match[1] : ''),
 	);
 }
 
@@ -375,7 +397,7 @@ function stop_session(bool $force = false): void {
 	$use_cookies = ini_bool("session.use_cookies");
 	if (!$use_cookies || $force) {
 		session_write_close(); // improves concurrency if a user opens several pages at once, may be restarted later
-		if ($use_cookies && @ini_set("session.use_cookies", '0') === false) { // @ - may be disabled
+		if ($use_cookies && ini_set("session.use_cookies", '0') === false) {
 			session_start();
 		}
 	}
@@ -669,20 +691,7 @@ function apply_sql_function(?string $function, string $column): string {
 
 /** Get path of the temporary directory */
 function get_temp_dir(): string {
-	$return = ini_get("upload_tmp_dir"); // session_save_path() may contain other storage path
-	if (!$return) {
-		if (function_exists('sys_get_temp_dir')) {
-			$return = sys_get_temp_dir();
-		} else {
-			$filename = @tempnam("", ""); // @ - temp directory can be disabled by open_basedir
-			if (!$filename) {
-				return '';
-			}
-			$return = dirname($filename);
-			unlink($filename);
-		}
-	}
-	return $return;
+	return ini_get("upload_tmp_dir") ?: sys_get_temp_dir(); // session_save_path() may contain other storage path
 }
 
 /** Open and exclusively lock a file
@@ -757,12 +766,12 @@ function password_file(bool $create): string {
 * @return string 32 hexadecimal characters
 */
 function rand_string(): string {
-	return md5(uniqid(strval(mt_rand()), true));
+	return (function_exists('random_bytes') ? bin2hex(random_bytes(16)) : md5(uniqid(strval(mt_rand()), true)));
 }
 
 /** Format value to use in select
 * @param string|string[]|list<string[]> $val
-* @param array{type: string} $field
+* @param array{type: string, full_type?: string} $field
 * @param ?numeric-string $text_length
 * @return string HTML
 */
@@ -804,7 +813,8 @@ function select_value($val, string $link, array $field, ?string $text_length): s
 			$link = $val; // IE 11 and all modern browsers hide referrer
 		}
 	}
-	$return = adminer()->editVal(driver()->value($val, $field), $field);
+	$val = driver()->value($val, $field);
+	$return = adminer()->editVal($val, $field);
 	if ($return !== null) {
 		if (!is_utf8($return)) {
 			$return = "\0"; // htmlspecialchars of binary data returns an empty string
@@ -849,8 +859,8 @@ function is_shortable(array $field): bool {
 * @return array{0: string, 1: string}
 */
 function host_port(string $server) {
-	return (preg_match('~^(\[(.+)]|([^:]+)):([^:]+)$~', $server, $match) // [a:b] - IPv6
-		? array($match[2] . $match[3], $match[4])
+	return (preg_match('~^(:([^:].*)|(\[(.+)\]|(([^:]+://)?[^:]+))(:(\d+))?)$~', $server, $match) // :/tmp/socket | ([IPv6] | host) :port
+		? array($match[4] . $match[5], $match[2] . $match[8])
 		: array($server, '')
 	);
 }
@@ -902,45 +912,5 @@ function get_token(): string {
 /** Verify if supplied CSRF token is valid */
 function verify_token(): bool {
 	list($token, $rand) = explode(":", $_POST["token"]);
-	return ($rand ^ $_SESSION["token"]) == $token;
-}
-
-// used in compiled version
-function lzw_decompress(string $binary): string {
-	// convert binary string to codes
-	$dictionary_count = 256;
-	$bits = 8; // ceil(log($dictionary_count, 2))
-	$codes = array();
-	$rest = 0;
-	$rest_length = 0;
-	for ($i=0; $i < strlen($binary); $i++) {
-		$rest = ($rest << 8) + ord($binary[$i]);
-		$rest_length += 8;
-		if ($rest_length >= $bits) {
-			$rest_length -= $bits;
-			$codes[] = $rest >> $rest_length;
-			$rest &= (1 << $rest_length) - 1;
-			$dictionary_count++;
-			if ($dictionary_count >> $bits) {
-				$bits++;
-			}
-		}
-	}
-	// decompression
-	/** @var list<?string> */
-	$dictionary = range("\0", "\xFF");
-	$return = "";
-	$word = "";
-	foreach ($codes as $i => $code) {
-		$element = $dictionary[$code];
-		if (!isset($element)) {
-			$element = $word . $word[0];
-		}
-		$return .= $element;
-		if ($i) {
-			$dictionary[] = $word . $element[0];
-		}
-		$word = $element;
-	}
-	return $return;
+	return ($rand ^ $_SESSION["token"]) == $token && in_array($_SERVER["HTTP_SEC_FETCH_SITE"], array("", "same-origin"));
 }

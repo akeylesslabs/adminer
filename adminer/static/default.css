@@ -17,10 +17,10 @@ h1 { font-size: 150%; margin: 0; padding: .8em .667em; border-bottom: 1px solid 
 h2 { font-size: 150%; margin: 0 0 20px -18px; padding: .8em 1em; border-bottom: 1px solid var(--fg); font-weight: normal; background: var(--lit); }
 h3 { font-weight: normal; font-size: 130%; margin: 1em 0 0; }
 form { margin: 0; }
-td table { width: 100%; margin: 0; }
 table { margin: 1em 20px 0 0; font-size: 90%; border-spacing: 0; border-width: 1px 0 0 1px; }
 table, td, th, .js .column { border-color: #999; border-style: solid; }
 td, th { border-width: 0 1px 1px 0; padding: .2em .3em; margin: 0; }
+td table { width: 100%; margin: 0; }
 th { background: var(--dim); text-align: left; }
 thead { position: sticky; top: 0; }
 thead th { text-align: center; padding: .2em .5em; }
@@ -42,9 +42,10 @@ input[type="radio"] { vertical-align: text-bottom; }
 input.default { box-shadow: 1px 1px 1px #777; }
 input.required, input.maxlength { box-shadow: 1px 1px 1px red; }
 input.wayoff { left: -1000px; position: absolute; }
+[draggable] { cursor: grab; }
 .block { display: block; }
 .version { color: #777; font-size: 62%; }
-.js .hidden, .nojs .jsonly { display: none; }
+.js .hidden, .nojs .jsonly, .insecure .copy { display: none; }
 .js .column { position: absolute; background: var(--lit); padding: .27em 1ex .33em 0; margin-top: -.37em; border-width: 1px 1px 1px 0; border-radius: 0 8px 8px 0; }
 .nowrap td, .nowrap th, td.nowrap, p.nowrap { white-space: pre; }
 .wrap td { white-space: normal; }
@@ -101,8 +102,6 @@ input.wayoff { left: -1000px; position: absolute; }
 :target { background: var(--lit); }
 
 /* inlined here and not in compile.php because otherwise the development version flickers a little bit when loading the images */
-.icon-up { background-image: url(data:image/gif;base64,R0lGODlhEgASAIEAMe7u7gAAgJmZmQAAACH5BAEAAAEALAAAAAASABIAAQIghI+py+0PTQhRTgrvfRP0nmEVOIoReZphxbauAMfyHBcAOw==); }
-.icon-down { background-image: url(data:image/gif;base64,R0lGODlhEgASAIEAMe7u7gAAgJmZmQAAACH5BAEAAAEALAAAAAASABIAAQIghI+py+0PTQjxzCopvltX/lyix0wm2ZwdxraVAMfyHBcAOw==); }
 .icon-plus { background-image: url(data:image/gif;base64,R0lGODlhEgASAIEAMe7u7gAAgJmZmQAAACH5BAEAAAEALAAAAAASABIAAQIhhI+py+0PTQjxzCopvm/6rykgCHGVGaFliLXuI8TyTMsFADs=); }
 .icon-cross { background-image: url(data:image/gif;base64,R0lGODlhEgASAIEAMe7u7gAAgJmZmQAAACH5BAEAAAEALAAAAAASABIAAQIjhI+py+0PIwph1kZvfnnDLoFfd2GU4THnsUruC0fCTNc2XQAAOw==); }
 .icon-move { background-image: url(data:image/gif;base64,R0lGODlhEgASAJEAAO7u7gAAAJmZmQAAACH5BAEAAAEALAAAAAASABIAAAIfhI+py+3vgpyU0Rug3gnX5U3cqIWSZZLqigjuC8dvAQA7); }

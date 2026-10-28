@@ -143,8 +143,6 @@ Lang::$translations = array(
 	'Revoke' => 'Widerrufen',
 	'Too big POST data. Reduce the data or increase the %s configuration directive.' => 'POST-Daten sind zu groß. Reduzieren Sie die Größe oder vergrößern Sie den Wert %s in der Konfiguration.',
 	'Logged as: %s' => 'Angemeldet als: %s',
-	'Move up' => 'Nach oben',
-	'Move down' => 'Nach unten',
 	'Functions' => 'Funktionen',
 	'Aggregation' => 'Aggregationen',
 	'Export' => 'Exportieren',
@@ -283,11 +281,11 @@ Lang::$translations = array(
 	'Master password expired. <a href="https://www.adminer.org/en/extension/"%s>Implement</a> %s method to make it permanent.' => 'Das Master-Passwort ist abgelaufen. <a href="https://www.adminer.org/de/extension/"%s>Implementieren</a> Sie die %s Methode, um es permanent zu machen.',
 	'%d / ' => '%d / ',
 	'Drop %s?' => '%s entfernen?',
-	'Materialized view' => 'Strukturierte Ansicht',
+	'Materialized view' => 'Materialisierte View', // Claude Fable 5
 	'Vacuum' => 'Vacuum',
 	'overwrite' => 'überschreiben',
 	'DB' => 'DB',
-	'ATTACH queries are not supported.' => 'ATTACH Abfragen werden nicht unterstützt.',
+	'%s queries are not supported.' => '%s Abfragen werden nicht unterstützt.',
 	'Warnings' => 'Warnungen',
 	'Adminer does not support accessing a database without a password, <a href="https://www.adminer.org/en/password/"%s>more information</a>.' => 'Adminer unterstützt den Zugriff auf eine Datenbank ohne Passwort nicht, <a href="https://www.adminer.org/de/password/"%s>mehr Informationen</a>.',
 	'Full table scan' => 'Vollständige Überprüfung der Tabelle',
@@ -297,7 +295,7 @@ Lang::$translations = array(
 	'Unknown error.' => 'Unbekannter Fehler.',
 	'Database does not support password.' => 'Die Datenbank unterstützt kein Passwort.',
 	'Disable %s or enable %s or %s extensions.' => 'Deaktivieren Sie %s oder aktivieren Sie die Erweiterungen %s oder %s.',
-	'Check has been dropped.' => 'Check wurde abgebrochen.',
+	'Check has been dropped.' => 'Check wurde entfernt.', // Claude Fable 5
 	'Check has been altered.' => 'Check wurde geändert.',
 	'Check has been created.' => 'Check wurde erstellt.',
 	'Alter check' => 'Check ändern',
@@ -305,8 +303,15 @@ Lang::$translations = array(
 	'Checks' => 'Checks',
 	'Loaded plugins' => 'Geladene Plugins',
 	'%s must <a%s>return an array</a>.' => '%s muss <a%s>ein Array zurückgeben</a>.',
-	'<a%s>Configure</a> %s in %s.' => '<a%s>Konfigure</a> %s mit %s.',
+	'<a%s>Configure</a> %s in %s.' => '<a%s>Konfigurieren</a> Sie %s in %s.',
 	'screenshot' => 'Screenshot',
+	'Algorithm' => 'Algorithmus', // Claude Fable 5
+	'Condition' => 'Bedingung', // Claude Fable 5
+	'Inherits from' => 'Erbt von', // Claude Fable 5
+	'Inherited by' => 'Vererbt an', // Claude Fable 5
+	'hostname[:port] or :socket' => 'hostname[:port] oder :socket', // Claude Fable 5
+	'Invalid server.' => 'Ungültiger Server.', // Claude Fable 5
+	'Increase %s.' => 'Erhöhen Sie %s.', // Claude Fable 5
 );
 
 // run `php ../../lang.php de` to update this file

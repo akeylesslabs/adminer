@@ -2,8 +2,7 @@
 namespace Adminer;
 
 Lang::$translations = array(
-	// label for database system selection (MySQL, SQLite, ...)
-	'System' => 'Система',
+	'System' => 'Система', // label for database system selection (MySQL, SQLite, ...)
 	'Server' => 'Сървър',
 	'Username' => 'Потребител',
 	'Password' => 'Парола',
@@ -25,8 +24,7 @@ Lang::$translations = array(
 	'%s version: %s through PHP extension %s' => '%s версия: %s през PHP разширение %s',
 	'Refresh' => 'Обновяване',
 
-	// text direction - 'ltr' or 'rtl'
-	'ltr' => 'ltr',
+	'ltr' => 'ltr', // text direction - 'ltr' or 'rtl'
 
 	'Privileges' => 'Права',
 	'Create user' => 'Създаване на потребител',
@@ -54,8 +52,7 @@ Lang::$translations = array(
 	'Execute' => 'Изпълнение',
 	'Stop on error' => 'Спиране при грешка',
 	'Show only errors' => 'Показване само на грешките',
-	// sprintf() format for time of the command
-	'%.3f s' => '%.3f s',
+	'%.3f s' => '%.3f s', // sprintf() format for time of the command
 	'History' => 'Хронология',
 	'Clear' => 'Изчистване',
 	'Edit all' => 'Редактиране на всички',
@@ -92,11 +89,9 @@ Lang::$translations = array(
 	'Create database' => 'Създаване на база данни',
 	'Database schema' => 'Схема на базата данни',
 
-	// link to current database schema layout
-	'Permanent link' => 'Постоянна препратка',
+	'Permanent link' => 'Постоянна препратка', // link to current database schema layout
 
-	// thousands separator - must contain single byte
-	',' => ',',
+	',' => ',', // thousands separator - must contain single byte
 	'0123456789' => '0123456789',
 	'Engine' => 'Система',
 	'Collation' => 'Кодировка',
@@ -171,8 +166,6 @@ Lang::$translations = array(
 	'Are you sure?' => 'Сигурни ли сте?',
 	'Size' => 'Големина',
 	'Compute' => 'Изчисляване',
-	'Move up' => 'Преместване нагоре',
-	'Move down' => 'Преместване надолу',
 	'Remove' => 'Премахване',
 	'Maximum number of allowed fields exceeded. Please increase %s.' => 'Максималния брой полета е превишен. Моля, увеличете %s.',
 
@@ -253,20 +246,17 @@ Lang::$translations = array(
 	'%d row(s) have been imported.' => array('%d ред беше импортиран.', '%d реда бяха импортирани.'),
 	'File must be in UTF-8 encoding.' => 'Файла трябва да е с UTF-8 кодировка.',
 
-	// in-place editing in select
-	'Modify' => 'Промяна',
+	'Modify' => 'Промяна', // in-place editing in select
 	'Ctrl+click on a value to modify it.' => 'Ctrl+щракване в стойността, за да я промените.',
 	'Use edit link to modify this value.' => 'Използвайте \'редакция\' за промяна на данните.',
 
-	// %s can contain auto-increment value
-	'Item%s has been inserted.' => 'Елементи%s бяха вмъкнати.',
+	'Item%s has been inserted.' => 'Елементи%s бяха вмъкнати.', // %s can contain auto-increment value
 	'Item has been deleted.' => 'Елемента беше изтрит.',
 	'Item has been updated.' => 'Елемента беше обновен.',
 	'%d item(s) have been affected.' => array('%d елемент беше засегнат.', '%d елемента бяха засегнати.'),
 	'New item' => 'Нов елемент',
 	'original' => 'оригинал',
-	// label for value '' in enum data type
-	'empty' => 'празно',
+	'empty' => 'празно', // label for value '' in enum data type
 	'edit' => 'редакция',
 	'Edit' => 'Редактиране',
 	'Insert' => 'Вмъкване',
@@ -290,18 +280,14 @@ Lang::$translations = array(
 	'Relations' => 'Зависимости',
 
 	'Editor' => 'Редактор',
-	// date format in Editor: $1 yyyy, $2 yy, $3 mm, $4 m, $5 dd, $6 d
-	'$1-$3-$5' => '$1-$3-$5',
-	// hint for date format - use language equivalents for day, month and year shortcuts
-	'[yyyy]-mm-dd' => '[гггг]-мм-дд',
-	// hint for time format - use language equivalents for hour, minute and second shortcuts
-	'HH:MM:SS' => 'ЧЧ:ММ:СС',
+	'$1-$3-$5' => '$1-$3-$5', // date format in Editor: $1 yyyy, $2 yy, $3 mm, $4 m, $5 dd, $6 d
+	'[yyyy]-mm-dd' => '[гггг]-мм-дд', // hint for date format - use language equivalents for day, month and year shortcuts
+	'HH:MM:SS' => 'ЧЧ:ММ:СС', // hint for time format - use language equivalents for hour, minute and second shortcuts
 	'now' => 'сега',
 	'yes' => 'да',
 	'no' => 'не',
 
-	// general SQLite error in create, drop or rename database
-	'File exists.' => 'Файла вече съществува.',
+	'File exists.' => 'Файла вече съществува.', // general SQLite error in create, drop or rename database
 	'Please use one of the extensions %s.' => 'Моля, използвайте някое от разширенията %s.',
 
 	// PostgreSQL and MS SQL schema support
@@ -321,12 +307,43 @@ Lang::$translations = array(
 	'Sequence has been altered.' => 'Последователността беше променена.',
 	'Alter sequence' => 'Промяна на последователност',
 
-	// PostgreSQL user types support
-	'User types' => 'Видове потребители',
+	// PostgreSQL user-defined types support
+	'User types' => 'Потребителски типове', // Claude Fable 5
 	'Create type' => 'Създаване на вид',
 	'Type has been dropped.' => 'Вида беше пермахнат.',
 	'Type has been created.' => 'Вида беше създаден.',
 	'Alter type' => 'Промяна на вид',
+	'Check has been dropped.' => 'Проверката беше премахната.', // Claude Fable 5
+	'Check has been altered.' => 'Проверката беше променена.', // Claude Fable 5
+	'Check has been created.' => 'Проверката беше създадена.', // Claude Fable 5
+	'Alter check' => 'Промяна на проверка', // Claude Fable 5
+	'Create check' => 'Създаване на проверка', // Claude Fable 5
+	'Drop %s?' => 'Премахване на %s?', // Claude Fable 5
+	'overwrite' => 'презаписване', // Claude Fable 5
+	'DB' => 'БД', // Claude Fable 5
+	'Algorithm' => 'Алгоритъм', // Claude Fable 5
+	'Columns' => 'Колони', // Claude Fable 5
+	'Condition' => 'Условие', // Claude Fable 5
+	'%s queries are not supported.' => 'Заявките %s не се поддържат.', // Claude Fable 5
+	'Warnings' => 'Предупреждения', // Claude Fable 5
+	'Inherits from' => 'Наследява от', // Claude Fable 5
+	'Checks' => 'Проверки', // Claude Fable 5
+	'Inherited by' => 'Наследява се от', // Claude Fable 5
+	'hostname[:port] or :socket' => 'hostname[:port] или :socket', // Claude Fable 5
+	'Adminer does not support accessing a database without a password, <a href="https://www.adminer.org/en/password/"%s>more information</a>.' => 'Adminer не поддържа достъп до база данни без парола, <a href="https://www.adminer.org/en/password/"%s>повече информация</a>.', // Claude Fable 5
+	'Thanks for using Adminer, consider <a href="https://www.adminer.org/en/donation/">donating</a>.' => 'Благодарим ви, че използвате Adminer, помислете за <a href="https://www.adminer.org/en/donation/">дарение</a>.', // Claude Fable 5
+	'The action will be performed after successful login with the same credentials.' => 'Действието ще бъде извършено след успешно влизане със същите данни.', // Claude Fable 5
+	'Invalid server.' => 'Невалиден сървър.', // Claude Fable 5
+	'Connecting to privileged ports is not allowed.' => 'Свързването към привилегировани портове не е разрешено.', // Claude Fable 5
+	'There is a space in the input password which might be the cause.' => 'Има интервал във въведената парола, което може да е причината.', // Claude Fable 5
+	'Loaded plugins' => 'Заредени плъгини', // Claude Fable 5
+	'screenshot' => 'екранна снимка', // Claude Fable 5
+	'Increase %s.' => 'Увеличете %s.', // Claude Fable 5
+	'Unknown error.' => 'Неизвестна грешка.', // Claude Fable 5
+	'%s must <a%s>return an array</a>.' => '%s трябва да <a%s>връща масив</a>.', // Claude Fable 5
+	'<a%s>Configure</a> %s in %s.' => '<a%s>Конфигурирайте</a> %s в %s.', // Claude Fable 5
+	'Disable %s or enable %s or %s extensions.' => 'Изключете %s или включете разширенията %s или %s.', // Claude Fable 5
+	'Database does not support password.' => 'Базата данни не поддържа парола.', // Claude Fable 5
 );
 
 // run `php ../../lang.php bg` to update this file

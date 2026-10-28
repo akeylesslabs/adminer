@@ -99,10 +99,6 @@ if (isset($_GET["oracle"])) {
 				$return->charsetnr = (preg_match("~raw|blob|bfile~", $return->type) ? 63 : 0); // 63 - binary
 				return $return;
 			}
-
-			function __destruct() {
-				oci_free_statement($this->result);
-			}
 		}
 
 	} elseif (extension_loaded("pdo_oci")) {
@@ -470,10 +466,7 @@ AND c_src.TABLE_NAME = " . q($table);
 	}
 
 	function set_schema($scheme, $connection2 = null) {
-		if (!$connection2) {
-			$connection2 = connection();
-		}
-		return $connection2->query("ALTER SESSION SET CURRENT_SCHEMA = " . idf_escape($scheme));
+		return connection($connection2)->query("ALTER SESSION SET CURRENT_SCHEMA = " . idf_escape($scheme));
 	}
 
 	function show_variables() {

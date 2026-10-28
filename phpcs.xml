@@ -6,8 +6,11 @@
 
 	<file>.</file>
 	<exclude-pattern>/externals/</exclude-pattern>
+	<exclude-pattern>/vendor/</exclude-pattern><!-- Created by Composer in CI -->
 	<exclude-pattern>/designs/</exclude-pattern>
-	<exclude-pattern>/(adminer|editor)[-.]</exclude-pattern>
+	<exclude-pattern type="relative">^(adminer|editor)[-.]</exclude-pattern>
+	<exclude-pattern>/adminer-plugins/</exclude-pattern><!-- Local plugins used by the dev server -->
+	<exclude-pattern>/adminer-plugins\.php</exclude-pattern>
 
 	<rule ref="PSR12">
 		<exclude name="Generic.WhiteSpace.DisallowTabIndent"/><!-- Replaced by: Generic.WhiteSpace.DisallowSpaceIndent -->
@@ -20,7 +23,9 @@
 		<exclude name="PSR12.Properties.ConstantVisibility.NotFound"/><!-- PHP 7.1 is not required. -->
 
 		<!-- More readable. -->
-		<exclude name="PSR12.Files.FileHeader.SpacingAfterBlock"/>
+		<exclude name="PSR12.Files.FileHeader.SpacingAfterBlock"/><!-- PHP_CodeSniffer 3 -->
+		<exclude name="PSR12.Files.FileHeader.SpacingAfterTagBlock"/>
+		<exclude name="PSR12.Files.FileHeader.SpacingAfterDocblockBlock"/>
 		<exclude name="PSR12.Classes.OpeningBraceSpace.Found"/>
 		<exclude name="PSR12.Operators.OperatorSpacing.NoSpaceBefore"/>
 		<exclude name="PSR12.Operators.OperatorSpacing.NoSpaceAfter"/>
@@ -49,8 +54,8 @@
 		<exclude-pattern>adminer/drivers/</exclude-pattern>
 		<exclude-pattern>adminer/include/db.inc.php</exclude-pattern>
 		<exclude-pattern>adminer/include/pdo.inc.php</exclude-pattern>
-		<exclude-pattern>adminer/plugins/foreign-system.php</exclude-pattern>
-		<exclude-pattern>adminer/plugins/drivers/</exclude-pattern>
+		<exclude-pattern>/plugins/foreign-system.php</exclude-pattern>
+		<exclude-pattern>/plugins/drivers/</exclude-pattern>
 	</rule>
 
 	<rule ref="Generic.Files.LineLength">
@@ -79,7 +84,6 @@
 	<rule ref="Generic.Files.EndFileNewline"/>
 	<rule ref="Generic.Files.LowercasedFilename"/>
 	<rule ref="Generic.Formatting.SpaceAfterCast"/>
-	<rule ref="Generic.Functions.CallTimePassByReference"/>
 	<rule ref="Generic.Functions.OpeningFunctionBraceKernighanRitchie"/>
 	<rule ref="Generic.NamingConventions.ConstructorName"/>
 	<rule ref="Generic.PHP.BacktickOperator"/>
@@ -93,19 +97,7 @@
 	<rule ref="Squiz.Arrays.ArrayBracketSpacing"/>
 	<rule ref="Squiz.Classes.LowercaseClassKeywords"/>
 	<rule ref="Squiz.Classes.SelfMemberReference"/>
-	<rule ref="Squiz.CSS.ClassDefinitionNameSpacing"/>
-	<rule ref="Squiz.CSS.ColonSpacing"/>
-	<rule ref="Squiz.CSS.DuplicateClassDefinition"/>
-	<rule ref="Squiz.CSS.DuplicateStyleDefinition"/>
-	<rule ref="Squiz.CSS.EmptyClassDefinition"/>
-	<rule ref="Squiz.CSS.EmptyStyleDefinition"/>
-	<rule ref="Squiz.CSS.ForbiddenStyles"/>
-	<rule ref="Squiz.CSS.Indentation"/>
-	<rule ref="Squiz.CSS.MissingColon"/>
-	<rule ref="Squiz.CSS.Opacity"/>
-	<rule ref="Squiz.CSS.SemicolonSpacing"/>
 	<rule ref="Squiz.Functions.FunctionDuplicateArgument"/>
-	<rule ref="Squiz.Objects.ObjectMemberComma"/>
 	<rule ref="Squiz.Operators.IncrementDecrementUsage"/>
 	<rule ref="Squiz.Operators.ValidLogicalOperators"/>
 	<rule ref="Squiz.PHP.DiscouragedFunctions"/>
@@ -120,7 +112,7 @@
 	<rule ref="Squiz.WhiteSpace.ObjectOperatorSpacing"/>
 
 	<!--
-	This is slow and has false positives but it's useful occasionally.
+	This is slow and has false positives but it's useful occasionally. It requires PHP_CodeSniffer 3.
 	https://github.com/PHPCompatibility/PHPCompatibility
 	<rule ref="PHPCompatibility"/>
 	<config name="testVersion" value="5.3-"/>

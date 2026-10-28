@@ -10,8 +10,8 @@ if ($_COOKIE["adminer_permanent"]) {
 }
 
 function add_invalid_login(): void {
-	$base = get_temp_dir() . "/adminer.invalid";
-	// adminer.invalid may not be writable by us, try the files with random suffixes
+	$base = get_temp_dir() . "/adminer-invalid";
+	// adminer-invalid may not be writable by us, try the files with random suffixes
 	foreach (glob("$base*") ?: array($base) as $filename) {
 		$fp = file_open_lock($filename);
 		if ($fp) {
@@ -24,7 +24,7 @@ function add_invalid_login(): void {
 	if (!$fp) {
 		return;
 	}
-	$invalids = unserialize(stream_get_contents($fp));
+	$invalids = json_decode(stream_get_contents($fp), true);
 	$time = time();
 	if ($invalids) {
 		foreach ($invalids as $ip => $val) {
@@ -38,16 +38,16 @@ function add_invalid_login(): void {
 		$invalid = array($time + 30*60, 0); // active for 30 minutes
 	}
 	$invalid[1]++;
-	file_write_unlock($fp, serialize($invalids));
+	file_write_unlock($fp, json_encode($invalids));
 }
 
 /** @param string[] $permanent */
 function check_invalid_login(array &$permanent): void {
 	$invalids = array();
-	foreach (glob(get_temp_dir() . "/adminer.invalid*") as $filename) {
+	foreach (glob(get_temp_dir() . "/adminer-invalid*") as $filename) {
 		$fp = file_open_lock($filename);
 		if ($fp) {
-			$invalids = unserialize(stream_get_contents($fp));
+			$invalids = json_decode(stream_get_contents($fp), true);
 			file_unlock($fp);
 			break;
 		}
@@ -172,8 +172,11 @@ if (isset($_GET["username"]) && !class_exists('Adminer\Db')) {
 
 $connection = '';
 if (isset($_GET["username"]) && is_string(get_password())) {
-	list(, $port) = host_port(SERVER);
-	if (preg_match('~^\s*([-+]?\d+)~', $port, $match) && ($match[1] < 1024 || $match[1] > 65535)) { // is_numeric('80#') would still connect to port 80
+	list($host, $port) = host_port(SERVER);
+	if (preg_match('~[^-\w.:/]~', $host . $port)) {
+		auth_error(lang('Invalid server.'), $permanent);
+	}
+	if (preg_match('~^-?\d+~', $port, $match) && ($match[0] < 1024 || $match[0] > 65535)) { // is_numeric('80.') would still connect to port 80
 		auth_error(lang('Connecting to privileged ports is not allowed.'), $permanent);
 	}
 	check_invalid_login($permanent);

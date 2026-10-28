@@ -23,11 +23,11 @@ if (isset($_GET["pgsql"])) {
 			function attach(string $server, string $username, string $password): string {
 				$db = adminer()->database();
 				set_error_handler(array($this, '_error'));
-				list($host, $port) = host_port(addcslashes($server, "'\\"));
-				$this->string = "host='$host'" . ($port ? " port='$port'" : "") . " user='" . addcslashes($username, "'\\") . "' password='" . addcslashes($password, "'\\") . "'";
+				list($host, $port) = host_port($server);
+				$this->string = "host='$host'" . ($port ? " port=$port" : "") . " user='" . addcslashes($username, "'\\") . "' password='" . addcslashes($password, "'\\") . "'";
 				$ssl = adminer()->connectSsl();
 				if (isset($ssl["mode"])) {
-					$this->string .= " sslmode='" . $ssl["mode"] . "'";
+					$this->string .= " sslmode=$ssl[mode]";
 				}
 				if (isset($ssl["sslrootcert"]) && $ssl["sslrootcert"] !== "") {
 					$this->string .= " sslrootcert='" . addcslashes($ssl["sslrootcert"], "'\\") . "'";
@@ -91,7 +91,13 @@ if (isset($_GET["pgsql"])) {
 			}
 
 			function warnings() {
-				return h(pg_last_notice($this->link)); // second parameter is available since PHP 7.1.0
+				if (PHP_VERSION_ID >= 70100) {
+					$return = implode("\n", pg_last_notice($this->link, 2)); // 2 - PGSQL_NOTICE_ALL
+					pg_last_notice($this->link, 3); // 3 - PGSQL_NOTICE_CLEAR
+				} else {
+					$return = pg_last_notice($this->link);
+				}
+				return nl_br(h($return));
 			}
 
 			/** Copy from array into a table
@@ -136,10 +142,6 @@ if (isset($_GET["pgsql"])) {
 				$return->charsetnr = ($type == "bytea" ? 63 : 0); // 63 - binary
 				return $return;
 			}
-
-			function __destruct() {
-				pg_free_result($this->result);
-			}
 		}
 
 	} elseif (extension_loaded("pdo_pgsql")) {
@@ -149,12 +151,12 @@ if (isset($_GET["pgsql"])) {
 
 			function attach(string $server, string $username, string $password): string {
 				$db = adminer()->database();
-				list($host, $port) = host_port(addcslashes($server, "'\\"));
+				list($host, $port) = host_port($server);
 				//! client_encoding is supported since 9.1, but we can't yet use min_version here
-				$dsn = "pgsql:host='$host'" . ($port ? " port='$port'" : "") . " client_encoding=utf8 dbname='" . ($db != "" ? addcslashes($db, "'\\") : "postgres") . "'";
+				$dsn = "pgsql:host='$host'" . ($port ? " port=$port" : "") . " client_encoding=utf8 dbname='" . ($db != "" ? addcslashes($db, "'\\") : "postgres") . "'";
 				$ssl = adminer()->connectSsl();
 				if (isset($ssl["mode"])) {
-					$dsn .= " sslmode='" . $ssl["mode"] . "'";
+					$dsn .= " sslmode=$ssl[mode]";
 				}
 				if (isset($ssl["sslrootcert"]) && $ssl["sslrootcert"] !== "") {
 					$dsn .= " sslrootcert='" . addcslashes($ssl["sslrootcert"], "'\\") . "'";
@@ -212,7 +214,7 @@ if (isset($_GET["pgsql"])) {
 		static $extensions = array("PgSQL", "PDO_PgSQL");
 		static $jush = "pgsql";
 
-		public $operators = array("=", "<", ">", "<=", ">=", "!=", "~", "!~", "LIKE", "LIKE %%", "ILIKE", "ILIKE %%", "IN", "IS NULL", "NOT LIKE", "NOT ILIKE", "NOT IN", "IS NOT NULL", "SQL"); //! SQL - same-site CSRF
+		public $operators = array("=", "<", ">", "<=", ">=", "!=", "~", "~*", "!~", "LIKE", "LIKE %%", "ILIKE", "ILIKE %%", "IN", "IS NULL", "NOT LIKE", "NOT ILIKE", "NOT IN", "IS NOT NULL", "SQL"); //! SQL - same-site CSRF
 		public $functions = array("char_length", "lower", "round", "to_hex", "to_timestamp", "upper");
 		public $grouping = array("avg", "count", "count distinct", "max", "min", "sum");
 
@@ -261,7 +263,10 @@ if (isset($_GET["pgsql"])) {
 				"char|text" => "||",
 			);
 			if (min_version(12, 0, $connection)) {
-				$this->generated = array("STORED");
+				$this->generated[] = "STORED";
+				if (min_version(18, 0, $connection)) {
+					$this->generated[] = "VIRTUAL";
+				}
 			}
 			$this->partitionBy = array("RANGE", "LIST");
 			if (!$connection->flavor) {
@@ -520,7 +525,7 @@ ORDER BY a.attnum") as $row
 			if (in_array($row['attidentity'], array('a', 'd'))) {
 				$row['default'] = 'GENERATED ' . ($row['attidentity'] == 'd' ? 'BY DEFAULT' : 'ALWAYS') . ' AS IDENTITY';
 			}
-			$row["generated"] = ($row["attgenerated"] == "s" ? "STORED" : "");
+			$row["generated"] = idx(array("s" => "STORED", "v" => "VIRTUAL"), $row["attgenerated"], "");
 			$row["null"] = !$row["attnotnull"];
 			$row["auto_increment"] = $row['attidentity'] || preg_match('~^nextval\(~i', $row["default"])
 				|| preg_match('~^unique_rowid\(~', $row["default"]); // CockroachDB
@@ -657,7 +662,7 @@ ORDER BY conkey, conname") as $row
 					}
 					$alter[] = "ALTER $column TYPE$val[1]";
 					$sequence_name = $table . "_" . idf_unescape($val[0]) . "_seq";
-					$alter[] = "ALTER $column " . ($val[3] ? "SET" . preg_replace('~GENERATED ALWAYS(.*) STORED~', 'EXPRESSION\1', $val[3])
+					$alter[] = "ALTER $column " . ($val[3] ? "SET" . preg_replace('~GENERATED ALWAYS(.*) (STORED|VIRTUAL)~', 'EXPRESSION\1', $val[3])
 						: (isset($val[6]) ? "SET DEFAULT nextval(" . q($sequence_name) . ")"
 						: "DROP DEFAULT" //! change to DROP EXPRESSION with generated columns
 					));
@@ -900,10 +905,7 @@ AND typelem = 0"
 	}
 
 	function set_schema($schema, $connection2 = null) {
-		if (!$connection2) {
-			$connection2 = connection();
-		}
-		$return = $connection2->query("SET search_path TO " . idf_escape($schema));
+		$return = connection($connection2)->query("SET search_path TO " . idf_escape($schema));
 		driver()->setUserTypes(types()); //! get types from current_schemas('t')
 		return $return;
 	}
@@ -915,11 +917,12 @@ AND typelem = 0"
 		$return = "";
 
 		$status = table_status1($table);
+		$ns = idf_escape($status['nspname']);
 		$fkeys = foreign_keys($table);
 		ksort($fkeys);
 
 		foreach ($fkeys as $fkey_name => $fkey) {
-			$return .= "ALTER TABLE ONLY " . idf_escape($status['nspname']) . "." . idf_escape($status['Name']) . " ADD CONSTRAINT " . idf_escape($fkey_name) . " $fkey[definition];\n";
+			$return .= "ALTER TABLE ONLY $ns." . idf_escape($status['Name']) . " ADD CONSTRAINT " . idf_escape($fkey_name) . " " . preg_replace('~( REFERENCES )([^(.]+\()~', "\\1$ns.\\2", $fkey["definition"]) . ";\n";
 		}
 
 		return ($return ? "$return\n" : $return);
@@ -945,8 +948,13 @@ AND typelem = 0"
 
 		// fields' definitions
 		foreach ($fields as $field) {
+			if ($field['default'] == "nextval('$status[Name]_$field[field]_seq')") {
+				$field['default'] = null;
+				$field['full_type'] = preg_replace('~int(eger)?~', 'serial', $field['full_type']);
+			}
+
 			$part = idf_escape($field['field']) . ' ' . $field['full_type']
-				. default_value($field)
+				. preg_replace('~(nextval\(\')([^.\']+\')~', '\1' . str_replace("'", "''", $status['nspname']) . '.\2', default_value($field))
 				. ($field['null'] ? "" : " NOT NULL");
 			$return_parts[] = $part;
 

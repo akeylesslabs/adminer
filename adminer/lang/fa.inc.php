@@ -2,8 +2,7 @@
 namespace Adminer;
 
 Lang::$translations = array(
-	// label for database system selection (MySQL, SQLite, ...)
-	'System' => 'سیستم',
+	'System' => 'سیستم', // label for database system selection (MySQL, SQLite, ...)
 	'Server' => 'سرور',
 	'Username' => 'نام کاربری',
 	'Password' => 'کلمه عبور',
@@ -13,7 +12,7 @@ Lang::$translations = array(
 	'Logged as: %s' => 'ورود به عنوان: %s',
 	'Logout successful.' => 'با موفقیت خارج شدید.',
 	'Invalid credentials.' => 'اعتبار سنجی نامعتبر.',
-	'Too many unsuccessful logins, try again in %d minute(s).' => array('ورودهای ناموفق بیش از حد، %d دقیقه دیگر تلاش نمایید.', 'ورودهای ناموفق بیش از حد، %d دقیقه دیگر تلاش نمایید.'),
+	'Too many unsuccessful logins, try again in %d minute(s).' => 'ورودهای ناموفق بیش از حد، %d دقیقه دیگر تلاش نمایید.',
 	'Master password expired. <a href="https://www.adminer.org/en/extension/"%s>Implement</a> %s method to make it permanent.' => 'رمز اصلی باطل شده است. روش %s را <a href="https://www.adminer.org/en/extension/"%s>پیاده سازی</a> کرده تا آن را دائمی سازید.',
 	'Language' => 'زبان',
 	'Invalid CSRF token. Send the form again.' => 'CSRF token نامعتبر است. دوباره سعی کنید.',
@@ -24,8 +23,7 @@ Lang::$translations = array(
 	'%s version: %s through PHP extension %s' => 'نسخه %s : %s توسعه پی اچ پی %s',
 	'Refresh' => 'بازیابی',
 
-	// text direction - 'ltr' or 'rtl'
-	'ltr' => 'rtl',
+	'ltr' => 'rtl', // text direction - 'ltr' or 'rtl'
 
 	'Privileges' => 'امتیازات',
 	'Create user' => 'ایجاد کاربر',
@@ -53,8 +51,7 @@ Lang::$translations = array(
 	'Execute' => 'اجرا',
 	'Stop on error' => 'توقف بر روی خطا',
 	'Show only errors' => 'فقط نمایش خطاها',
-	// sprintf() format for time of the command
-	'%.3f s' => '%.3f s',
+	'%.3f s' => '%.3f s', // sprintf() format for time of the command
 	'History' => 'تاریخ',
 	'Clear' => 'پاک کردن',
 	'Edit all' => 'ویرایش همه',
@@ -91,11 +88,9 @@ Lang::$translations = array(
 	'Create database' => 'ایجاد پایگاه داده',
 	'Database schema' => 'ساختار پایگاه داده',
 
-	// link to current database schema layout
-	'Permanent link' => 'ارتباط دائم',
+	'Permanent link' => 'ارتباط دائم', // link to current database schema layout
 
-	// thousands separator - must contain single byte
-	',' => ' ',
+	',' => ' ', // thousands separator - must contain single byte
 	'0123456789' => '۰۱۲۳۴۵۶۷۸۹',
 	'Engine' => 'موتور',
 	'Collation' => 'تطبیق',
@@ -118,7 +113,7 @@ Lang::$translations = array(
 	'Tables have been copied.' => 'جدولها کپی شدند.',
 
 	'Routines' => 'روالها',
-	'Routine has been called, %d row(s) affected.' => array('روال فراخوانی شد %d سطر متاثر شد.', 'روال فراخوانی شد %d سطر متاثر شد.'),
+	'Routine has been called, %d row(s) affected.' => 'روال فراخوانی شد %d سطر متاثر شد.',
 	'Call' => 'صدا زدن',
 	'Parameter name' => 'نام پارامتر',
 	'Create procedure' => 'ایجاد زیربرنامه',
@@ -170,8 +165,6 @@ Lang::$translations = array(
 	'Are you sure?' => 'مطمئن هستید؟',
 	'Size' => 'حجم',
 	'Compute' => 'محاسبه',
-	'Move up' => 'انتقال به بالا',
-	'Move down' => 'انتقال به پایین',
 	'Remove' => 'حذف',
 	'Maximum number of allowed fields exceeded. Please increase %s.' => 'حداکثر تعداد فیلدهای مجاز اشباع شد. لطفا %s را افزایش دهید.',
 
@@ -240,32 +233,29 @@ Lang::$translations = array(
 	'Unable to select the table' => 'قادر به انتخاب جدول نیستید',
 	'No rows.' => 'سطری وجود ندارد.',
 	'%d / ' => '%d / ',
-	'%d row(s)' => array('%d سطر', '%d سطر'),
+	'%d row(s)' => '%d سطر',
 	'Page' => 'صفحه',
 	'last' => 'آخری',
 	'Load more data' => 'بارگزاری اطلاعات بیشتر',
 	'Loading' => 'در حال بارگزاری',
 	'Whole result' => 'همه نتایج',
-	'%d byte(s)' => array('%d بایت', '%d بایت'),
+	'%d byte(s)' => '%d بایت',
 
 	'Import' => 'وارد کردن',
-	'%d row(s) have been imported.' => array('%d سطر وارد شد.', '%d سطر وارد شد.'),
+	'%d row(s) have been imported.' => '%d سطر وارد شد.',
 	'File must be in UTF-8 encoding.' => 'فرمت فایل باید UTF-8 باشید.',
 
-	// in-place editing in select
-	'Modify' => 'ویرایش',
+	'Modify' => 'ویرایش', // in-place editing in select
 	'Ctrl+click on a value to modify it.' => 'برای ویرایش بر روی مقدار ctrl+click کنید.',
 	'Use edit link to modify this value.' => 'از لینک ویرایش برای ویرایش این مقدار استفاده کنید.',
 
-	// %s can contain auto-increment value
-	'Item%s has been inserted.' => '%s آیتم درج شد.',
+	'Item%s has been inserted.' => '%s آیتم درج شد.', // %s can contain auto-increment value
 	'Item has been deleted.' => 'آیتم حذف شد.',
 	'Item has been updated.' => 'آیتم بروز رسانی شد.',
-	'%d item(s) have been affected.' => array('%d آیتم متاثر شد.', '%d آیتم متاثر شد.'),
+	'%d item(s) have been affected.' => '%d آیتم متاثر شد.',
 	'New item' => 'آیتم جدید',
 	'original' => 'اصلی',
-	// label for value '' in enum data type
-	'empty' => 'خالی',
+	'empty' => 'خالی', // label for value '' in enum data type
 	'edit' => 'ویرایش',
 	'Edit' => 'ویرایش',
 	'Insert' => 'درج',
@@ -288,18 +278,14 @@ Lang::$translations = array(
 	'Relations' => 'رابطه ها',
 
 	'Editor' => 'ویرایشگر',
-	// date format in Editor: $1 yyyy, $2 yy, $3 mm, $4 m, $5 dd, $6 d
-	'$1-$3-$5' => '$1-$3-$5',
-	// hint for date format - use language equivalents for day, month and year shortcuts
-	'[yyyy]-mm-dd' => '[yyyy]-mm-dd',
-	// hint for time format - use language equivalents for hour, minute and second shortcuts
-	'HH:MM:SS' => 'HH:MM:SS',
+	'$1-$3-$5' => '$1-$3-$5', // date format in Editor: $1 yyyy, $2 yy, $3 mm, $4 m, $5 dd, $6 d
+	'[yyyy]-mm-dd' => '[yyyy]-mm-dd', // hint for date format - use language equivalents for day, month and year shortcuts
+	'HH:MM:SS' => 'HH:MM:SS', // hint for time format - use language equivalents for hour, minute and second shortcuts
 	'now' => 'اکنون',
 	'yes' => 'بله',
 	'no' => 'خیر',
 
-	// general SQLite error in create, drop or rename database
-	'File exists.' => 'فایل موجود است.',
+	'File exists.' => 'فایل موجود است.', // general SQLite error in create, drop or rename database
 	'Please use one of the extensions %s.' => 'لطفا یکی از پسوندها را انتخاب نمائید %s.',
 
 	// PostgreSQL and MS SQL schema support
@@ -319,7 +305,7 @@ Lang::$translations = array(
 	'Sequence has been altered.' => 'صف ویرایش شد.',
 	'Alter sequence' => 'ویرایش صف',
 
-	// PostgreSQL user types support
+	// PostgreSQL user-defined types support
 	'User types' => 'انواع کاربر',
 	'Create type' => 'ایجاد نوع',
 	'Type has been dropped.' => 'نوع حذف شد.',

@@ -2,8 +2,7 @@
 namespace Adminer;
 
 Lang::$translations = array(
-	// label for database system selection (MySQL, SQLite, ...)
-	'System' => '系统',
+	'System' => '系统', // label for database system selection (MySQL, SQLite, ...)
 	'Server' => '服务器',
 	'Username' => '用户名',
 	'Password' => '密码',
@@ -32,8 +31,7 @@ Lang::$translations = array(
 	'%s version: %s through PHP extension %s' => '%s 版本：%s， 使用PHP扩展 %s',
 	'Refresh' => '刷新',
 
-	// text direction - 'ltr' or 'rtl'
-	'ltr' => 'ltr',
+	'ltr' => 'ltr', // text direction - 'ltr' or 'rtl'
 
 	'Privileges' => '权限',
 	'Create user' => '创建用户',
@@ -60,12 +58,11 @@ Lang::$translations = array(
 	'Error in query' => '查询出错',
 	'Unknown error.' => '未知错误。',
 	'Warnings' => '警告',
-	'ATTACH queries are not supported.' => '不支持ATTACH查询。',
+	'%s queries are not supported.' => '不支持%s查询。',
 	'Execute' => '执行',
 	'Stop on error' => '出错时停止',
 	'Show only errors' => '仅显示错误',
-	// sprintf() format for time of the command
-	'%.3f s' => '%.3f 秒',
+	'%.3f s' => '%.3f 秒', // sprintf() format for time of the command
 	'History' => '历史',
 	'Clear' => '清除',
 	'Edit all' => '编辑全部',
@@ -104,11 +101,9 @@ Lang::$translations = array(
 	'Create database' => '创建数据库',
 	'Database schema' => '数据库概要',
 
-	// link to current database schema layout
-	'Permanent link' => '固定链接',
+	'Permanent link' => '固定链接', // link to current database schema layout
 
-	// thousands separator - must contain single byte
-	',' => ',',
+	',' => ',', // thousands separator - must contain single byte
 	'0123456789' => '0123456789',
 	'Engine' => '引擎',
 	'Collation' => '校对',
@@ -185,8 +180,6 @@ Lang::$translations = array(
 	'Are you sure?' => '您确定吗？',
 	'Size' => '大小',
 	'Compute' => '计算',
-	'Move up' => '上移',
-	'Move down' => '下移',
 	'Remove' => '移除',
 	'Maximum number of allowed fields exceeded. Please increase %s.' => '超过最多允许的字段数量。请增加 %s。',
 
@@ -266,20 +259,17 @@ Lang::$translations = array(
 	'%d row(s) have been imported.' => '%d 行已导入。',
 	'File must be in UTF-8 encoding.' => '文件必须使用UTF-8编码。',
 
-	// in-place editing in select
-	'Modify' => '修改',
+	'Modify' => '修改', // in-place editing in select
 	'Ctrl+click on a value to modify it.' => '按住Ctrl并单击某个值进行修改。',
 	'Use edit link to modify this value.' => '使用编辑链接修改该值。',
 
-	// %s can contain auto-increment value
-	'Item%s has been inserted.' => '已插入项目%s。',
+	'Item%s has been inserted.' => '已插入项目%s。', // %s can contain auto-increment value
 	'Item has been deleted.' => '已删除项目。',
 	'Item has been updated.' => '已更新项目。',
 	'%d item(s) have been affected.' => '%d 个项目受到影响。',
 	'New item' => '新建数据',
 	'original' => '原始',
-	// label for value '' in enum data type
-	'empty' => '空',
+	'empty' => '空', // label for value '' in enum data type
 	'edit' => '编辑',
 	'Edit' => '编辑',
 	'Insert' => '插入',
@@ -302,18 +292,14 @@ Lang::$translations = array(
 	'Relations' => '关联信息',
 
 	'Editor' => '编辑器',
-	// date format in Editor: $1 yyyy, $2 yy, $3 mm, $4 m, $5 dd, $6 d
-	'$1-$3-$5' => '$1.$3.$5',
-	// hint for date format - use language equivalents for day, month and year shortcuts
-	'[yyyy]-mm-dd' => '[yyyy].mm.dd',
-	// hint for time format - use language equivalents for hour, minute and second shortcuts
-	'HH:MM:SS' => 'HH:MM:SS',
+	'$1-$3-$5' => '$1.$3.$5', // date format in Editor: $1 yyyy, $2 yy, $3 mm, $4 m, $5 dd, $6 d
+	'[yyyy]-mm-dd' => '[yyyy].mm.dd', // hint for date format - use language equivalents for day, month and year shortcuts
+	'HH:MM:SS' => 'HH:MM:SS', // hint for time format - use language equivalents for hour, minute and second shortcuts
 	'now' => '现在',
 	'yes' => '是',
 	'no' => '否',
 
-	// general SQLite error in create, drop or rename database
-	'File exists.' => '文件已存在。',
+	'File exists.' => '文件已存在。', // general SQLite error in create, drop or rename database
 	'Please use one of the extensions %s.' => '请使用其中一个扩展：%s。',
 
 	// PostgreSQL and MS SQL schema support
@@ -333,12 +319,31 @@ Lang::$translations = array(
 	'Sequence has been altered.' => '已修改序列。',
 	'Alter sequence' => '修改序列',
 
-	// PostgreSQL user types support
-	'User types' => '用户类型',
+	// PostgreSQL user-defined types support
+	'User types' => '用户定义类型', // Claude Fable 5
 	'Create type' => '创建类型',
 	'Type has been dropped.' => '已删除类型。',
 	'Type has been created.' => '已创建类型。',
 	'Alter type' => '修改类型',
+	'Check has been dropped.' => '已删除检查约束。', // Claude Fable 5
+	'Check has been altered.' => '已修改检查约束。', // Claude Fable 5
+	'Check has been created.' => '已创建检查约束。', // Claude Fable 5
+	'Alter check' => '修改检查约束', // Claude Fable 5
+	'Create check' => '创建检查约束', // Claude Fable 5
+	'Algorithm' => '算法', // Claude Fable 5
+	'Columns' => '列', // Claude Fable 5
+	'length' => '长度', // Claude Fable 5
+	'Condition' => '条件', // Claude Fable 5
+	'Inherits from' => '继承自', // Claude Fable 5
+	'Checks' => '检查约束', // Claude Fable 5
+	'Inherited by' => '被继承', // Claude Fable 5
+	'hostname[:port] or :socket' => 'hostname[:port] 或 :socket', // Claude Fable 5
+	'Invalid server.' => '无效的服务器。', // Claude Fable 5
+	'Loaded plugins' => '已加载的插件', // Claude Fable 5
+	'screenshot' => '截图', // Claude Fable 5
+	'Increase %s.' => '请增大 %s。', // Claude Fable 5
+	'%s must <a%s>return an array</a>.' => '%s 必须<a%s>返回一个数组</a>。', // Claude Fable 5
+	'<a%s>Configure</a> %s in %s.' => '在 %3$s 中<a%1$s>配置</a> %2$s。', // Claude Fable 5
 );
 
 // run `php ../../lang.php zh` to update this file

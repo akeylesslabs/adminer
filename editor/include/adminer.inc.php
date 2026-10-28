@@ -94,7 +94,8 @@ class Adminer {
 
 	function loginForm() {
 		echo "<table class='layout'>\n";
-		echo adminer()->loginFormField('username', '<tr><th>' . lang('Username') . '<td>', input_hidden("auth[driver]", "server") . '<input name="auth[username]" autofocus value="' . h($_GET["username"]) . '" autocomplete="username" autocapitalize="off">');
+		echo adminer()->loginFormField('username', '<tr><th>' . lang('Username') . '<td>', input_hidden("auth[driver]", "server")
+			. '<input name="auth[username]" autofocus value="' . h($_GET["username"]) . '" autocomplete="username" autocapitalize="off">');
 		echo adminer()->loginFormField('password', '<tr><th>' . lang('Password') . '<td>', '<input type="password" name="auth[password]" autocomplete="current-password">');
 		echo "</table>\n";
 		echo "<p><input type='submit' value='" . lang('Login') . "'>\n";
@@ -112,8 +113,7 @@ class Adminer {
 	function tableName($tableStatus) {
 		return h(isset($tableStatus["Engine"])
 			? ($tableStatus["Comment"] != "" ? $tableStatus["Comment"] : $tableStatus["Name"])
-			: "" // ignore views
-		);
+			: ""); // ignore views
 	}
 
 	function fieldName($field, $order = 0) {
@@ -472,7 +472,7 @@ ORDER BY ORDINAL_POSITION", null, "") as $row
 		$options = $this->foreignKeyOptions($table, $field["field"], $value);
 		if ($options !== null) {
 			return (is_array($options)
-				? "<select$attrs>" . optionlist($options, $value, true) . "</select>"
+				? "<select$attrs>" . optionlist($options, (string) $value, true) . "</select>"
 				: "<input value='" . h($value) . "'$attrs class='hidden'>"
 					. "<input value='" . h($options) . "' class='jsonly'>"
 					. "<div></div>"
@@ -591,6 +591,8 @@ ORDER BY ORDINAL_POSITION", null, "") as $row
 			}
 		} else {
 			adminer()->databasesPrint($missing);
+			$actions = adminer()->menuActions(array(), $missing);
+			echo ($actions ? "<p class='links'>\n" . implode("\n", $actions) . "\n" : "");
 			if ($missing != "db" && $missing != "ns") {
 				$table_status = table_status('', true);
 				if (!$table_status) {
@@ -606,6 +608,10 @@ ORDER BY ORDINAL_POSITION", null, "") as $row
 	}
 
 	function databasesPrint($missing) {
+	}
+
+	function menuActions($actions, $missing) {
+		return $actions;
 	}
 
 	function tablesPrint($tables) {

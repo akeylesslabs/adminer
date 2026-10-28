@@ -5,15 +5,8 @@ $USER = $_GET["user"];
 $privileges = array("" => array("All privileges" => ""));
 foreach (get_rows("SHOW PRIVILEGES") as $row) {
 	foreach (explode(",", ($row["Privilege"] == "Grant option" ? "" : $row["Context"])) as $context) {
-		$privileges[$context][$row["Privilege"]] = $row["Comment"];
+		$privileges[$context == "File access on server" ? "Server Admin" : $context][$row["Privilege"]] = $row["Comment"];
 	}
-}
-$privileges["Server Admin"] += $privileges["File access on server"];
-$privileges["Databases"]["Create routine"] = $privileges["Procedures"]["Create routine"]; // MySQL bug #30305
-unset($privileges["Procedures"]["Create routine"]);
-$privileges["Columns"] = array();
-foreach (array("Select", "Insert", "Update", "References") as $val) {
-	$privileges["Columns"][$val] = $privileges["Tables"][$val];
 }
 unset($privileges["Server Admin"]["Usage"]);
 foreach ($privileges["Tables"] as $key => $val) {
@@ -27,7 +20,6 @@ if ($_POST) {
 	}
 }
 $grants = array();
-$old_pass = "";
 
 if (isset($_GET["host"]) && ($result = connection()->query("SHOW GRANTS FOR " . q($USER) . "@" . q($_GET["host"])))) { //! use information_schema for MySQL 5 - column names in column privileges are not escaped
 	while ($row = $result->fetch_row()) {
@@ -41,9 +33,6 @@ if (isset($_GET["host"]) && ($result = connection()->query("SHOW GRANTS FOR " . 
 				}
 			}
 		}
-		if (preg_match("~ IDENTIFIED BY PASSWORD '([^']+)~", $row[0], $match)) {
-			$old_pass = $match[1];
-		}
 	}
 }
 
@@ -54,23 +43,17 @@ if ($_POST && !$error) {
 	} else {
 		$new_user = q($_POST["user"]) . "@" . q($_POST["host"]); // if $_GET["host"] is not set then $new_user is always different
 		$pass = $_POST["pass"];
-		if ($pass != '' && !$_POST["hashed"] && !min_version(8)) {
-			// compute hash in a separate query so that plain text password is not saved to history
-			$pass = get_val("SELECT PASSWORD(" . q($pass) . ")");
-			$error = !$pass;
-		}
 
 		$created = false;
-		if (!$error) {
-			if ($old_user != $new_user) {
-				$created = queries((min_version(5) ? "CREATE USER" : "GRANT USAGE ON *.* TO") . " $new_user IDENTIFIED BY " . (min_version(8) ? "" : "PASSWORD ") . q($pass));
-				$error = !$created;
-			} elseif ($pass != $old_pass) {
-				queries("SET PASSWORD FOR $new_user = " . q($pass));
-			}
+		$result = true;
+		if ($old_user != $new_user) {
+			$created = queries("CREATE USER $new_user IDENTIFIED BY " . ($_POST["hashed"] ? "PASSWORD " : "") . q($pass));
+			$result = $created;
+		} elseif ($pass != "") {
+			$result = queries("SET PASSWORD FOR $new_user = " . (min_version(8, 99) || $_POST["hashed"] ? q($pass) : "PASSWORD(" . q($pass) . ")"));
 		}
 
-		if (!$error) {
+		if ($result) {
 			$revoke = array();
 			foreach ($new_grants as $object => $grant) {
 				if (isset($_GET["grant"])) {
@@ -91,13 +74,13 @@ if ($_POST && !$error) {
 					!grant("REVOKE", $revoke, $match[2], " ON $match[1] FROM $new_user") //! SQL injection
 					|| !grant("GRANT", $grant, $match[2], " ON $match[1] TO $new_user"))
 				) {
-					$error = true;
+					$result = false;
 					break;
 				}
 			}
 		}
 
-		if (!$error && isset($_GET["host"])) {
+		if ($result && isset($_GET["host"])) {
 			if ($old_user != $new_user) {
 				queries("DROP USER $old_user");
 			} elseif (!isset($_GET["grant"])) {
@@ -109,7 +92,7 @@ if ($_POST && !$error) {
 			}
 		}
 
-		queries_redirect(ME . "privileges=", (isset($_GET["host"]) ? lang('User has been altered.') : lang('User has been created.')), !$error);
+		queries_redirect(ME . "privileges=", (isset($_GET["host"]) ? lang('User has been altered.') : lang('User has been created.')), $result);
 
 		if ($created) {
 			// delete new user in case of an error
@@ -125,10 +108,6 @@ if ($row) {
 	$grants = $new_grants;
 } else {
 	$row = $_GET + array("host" => get_val("SELECT SUBSTRING_INDEX(CURRENT_USER, '@', -1)")); // create user on the same domain by default
-	$row["pass"] = $old_pass;
-	if ($old_pass != "") {
-		$row["hashed"] = true;
-	}
 	$grants[(DB == "" || $grants ? "" : idf_escape(addcslashes(DB, "%_\\"))) . ".*"] = array();
 }
 
@@ -139,7 +118,7 @@ if ($row) {
 <tr><th><?php echo lang('Username'); ?><td><input name="user" data-maxlength="80" value="<?php echo h($row["user"]); ?>" autocapitalize="off">
 <tr><th><?php echo lang('Password'); ?><td><input name="pass" id="pass" value="<?php echo h($row["pass"]); ?>" autocomplete="new-password">
 <?php echo ($row["hashed"] ? "" : script("typePassword(qs('#pass'));")); ?>
-<?php echo (min_version(8) ? "" : checkbox("hashed", 1, $row["hashed"], lang('Hashed'), "typePassword(this.form['pass'], this.checked);")); ?>
+<?php echo (min_version(8, 99) ? "" : checkbox("hashed", 1, $row["hashed"], lang('Hashed'), "typePassword(this.form['pass'], this.checked);")); ?>
 </table>
 
 <?php
@@ -162,7 +141,6 @@ foreach (
 		"Server Admin" => lang('Server'),
 		"Databases" => lang('Database'),
 		"Tables" => lang('Table'),
-		"Columns" => lang('Column'),
 		"Procedures" => lang('Routine'),
 	) as $context => $desc
 ) {
