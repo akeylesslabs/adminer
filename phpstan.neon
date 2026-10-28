@@ -2,7 +2,18 @@ parameters:
 	level: 6
 	checkNullables: true # level 8
 
+	# Upstream 5.5.1 reports differently under different PHPStan releases, so a pattern that
+	# matches on one release is unmatched on another.
+	reportUnmatchedIgnoredErrors: false
+
 	ignoreErrors:
+		# VERSION is a constant that PHPStan folds, upstream resolves this in later refactors
+		-
+			message: "~Loose comparison using != between '[^']*' and '-dev'~"
+			path: adminer/file.inc.php
+		-
+			message: "~^Variable \\$orig_schema might not be defined~"
+			path: adminer/foreign.inc.php
 		# need to fix
 		- "~^Function Adminer\\\\fields_from_edit\\(\\) should return|Adminer\\\\Driver::\\$primary~" # Mongo and SimpleDB
 		- "~Adminer\\\\Result.*mysqli_result~" # mysqli_result
