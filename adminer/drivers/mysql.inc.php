@@ -78,14 +78,7 @@ if (!defined('Adminer\DRIVER')) {
 
 			/** Set the client character set */
 			function set_charset(string $charset): bool {
-				if (function_exists('mysql_set_charset')) {
-					if (mysql_set_charset($charset, $this->link)) {
-						return true;
-					}
-					// the client library may not support utf8mb4
-					mysql_set_charset('utf8', $this->link);
-				}
-				return $this->query("SET NAMES $charset");
+				return mysql_set_charset($charset, $this->link) || mysql_set_charset('utf8', $this->link); // the client library may not support utf8mb4
 			}
 
 			function quote(string $string): string {
@@ -147,11 +140,6 @@ if (!defined('Adminer\DRIVER')) {
 				$return->charsetnr = ($return->blob ? 63 : 0);
 				return $return;
 			}
-
-			/** Free result set */
-			function __destruct() {
-				mysql_free_result($this->result);
-			}
 		}
 
 	} elseif (extension_loaded("pdo_mysql")) {
@@ -177,7 +165,7 @@ if (!defined('Adminer\DRIVER')) {
 				}
 				list($host, $port) = host_port($server);
 				return $this->dsn(
-					"mysql:charset=utf8;host=$host" . ($port ? (is_numeric($port) ? ";port=" : ";unix_socket=") . $port : ""),
+					"mysql:charset=utf8" . ($host != "" ? ";host=$host" : '') . ($port ? (is_numeric($port) ? ";port=" : ";unix_socket=") . $port : ""),
 					$username,
 					$password,
 					$options
@@ -211,6 +199,7 @@ if (!defined('Adminer\DRIVER')) {
 		public $operators = array("=", "<", ">", "<=", ">=", "!=", "LIKE", "LIKE %%", "REGEXP", "IN", "FIND_IN_SET", "IS NULL", "NOT LIKE", "NOT REGEXP", "NOT IN", "IS NOT NULL", "SQL");
 		public $functions = array("char_length", "date", "from_unixtime", "lower", "round", "floor", "ceil", "sec_to_time", "time_to_sec", "upper");
 		public $grouping = array("avg", "count", "count distinct", "group_concat", "max", "min", "sum");
+		public $partitionBy = array("HASH", "LINEAR HASH", "KEY", "LINEAR KEY", "RANGE", "LIST");
 
 		static function connect(string $server, string $username, string $password) {
 			$connection = parent::connect($server, $username, $password);
@@ -255,12 +244,14 @@ if (!defined('Adminer\DRIVER')) {
 				$this->types[lang('Strings')]["uuid"] = 128;
 				$this->insertFunctions['uuid'] = 'uuid';
 			}
-			if (min_version(9, '', $connection)) {
-				$this->types[lang('Numbers')]["vector"] = 16383;
-				$this->insertFunctions['vector'] = 'string_to_vector';
+			if (min_version('', 10.5, $connection)) {
+				$this->types[lang('Network')]["inet6"] = 39;
+				if (min_version('', '10.10', $connection)) {
+					$this->types[lang('Network')]["inet4"] = 15;
+				}
 			}
-			if (min_version(5.1, '', $connection)) {
-				$this->partitionBy = array("HASH", "LINEAR HASH", "KEY", "LINEAR KEY", "RANGE", "LIST");
+			if (min_version(9, 11.7, $connection)) {
+				$this->types[lang('Numbers')]["vector"] = 16383;
 			}
 			if (min_version(5.7, 10.2, $connection)) {
 				$this->generated = array("STORED", "VIRTUAL");
@@ -270,8 +261,9 @@ if (!defined('Adminer\DRIVER')) {
 		function unconvertFunction(array $field) {
 			return (preg_match("~binary~", $field["type"]) ? "<code class='jush-sql'>UNHEX</code>"
 				: ($field["type"] == "bit" ? doc_link(array('sql' => 'bit-value-literals.html'), "<code>b''</code>")
+				: ($field["type"] == "vector" ? "<code class='jush-sql'>" . ($this->conn->flavor == 'maria' ? "VEC_FromText" : "STRING_TO_VECTOR") . "</code>"
 				: (preg_match("~geometry|point|linestring|polygon~", $field["type"]) ? "<code class='jush-sql'>GeomFromText</code>"
-				: "")));
+				: ""))));
 		}
 
 		function insert(string $table, array $set) {
@@ -318,6 +310,10 @@ if (!defined('Adminer\DRIVER')) {
 				? "CONVERT($idf USING " . charset($this->conn) . ")"
 				: $idf
 			);
+		}
+
+		function quoteBinary(string $s): string {
+			return "X" . q(bin2hex($s));
 		}
 
 		function warnings() {
@@ -559,7 +555,7 @@ if (!defined('Adminer\DRIVER')) {
 		$return = array();
 		foreach (get_rows("SHOW INDEX FROM " . table($table), $connection2) as $row) {
 			$name = $row["Key_name"];
-			$return[$name]["type"] = ($name == "PRIMARY" ? "PRIMARY" : ($row["Index_type"] == "FULLTEXT" ? "FULLTEXT" : ($row["Non_unique"] ? ($row["Index_type"] == "SPATIAL" ? "SPATIAL" : "INDEX") : "UNIQUE")));
+			$return[$name]["type"] = ($name == "PRIMARY" ? "PRIMARY" : ($row["Index_type"] == "FULLTEXT" ? "FULLTEXT" : ($row["Non_unique"] ? (preg_match('~^(SPATIAL|VECTOR)$~', $row["Index_type"]) ? $row["Index_type"] : "INDEX") : "UNIQUE")));
 			$return[$name]["columns"][] = $row["Column_name"];
 			$return[$name]["lengths"][] = ($row["Index_type"] == "SPATIAL" ? null : $row["Sub_part"]);
 			$return[$name]["descs"][] = null;
@@ -896,16 +892,19 @@ if (!defined('Adminer\DRIVER')) {
 		$fields = get_rows("SELECT
 	PARAMETER_NAME field,
 	DATA_TYPE type,
-	CHARACTER_MAXIMUM_LENGTH length,
+	REGEXP_REPLACE(DTD_IDENTIFIER, '^[^(]+\\\\(?|\\\\)$', '') length,
 	REGEXP_REPLACE(DTD_IDENTIFIER, '^[^ ]+ ', '') `unsigned`,
 	1 `null`,
 	DTD_IDENTIFIER full_type,
-	PARAMETER_MODE `inout`,
+	" . ($type == "FUNCTION" ? "''" : "PARAMETER_MODE") . " `inout`,
 	CHARACTER_SET_NAME collation
 FROM information_schema.PARAMETERS
 WHERE SPECIFIC_SCHEMA = DATABASE() AND ROUTINE_TYPE = '$type' AND SPECIFIC_NAME = " . q($name) . "
 ORDER BY ORDINAL_POSITION");
-		$return = connection()->query("SELECT ROUTINE_COMMENT comment, ROUTINE_DEFINITION definition, 'SQL' language
+		$return = connection()->query("SELECT
+	ROUTINE_COMMENT comment,
+	CONCAT(IF(IS_DETERMINISTIC = 'YES', 'DETERMINISTIC\\n', ''), IF(SQL_DATA_ACCESS != 'CONTAINS SQL', CONCAT(SQL_DATA_ACCESS, '\\n'), ''), ROUTINE_DEFINITION) definition,
+	'SQL' language
 FROM information_schema.ROUTINES
 WHERE ROUTINE_SCHEMA = DATABASE() AND ROUTINE_TYPE = '$type' AND ROUTINE_NAME = " . q($name))->fetch_assoc();
 		if ($fields && $fields[0]['field'] == '') {
@@ -948,7 +947,7 @@ WHERE ROUTINE_SCHEMA = DATABASE() AND ROUTINE_TYPE = '$type' AND ROUTINE_NAME = 
 	* @return Result
 	*/
 	function explain(Db $connection, string $query) {
-		return $connection->query("EXPLAIN " . (min_version(5.1) && !min_version(5.7) ? "PARTITIONS " : "") . $query);
+		return $connection->query("EXPLAIN " . (min_version(5.7) ? "" : "PARTITIONS ") . $query);
 	}
 
 	/** Get approximate number of rows
@@ -1029,6 +1028,9 @@ WHERE ROUTINE_SCHEMA = DATABASE() AND ROUTINE_TYPE = '$type' AND ROUTINE_NAME = 
 		if ($field["type"] == "bit") {
 			return "BIN(" . idf_escape($field["field"]) . " + 0)"; // + 0 is required outside MySQLnd
 		}
+		if ($field["type"] == "vector") {
+			return (connection()->flavor == 'maria' ? "VEC_ToText" : "VECTOR_TO_STRING") . "(" . idf_escape($field["field"]) . ")";
+		}
 		if (preg_match("~geometry|point|linestring|polygon~", $field["type"])) {
 			return (min_version(8) ? "ST_" : "") . "AsWKT(" . idf_escape($field["field"]) . ")";
 		}
@@ -1045,6 +1047,9 @@ WHERE ROUTINE_SCHEMA = DATABASE() AND ROUTINE_TYPE = '$type' AND ROUTINE_NAME = 
 		if ($field["type"] == "bit") {
 			$return = "CONVERT(b$return, UNSIGNED)";
 		}
+		if ($field["type"] == "vector") {
+			$return = (connection()->flavor == 'maria' ? "VEC_FromText" : "STRING_TO_VECTOR") . "($return)";
+		}
 		if (preg_match("~geometry|point|linestring|polygon~", $field["type"])) {
 			$prefix = (min_version(8) ? "ST_" : "");
 			$return = $prefix . "GeomFromText($return, $prefix" . "SRID($field[field]))";
@@ -1058,8 +1063,7 @@ WHERE ROUTINE_SCHEMA = DATABASE() AND ROUTINE_TYPE = '$type' AND ROUTINE_NAME = 
 	*/
 	function support(string $feature): bool {
 		return preg_match(
-			'~^(comment|columns|copy|database|drop_col|dump|indexes|kill|privileges|move_col|procedure|processlist|routine|sql|status|table|trigger|variables|view'
-				. (min_version(5.1) ? '|event' : '')
+			'~^(comment|columns|copy|database|drop_col|dump|event|indexes|kill|privileges|move_col|procedure|processlist|routine|sql|status|table|trigger|variables|view'
 				. (min_version(8) ? '|descidx' : '')
 				. (min_version('8.0.16', '10.2.1') ? '|check' : '')
 				. ')$~',
@@ -1114,6 +1118,7 @@ WHERE ROUTINE_SCHEMA = DATABASE() AND ROUTINE_TYPE = '$type' AND ROUTINE_NAME = 
 	}
 
 	/** Set current schema
+	* @phpstan-impure other drivers have side effects
 	*/
 	function set_schema(string $schema, ?Db $connection2 = null): bool {
 		return true;

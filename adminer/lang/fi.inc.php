@@ -2,8 +2,7 @@
 namespace Adminer;
 
 Lang::$translations = array(
-	// label for database system selection (MySQL, SQLite, ...)
-	'System' => 'Järjestelmä',
+	'System' => 'Järjestelmä', // label for database system selection (MySQL, SQLite, ...)
 	'Server' => 'Palvelin',
 	'Username' => 'Käyttäjänimi',
 	'Password' => 'Salasana',
@@ -13,7 +12,7 @@ Lang::$translations = array(
 	'Logged as: %s' => 'Olet kirjautunut käyttäjänä: %s',
 	'Logout successful.' => 'Uloskirjautuminen onnistui.',
 	'Invalid credentials.' => 'Virheelliset kirjautumistiedot.',
-	'Too many unsuccessful logins, try again in %d minute(s).' => array('Liian monta epäonnistunutta sisäänkirjautumisyritystä, kokeile uudestaan %d minuutin kuluttua.', 'Liian monta epäonnistunutta sisäänkirjautumisyritystä, kokeile uudestaan %d minuutin kuluttua.'),
+	'Too many unsuccessful logins, try again in %d minute(s).' => 'Liian monta epäonnistunutta sisäänkirjautumisyritystä, kokeile uudestaan %d minuutin kuluttua.',
 	'Master password expired. <a href="https://www.adminer.org/en/extension/"%s>Implement</a> %s method to make it permanent.' => 'Master-salasana ei ole enää voimassa. <a href="https://www.adminer.org/en/extension/"%s>Toteuta</a> %s-metodi sen tekemiseksi pysyväksi.',
 	'Language' => 'Kieli',
 	'Invalid CSRF token. Send the form again.' => 'Virheellinen CSRF-vastamerkki. Lähetä lomake uudelleen.',
@@ -25,8 +24,7 @@ Lang::$translations = array(
 	'%s version: %s through PHP extension %s' => '%s versio: %s PHP-laajennuksella %s',
 	'Refresh' => 'Virkistä',
 
-	// text direction - 'ltr' or 'rtl'
-	'ltr' => 'ltr',
+	'ltr' => 'ltr', // text direction - 'ltr' or 'rtl'
 
 	'Privileges' => 'Oikeudet',
 	'Create user' => 'Luo käyttäjä',
@@ -48,14 +46,13 @@ Lang::$translations = array(
 
 	'SQL command' => 'SQL-komento',
 	'%d query(s) executed OK.' => array('%d kysely onnistui.', '%d kyselyä onnistui.'),
-	'Query executed OK, %d row(s) affected.' => array('Kysely onnistui, kohdistui %d riviin.', 'Kysely onnistui, kohdistui %d riviin.'),
+	'Query executed OK, %d row(s) affected.' => 'Kysely onnistui, kohdistui %d riviin.',
 	'No commands to execute.' => 'Ei komentoja suoritettavana.',
 	'Error in query' => 'Virhe kyselyssä',
 	'Execute' => 'Suorita',
 	'Stop on error' => 'Pysähdy virheeseen',
 	'Show only errors' => 'Näytä vain virheet',
-	// sprintf() format for time of the command
-	'%.3f s' => '%.3f s',
+	'%.3f s' => '%.3f s', // sprintf() format for time of the command
 	'History' => 'Historia',
 	'Clear' => 'Tyhjennä',
 	'Edit all' => 'Muokkaa kaikkia',
@@ -93,11 +90,9 @@ Lang::$translations = array(
 	'Create database' => 'Luo tietokanta',
 	'Database schema' => 'Tietokantakaava',
 
-	// link to current database schema layout
-	'Permanent link' => 'Pysyvä linkki',
+	'Permanent link' => 'Pysyvä linkki', // link to current database schema layout
 
-	// thousands separator - must contain single byte
-	',' => ',',
+	',' => ',', // thousands separator - must contain single byte
 	'0123456789' => '0123456789',
 	'Engine' => 'Moottori',
 	'Collation' => 'Kollaatio',
@@ -120,7 +115,7 @@ Lang::$translations = array(
 	'Tables have been copied.' => 'Taulut on kopioitu.',
 
 	'Routines' => 'Rutiinit',
-	'Routine has been called, %d row(s) affected.' => array('Rutiini kutsuttu, kohdistui %d riviin.', 'Rutiini kutsuttu, kohdistui %d riviin.'),
+	'Routine has been called, %d row(s) affected.' => 'Rutiini kutsuttu, kohdistui %d riviin.',
 	'Call' => 'Kutsua',
 	'Parameter name' => 'Parametrin nimi',
 	'Create procedure' => 'Luo proseduuri',
@@ -172,8 +167,6 @@ Lang::$translations = array(
 	'Are you sure?' => 'Oletko varma?',
 	'Size' => 'Koko',
 	'Compute' => 'Laske',
-	'Move up' => 'Siirrä ylös',
-	'Move down' => 'Siirrä alas',
 	'Remove' => 'Poista',
 	'Maximum number of allowed fields exceeded. Please increase %s.' => 'Kenttien sallittu enimmäismäärä ylitetty. Kasvata arvoa %s.',
 
@@ -254,20 +247,17 @@ Lang::$translations = array(
 	'%d row(s) have been imported.' => array('%d rivi tuotiin.', '%d riviä tuotiin.'),
 	'File must be in UTF-8 encoding.' => 'Tiedoston täytyy olla UTF-8-muodossa.',
 
-	// in-place editing in select
-	'Modify' => 'Muuta',
+	'Modify' => 'Muuta', // in-place editing in select
 	'Ctrl+click on a value to modify it.' => 'Ctrl+napsauta arvoa muuttaaksesi.',
 	'Use edit link to modify this value.' => 'Käytä muokkaa-linkkiä muuttaaksesi tätä arvoa.',
 
-	// %s can contain auto-increment value
-	'Item%s has been inserted.' => 'Tietue%s lisättiin.',
+	'Item%s has been inserted.' => 'Tietue%s lisättiin.', // %s can contain auto-increment value
 	'Item has been deleted.' => 'Tietue poistettiin.',
 	'Item has been updated.' => 'Tietue päivitettiin.',
-	'%d item(s) have been affected.' => array('Kohdistui %d tietueeseen.', 'Kohdistui %d tietueeseen.'),
+	'%d item(s) have been affected.' => 'Kohdistui %d tietueeseen.',
 	'New item' => 'Uusi tietue',
 	'original' => 'alkuperäinen',
-	// label for value '' in enum data type
-	'empty' => 'tyhjä',
+	'empty' => 'tyhjä', // label for value '' in enum data type
 	'edit' => 'muokkaa',
 	'Edit' => 'Muokkaa',
 	'Insert' => 'Lisää',
@@ -290,18 +280,14 @@ Lang::$translations = array(
 	'Relations' => 'Suhteet',
 
 	'Editor' => 'Editori',
-	// date format in Editor: $1 yyyy, $2 yy, $3 mm, $4 m, $5 dd, $6 d
-	'$1-$3-$5' => '$5.$3.$1',
-	// hint for date format - use language equivalents for day, month and year shortcuts
-	'[yyyy]-mm-dd' => 'pp.kk.[vvvv]',
-	// hint for time format - use language equivalents for hour, minute and second shortcuts
-	'HH:MM:SS' => 'HH:MM:SS',
+	'$1-$3-$5' => '$5.$3.$1', // date format in Editor: $1 yyyy, $2 yy, $3 mm, $4 m, $5 dd, $6 d
+	'[yyyy]-mm-dd' => 'pp.kk.[vvvv]', // hint for date format - use language equivalents for day, month and year shortcuts
+	'HH:MM:SS' => 'HH:MM:SS', // hint for time format - use language equivalents for hour, minute and second shortcuts
 	'now' => 'nyt',
 	'yes' => 'kyllä',
 	'no' => 'ei',
 
-	// general SQLite error in create, drop or rename database
-	'File exists.' => 'Tiedosto on olemassa.',
+	'File exists.' => 'Tiedosto on olemassa.', // general SQLite error in create, drop or rename database
 	'Please use one of the extensions %s.' => 'Käytä jotain %s-laajennuksista.',
 
 	// PostgreSQL and MS SQL schema support
@@ -321,7 +307,7 @@ Lang::$translations = array(
 	'Sequence has been altered.' => 'Sekvenssiä on muutettu.',
 	'Alter sequence' => 'Muuta sekvenssiä',
 
-	// PostgreSQL user types support
+	// PostgreSQL user-defined types support
 	'User types' => 'Käyttäjän tyypit',
 	'Create type' => 'Luo tyyppi',
 	'Type has been dropped.' => 'Tyyppi poistettiin.',
@@ -332,7 +318,7 @@ Lang::$translations = array(
 	'Drop %s?' => 'Poistetaanko %s?',
 	'overwrite' => 'kirjoittaen päälle',
 	'DB' => 'TK',
-	'ATTACH queries are not supported.' => 'ATTACH-komennolla tehtyjä kyselyjä ei tueta.',
+	'%s queries are not supported.' => '%s-komennolla tehtyjä kyselyjä ei tueta.',
 	'Warnings' => 'Varoitukset',
 	'Adminer does not support accessing a database without a password, <a href="https://www.adminer.org/en/password/"%s>more information</a>.' => 'Adminer ei tue pääsyä tietokantaan ilman salasanaa, katso tarkemmin <a href="https://www.adminer.org/en/password/"%s>täältä</a>.',
 	'The action will be performed after successful login with the same credentials.' => 'Toiminto suoritetaan sen jälkeen, kun on onnistuttu kirjautumaan samoilla käyttäjätunnuksilla uudestaan.',
@@ -341,6 +327,23 @@ Lang::$translations = array(
 	'Unknown error.' => 'Tuntematon virhe.',
 	'Database does not support password.' => 'Tietokanta ei tue salasanaa.',
 	'Disable %s or enable %s or %s extensions.' => 'Poista käytöstä %s tai ota käyttöön laajennus %s tai %s.',
+	'Check has been dropped.' => 'Tarkistus on poistettu.', // Claude Fable 5
+	'Check has been altered.' => 'Tarkistusta on muutettu.', // Claude Fable 5
+	'Check has been created.' => 'Tarkistus on luotu.', // Claude Fable 5
+	'Alter check' => 'Muuta tarkistusta', // Claude Fable 5
+	'Create check' => 'Luo tarkistus', // Claude Fable 5
+	'Algorithm' => 'Algoritmi', // Claude Fable 5
+	'Columns' => 'Sarakkeet', // Claude Fable 5
+	'Condition' => 'Ehto', // Claude Fable 5
+	'Inherits from' => 'Perii taulusta', // Claude Fable 5
+	'Checks' => 'Tarkistukset', // Claude Fable 5
+	'Inherited by' => 'Periytyy tauluihin', // Claude Fable 5
+	'hostname[:port] or :socket' => 'hostname[:port] tai :socket', // Claude Fable 5
+	'Invalid server.' => 'Virheellinen palvelin.', // Claude Fable 5
+	'Loaded plugins' => 'Ladatut lisäosat', // Claude Fable 5
+	'screenshot' => 'kuvakaappaus', // Claude Fable 5
+	'Increase %s.' => 'Kasvata %s.', // Claude Fable 5
+	'<a%s>Configure</a> %s in %s.' => '<a%s>Määritä</a> %s tiedostossa %s.', // Claude Fable 5
 );
 
 // run `php ../../lang.php fi` to update this file

@@ -2,8 +2,7 @@
 namespace Adminer;
 
 Lang::$translations = array(
-	// label for database system selection (MySQL, SQLite, ...)
-	'System' => 'Sistem',
+	'System' => 'Sistem', // label for database system selection (MySQL, SQLite, ...)
 	'Server' => 'Server',
 	'Username' => 'Pengguna',
 	'Password' => 'Sandi',
@@ -22,8 +21,7 @@ Lang::$translations = array(
 	'%s version: %s through PHP extension %s' => 'Versi %s: %s dengan ekstensi PHP %s',
 	'Refresh' => 'Segarkan',
 
-	// text direction - 'ltr' or 'rtl'
-	'ltr' => 'ltr',
+	'ltr' => 'ltr', // text direction - 'ltr' or 'rtl'
 
 	'Privileges' => 'Privilese',
 	'Create user' => 'Buat pengguna',
@@ -51,8 +49,7 @@ Lang::$translations = array(
 	'Execute' => 'Jalankan',
 	'Stop on error' => 'Hentikan jika galat',
 	'Show only errors' => 'Hanya tampilkan galat',
-	// sprintf() format for time of the command
-	'%.3f s' => '%.3f s',
+	'%.3f s' => '%.3f s', // sprintf() format for time of the command
 	'History' => 'Riwayat',
 	'Clear' => 'Bersihkan',
 
@@ -87,11 +84,9 @@ Lang::$translations = array(
 	'Create database' => 'Buat basis data',
 	'Database schema' => 'Skema basis data',
 
-	// link to current database schema layout
-	'Permanent link' => 'Pranala permanen',
+	'Permanent link' => 'Pranala permanen', // link to current database schema layout
 
-	// thousands separator - must contain single byte
-	',' => '.',
+	',' => '.', // thousands separator - must contain single byte
 	'0123456789' => '0123456789',
 	'Engine' => 'Mesin',
 	'Collation' => 'Kolasi',
@@ -162,8 +157,6 @@ Lang::$translations = array(
 	'Default values' => 'Nilai bawaan',
 	'Drop' => 'Hapus',
 	'Are you sure?' => 'Anda yakin?',
-	'Move up' => 'Naik',
-	'Move down' => 'Turun',
 	'Remove' => 'Hapus',
 	'Maximum number of allowed fields exceeded. Please increase %s.' => 'Sudah lebih dumlah ruas maksimum yang diizinkan. Harap naikkan %s.',
 
@@ -238,18 +231,15 @@ Lang::$translations = array(
 	'Import' => 'Impor',
 	'%d row(s) have been imported.' => '%d baris berhasil diimpor.',
 
-	// in-place editing in select
-	'Use edit link to modify this value.' => 'Gunakan pranala suntingan untuk mengubah nilai ini.',
+	'Use edit link to modify this value.' => 'Gunakan pranala suntingan untuk mengubah nilai ini.', // in-place editing in select
 
-	// %s can contain auto-increment value
-	'Item%s has been inserted.' => 'Entri%s berhasil disisipkan.',
+	'Item%s has been inserted.' => 'Entri%s berhasil disisipkan.', // %s can contain auto-increment value
 	'Item has been deleted.' => 'Entri berhasil dihapus.',
 	'Item has been updated.' => 'Entri berhasil diperbarui.',
 	'%d item(s) have been affected.' => '%d entri terpengaruh.',
 	'New item' => 'Entri baru',
 	'original' => 'asli',
-	// label for value '' in enum data type
-	'empty' => 'kosong',
+	'empty' => 'kosong', // label for value '' in enum data type
 	'edit' => 'sunting',
 	'Edit' => 'Sunting',
 	'Insert' => 'Sisipkan',
@@ -270,18 +260,14 @@ Lang::$translations = array(
 	'Relations' => 'Relasi',
 
 	'Editor' => 'Editor',
-	// date format in Editor: $1 yyyy, $2 yy, $3 mm, $4 m, $5 dd, $6 d
-	'$1-$3-$5' => '$1-$3-$5',
-	// hint for date format - use language equivalents for day, month and year shortcuts
-	'[yyyy]-mm-dd' => '[yyyy]-mm-dd',
-	// hint for time format - use language equivalents for hour, minute and second shortcuts
-	'HH:MM:SS' => 'HH:MM:SS',
+	'$1-$3-$5' => '$1-$3-$5', // date format in Editor: $1 yyyy, $2 yy, $3 mm, $4 m, $5 dd, $6 d
+	'[yyyy]-mm-dd' => '[yyyy]-mm-dd', // hint for date format - use language equivalents for day, month and year shortcuts
+	'HH:MM:SS' => 'HH:MM:SS', // hint for time format - use language equivalents for hour, minute and second shortcuts
 	'now' => 'now',
 	'yes' => 'yes',
 	'no' => 'no',
 
-	// general SQLite error in create, drop or rename database
-	'File exists.' => 'Berkas sudah ada.',
+	'File exists.' => 'Berkas sudah ada.', // general SQLite error in create, drop or rename database
 	'Please use one of the extensions %s.' => 'Harap gunakan salah satu ekstensi %s.',
 
 	// PostgreSQL and MS SQL schema support
@@ -301,12 +287,62 @@ Lang::$translations = array(
 	'Sequence has been altered.' => 'Deret berhasil diubah.',
 	'Alter sequence' => 'Ubah deret',
 
-	// PostgreSQL user types support
+	// PostgreSQL user-defined types support
 	'User types' => 'Jenis pengguna',
 	'Create type' => 'Buat jenis',
 	'Type has been dropped.' => 'Jenis berhasil dihapus.',
 	'Type has been created.' => 'Jenis berhasil dibuat.',
 	'Alter type' => 'Ubah jenis',
+	'Check has been dropped.' => 'Pemeriksaan berhasil dihapus.', // Claude Fable 5
+	'Check has been altered.' => 'Pemeriksaan berhasil diubah.', // Claude Fable 5
+	'Check has been created.' => 'Pemeriksaan berhasil dibuat.', // Claude Fable 5
+	'Alter check' => 'Ubah pemeriksaan', // Claude Fable 5
+	'Create check' => 'Buat pemeriksaan', // Claude Fable 5
+	'Drop %s?' => 'Hapus %s?', // Claude Fable 5
+	'Vacuum' => 'Bersihkan', // Claude Fable 5
+	'Selected' => 'Terpilih', // Claude Fable 5
+	'overwrite' => 'timpa', // Claude Fable 5
+	'DB' => 'DB', // Claude Fable 5
+	'Algorithm' => 'Algoritme', // Claude Fable 5
+	'Columns' => 'Kolom', // Claude Fable 5
+	'Condition' => 'Kondisi', // Claude Fable 5
+	'Ctrl+click on a value to modify it.' => 'Ctrl+klik pada nilai untuk mengubahnya.', // Claude Fable 5
+	'File must be in UTF-8 encoding.' => 'Berkas harus dalam pengodean UTF-8.', // Claude Fable 5
+	'Modify' => 'Ubah', // Claude Fable 5
+	'Load more data' => 'Muat lebih banyak data', // Claude Fable 5
+	'Loading' => 'Memuat', // Claude Fable 5
+	'%s queries are not supported.' => 'Kueri %s tidak didukung.', // Claude Fable 5
+	'Warnings' => 'Peringatan', // Claude Fable 5
+	'%d / ' => '%d / ', // Claude Fable 5
+	'Limit rows' => 'Batas baris', // Claude Fable 5
+	'Inherits from' => 'Mewarisi dari', // Claude Fable 5
+	'Checks' => 'Pemeriksaan', // Claude Fable 5
+	'Inherited by' => 'Diwarisi oleh', // Claude Fable 5
+	'hostname[:port] or :socket' => 'hostname[:port] atau :socket', // Claude Fable 5
+	'Adminer does not support accessing a database without a password, <a href="https://www.adminer.org/en/password/"%s>more information</a>.' => 'Adminer tidak mendukung akses basis data tanpa sandi, <a href="https://www.adminer.org/en/password/"%s>informasi lebih lanjut</a>.', // Claude Fable 5
+	'Default value' => 'Nilai bawaan', // Claude Fable 5
+	'Too many unsuccessful logins, try again in %d minute(s).' => 'Terlalu banyak upaya masuk yang gagal, coba lagi dalam %d menit.', // Claude Fable 5
+	'Thanks for using Adminer, consider <a href="https://www.adminer.org/en/donation/">donating</a>.' => 'Terima kasih telah menggunakan Adminer, pertimbangkan untuk <a href="https://www.adminer.org/en/donation/">berdonasi</a>.', // Claude Fable 5
+	'Master password expired. <a href="https://www.adminer.org/en/extension/"%s>Implement</a> %s method to make it permanent.' => 'Sandi utama kedaluwarsa. <a href="https://www.adminer.org/en/extension/"%s>Implementasikan</a> metode %s agar permanen.', // Claude Fable 5
+	'The action will be performed after successful login with the same credentials.' => 'Tindakan akan dilakukan setelah berhasil masuk dengan kredensial yang sama.', // Claude Fable 5
+	'Invalid server.' => 'Server tidak valid.', // Claude Fable 5
+	'Connecting to privileged ports is not allowed.' => 'Koneksi ke port istimewa tidak diizinkan.', // Claude Fable 5
+	'There is a space in the input password which might be the cause.' => 'Ada spasi pada sandi yang dimasukkan yang mungkin menjadi penyebabnya.', // Claude Fable 5
+	'If you did not send this request from Adminer then close this page.' => 'Jika Anda tidak mengirim permintaan ini dari Adminer, tutup halaman ini.', // Claude Fable 5
+	'You can upload a big SQL file via FTP and import it from server.' => 'Anda dapat mengunggah berkas SQL besar melalui FTP dan mengimpornya dari server.', // Claude Fable 5
+	'Size' => 'Ukuran', // Claude Fable 5
+	'Compute' => 'Hitung', // Claude Fable 5
+	'Loaded plugins' => 'Plugin yang dimuat', // Claude Fable 5
+	'screenshot' => 'tangkapan layar', // Claude Fable 5
+	'You are offline.' => 'Anda sedang luring.', // Claude Fable 5
+	'Increase %s.' => 'Naikkan %s.', // Claude Fable 5
+	'You have no privileges to update this table.' => 'Anda tidak memiliki hak istimewa untuk memperbarui tabel ini.', // Claude Fable 5
+	'Saving' => 'Menyimpan', // Claude Fable 5
+	'Unknown error.' => 'Kesalahan tidak dikenal.', // Claude Fable 5
+	'%s must <a%s>return an array</a>.' => '%s harus <a%s>mengembalikan array</a>.', // Claude Fable 5
+	'<a%s>Configure</a> %s in %s.' => '<a%s>Konfigurasikan</a> %s di %s.', // Claude Fable 5
+	'Disable %s or enable %s or %s extensions.' => 'Nonaktifkan ekstensi %s atau aktifkan ekstensi %s atau %s.', // Claude Fable 5
+	'Database does not support password.' => 'Basis data tidak mendukung sandi.', // Claude Fable 5
 );
 
 // run `php ../../lang.php id` to update this file

@@ -65,7 +65,7 @@ Lang::$translations = array(
 	'Error in query' => 'Error al ejecutar consulta',
 	'Unknown error.' => 'Error desconocido.',
 	'Warnings' => 'Advertencias',
-	'ATTACH queries are not supported.' => 'Consultas tipo ATTACH no soportadas.',
+	'%s queries are not supported.' => 'Consultas tipo %s no soportadas.',
 	'Execute' => 'Ejecutar',
 	'Table' => 'Tabla',
 	'Foreign keys' => 'Claves externas',
@@ -148,8 +148,6 @@ Lang::$translations = array(
 	'You can upload a big SQL file via FTP and import it from server.' => 'Usted puede cargar un SQL grande mediante FTP e importarlo desde el servidor.',
 	'You are offline.' => 'Usted no esta en linea.',
 	'Logged as: %s' => 'Logueado como: %s',
-	'Move up' => 'Mover arriba',
-	'Move down' => 'Mover abajo',
 	'Functions' => 'Funciones',
 	'Aggregation' => 'Agregados',
 	'Export' => 'Exportar',
@@ -275,9 +273,9 @@ Lang::$translations = array(
 	'There is a space in the input password which might be the cause.' => 'Hay un espacio en el password, lo cual puede ser la causa.',
 	'Adminer does not support accessing a database without a password, <a href="https://www.adminer.org/en/password/"%s>more information</a>.' => 'Adminer no soporta accesar una base de datos sin clave, <a href="https://www.adminer.org/en/password/"%s>Ver detalles</a>.',
 	'Database does not support password.' => 'La base de datos no soporta password.',
-	'Too many unsuccessful logins, try again in %d minute(s).' => array('Muchos intentos de acceso Intente en %d minutos.'),
+	'Too many unsuccessful logins, try again in %d minute(s).' => array('Demasiados intentos de acceso fallidos, intente nuevamente en %d minuto.', 'Demasiados intentos de acceso fallidos, intente nuevamente en %d minutos.'), // Claude Fable 5
 	'Master password expired. <a href="https://www.adminer.org/en/extension/"%s>Implement</a> %s method to make it permanent.' => 'Password maestro expirado. <a href="https://www.adminer.org/en/extension/"%s>Implemente</a> %s metodo para hacerlo permanente.',
-	'If you did not send this request from Adminer then close this page.' => 'Si no puede enviar la solicitud por Adminer entonces cierre esta pagina.',
+	'If you did not send this request from Adminer then close this page.' => 'Si no envió esta solicitud desde Adminer, cierre esta página.', // Claude Fable 5
 	'Connecting to privileged ports is not allowed.' => 'Conexiones a puertos privilegiados no son permitidas.',
 	'Disable %s or enable %s or %s extensions.' => 'Desactivar %s o activar %s o %s extensiones.',
 	'The action will be performed after successful login with the same credentials.' => 'La operacion sera ejecutada despues de ingresar nuevamente con las mismas credenciales.',
@@ -290,6 +288,33 @@ Lang::$translations = array(
 	'Check has been created.' => 'Chequeo creado.',
 	'Check has been altered.' => 'Chequeo cambiado.',
 	'Check has been dropped.' => 'Chequeo eliminado.',
+	'Drop %s?' => '¿Eliminar %s?', // Claude Fable 5
+	'Tables have been optimized.' => 'Tablas optimizadas.', // Claude Fable 5
+	'Vacuum' => 'Limpiar', // Claude Fable 5
+	'Selected' => 'Seleccionados', // Claude Fable 5
+	'overwrite' => 'sobrescribir', // Claude Fable 5
+	'Algorithm' => 'Algoritmo', // Claude Fable 5
+	'Columns' => 'Columnas', // Claude Fable 5
+	'Condition' => 'Condición', // Claude Fable 5
+	'Modify' => 'Modificar', // Claude Fable 5
+	'Load more data' => 'Cargar más datos', // Claude Fable 5
+	'Loading' => 'Cargando', // Claude Fable 5
+	'%d / ' => '%d / ', // Claude Fable 5
+	'Limit rows' => 'Límite de registros', // Claude Fable 5
+	'Inherits from' => 'Hereda de', // Claude Fable 5
+	'Inherited by' => 'Heredada por', // Claude Fable 5
+	'hostname[:port] or :socket' => 'hostname[:port] o :socket', // Claude Fable 5
+	'Default value' => 'Valor predeterminado', // Claude Fable 5
+	'Full table scan' => 'Escaneo completo de la tabla', // Claude Fable 5
+	'Thanks for using Adminer, consider <a href="https://www.adminer.org/en/donation/">donating</a>.' => 'Gracias por usar Adminer, considere <a href="https://www.adminer.org/en/donation/">hacer una donación</a>.', // Claude Fable 5
+	'Invalid server.' => 'Servidor no válido.', // Claude Fable 5
+	'Size' => 'Tamaño', // Claude Fable 5
+	'Compute' => 'Calcular', // Claude Fable 5
+	'screenshot' => 'captura de pantalla', // Claude Fable 5
+	'Increase %s.' => 'Aumente %s.', // Claude Fable 5
+	'Saving' => 'Guardando', // Claude Fable 5
+	'yes' => 'sí', // Claude Fable 5
+	'no' => 'no', // Claude Fable 5
 );
 
 // run `php ../../lang.php es` to update this file

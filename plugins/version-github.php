@@ -34,5 +34,6 @@ verifyVersion = current => {
 		'de' => array('' => 'Neue Versionen von GitHub verifizieren'),
 		'ja' => array('' => 'GitHub の新版を管理'),
 		'pl' => array('' => 'Weryfikuj nowe wersje z GitHuba'),
+		'hr' => array('' => 'Provjera novih verzija s GitHuba'),
 	);
 }

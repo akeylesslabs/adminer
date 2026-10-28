@@ -11,7 +11,7 @@ Lang::$translations = array(
 	'Loaded plugins' => '読込済プラグイン',
 	'Thanks for using Adminer, consider <a href="https://www.adminer.org/en/donation/">donating</a>.' => 'Adminerのご利用ありがとうございました。(寄付は<a href="https://www.adminer.org/en/donation/">こちら</a>)',
 	'%s must <a%s>return an array</a>.' => '%s は<a%s>配列を返す</a>必要があります。',
-	'<a%s>Configure</a> %s in %s.' => '%2$s の %1$s を<a%s>設定</a>してください。',
+	'<a%s>Configure</a> %s in %s.' => '%3$s の %2$s を<a%1$s>設定</a>してください。',
 	'There is a space in the input password which might be the cause.' => '入力されたパスワードに空白が含まれているので、それが原因かもしれません。',
 	'Adminer does not support accessing a database without a password, <a href="https://www.adminer.org/en/password/"%s>more information</a>.' => 'Adminer はパスワードのないデータベースへの接続には対応していません。(<a href="https://www.adminer.org/en/password/"%s>詳細</a>)',
 	'Database does not support password.' => 'データベースがパスワードに対応していません。',
@@ -76,7 +76,7 @@ Lang::$translations = array(
 	'Error in query' => 'クエリーのエラー',
 	'Unknown error.' => '不明なエラーです。',
 	'Warnings' => '警告',
-	'ATTACH queries are not supported.' => 'ATTACH クエリーは対応していません。',
+	'%s queries are not supported.' => '%s クエリーは対応していません。',
 	'Execute' => '実行',
 	'Table' => 'テーブル',
 	'Foreign keys' => '外部キー',
@@ -166,8 +166,6 @@ Lang::$translations = array(
 	'Too big POST data. Reduce the data or increase the %s configuration directive.' => 'POSTデータが大きすぎます。データサイズを小さくするか %s 設定を大きくしてください。',
 	'You can upload a big SQL file via FTP and import it from server.' => '大きなSQLファイルは、FTP経由でアップロードしてサーバからインポートしてください。',
 	'You are offline.' => 'オフライン状態です。',
-	'Move up' => '上',
-	'Move down' => '下',
 	'Export' => 'エクスポート',
 	'Tables' => 'テーブル',
 	'Data' => 'データ',
@@ -311,6 +309,10 @@ Lang::$translations = array(
 	'yes' => 'はい',
 	'no' => 'いいえ',
 	'Default value' => '既定値',
+	'Inherited by' => '継承先', // Claude Fable 5
+	'hostname[:port] or :socket' => 'hostname[:port] または :socket', // Claude Fable 5
+	'Invalid server.' => '不正なサーバーです。', // Claude Fable 5
+	'Increase %s.' => '%s を増やしてください。', // Claude Fable 5
 );
 
 // run `php ../../lang.php ja` to update this file

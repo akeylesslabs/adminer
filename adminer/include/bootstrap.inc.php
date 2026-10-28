@@ -22,6 +22,7 @@ if (function_exists("mb_internal_encoding")) {
 }
 
 include "../adminer/include/functions.inc.php";
+include "../adminer/include/decompress.inc.php";
 include "../adminer/include/html.inc.php";
 
 // used only in compiled file
@@ -37,16 +38,16 @@ if (!$_SERVER["REQUEST_URI"]) { // IIS 5 compatibility
 if (!strpos($_SERVER["REQUEST_URI"], '?') && $_SERVER["QUERY_STRING"] != "") { // IIS 7 compatibility
 	$_SERVER["REQUEST_URI"] .= "?$_SERVER[QUERY_STRING]";
 }
-if ($_SERVER["HTTP_X_FORWARDED_PREFIX"]) {
+if (preg_match('~^/[-\w.]~', $_SERVER["HTTP_X_FORWARDED_PREFIX"])) {
 	$_SERVER["REQUEST_URI"] = $_SERVER["HTTP_X_FORWARDED_PREFIX"] . $_SERVER["REQUEST_URI"];
 }
 define('Adminer\HTTPS', ($_SERVER["HTTPS"] && strcasecmp($_SERVER["HTTPS"], "off")) || ini_bool("session.cookie_secure")); // session.cookie_secure could be set on HTTP if we are behind a reverse proxy
 
-@ini_set("session.use_trans_sid", '0'); // protect links in export, @ - may be disabled
+ini_set("session.use_trans_sid", '0'); // protect links in export
 if (!defined("SID")) {
 	session_cache_limiter(""); // to allow restarting session
 	session_name("adminer_sid"); // use specific session name to get own namespace
-	session_set_cookie_params(0, preg_replace('~\?.*~', '', $_SERVER["REQUEST_URI"]), "", HTTPS, true); // ini_set() may be disabled
+	session_set_cookie_params(0, cookie_path(), "", HTTPS, true); // ini_set() may be disabled
 	session_start();
 }
 
@@ -59,8 +60,10 @@ if (function_exists("get_magic_quotes_gpc") && get_magic_quotes_gpc()) {
 if (function_exists("get_magic_quotes_runtime") && get_magic_quotes_runtime()) {
 	set_magic_quotes_runtime(false);
 }
-@set_time_limit(0); // @ - can be disabled
-@ini_set("precision", '15'); // @ - can be disabled, 15 - internal PHP precision
+if (function_exists('set_time_limit')) { // can be disabled
+	set_time_limit(0);
+}
+ini_set("precision", '16'); // 16 - IEEE 754 has 15.95 decimal digits for double
 
 include "../adminer/include/lang.inc.php";
 include "../adminer/lang/" . LANG . ".inc.php";

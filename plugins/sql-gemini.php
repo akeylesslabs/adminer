@@ -16,7 +16,7 @@ class AdminerSqlGemini extends Adminer\Plugin {
 	* @param string $apiKey The default key is shared with all users and may run out of quota; get your own API key at: https://aistudio.google.com/apikey
 	* @param string $model Available models: https://ai.google.dev/gemini-api/docs/models#available-models
 	*/
-	function __construct($apiKey = 'AIzaSyDWDbPjmvH9_hphsnY_yJGdue42qRMG3do', $model = "gemini-2.0-flash") {
+	function __construct($apiKey = 'AIzaSyDWDbPjmvH9_hphsnY_yJGdue42qRMG3do', $model = "gemini-3.1-flash-lite") {
 		$this->apiKey = $apiKey;
 		$this->model = $model;
 	}
@@ -36,7 +36,7 @@ class AdminerSqlGemini extends Adminer\Plugin {
 				"content" => '{"contents": [{"parts":[{"text": ' . json_encode($prompt) . '}]}]}',
 				"ignore_errors" => true,
 			)));
-			$response = json_decode(file_get_contents("https://generativelanguage.googleapis.com/v1beta/models/$this->model:generateContent?key=$this->apiKey", false, $context));
+			$response = json_decode(Adminer\get_url("https://generativelanguage.googleapis.com/v1beta/models/$this->model:generateContent?key=$this->apiKey", $context)[0]);
 			if (isset($response->error)) {
 				echo "-- " . $response->error->message;
 			} else {
@@ -115,6 +115,11 @@ geminiText.onkeydown = event => {
 			'' => 'Google Gemini AI を用いて SQL 文を生成',
 			'Ask Gemini' => 'Gemini に聞く',
 			'Just a sec...' => 'しばらくお待ち下さい...',
+		),
+		'hr' => array(
+			'' => 'Generiranje SQL naredbi pomoću Google Gemini AI',
+			'Ask Gemini' => 'Pitaj Gemini',
+			'Just a sec...' => 'Samo trenutak...',
 		),
 	);
 }

@@ -31,11 +31,11 @@ class AdminerFileUpload extends Adminer\Plugin {
 		if (preg_match('~(.*)_path$~', $field["field"], $regs)) {
 			$table = ($_GET["edit"] != "" ? $_GET["edit"] : $_GET["select"]);
 			$name = $field["field"];
-			if ($_FILES["fields"]["error"][$name] || !preg_match("~(\\.($this->extensions))?\$~", $_FILES["fields"]["name"][$name], $regs2)) {
+			if ($_FILES["fields"]["error"][$name] || !preg_match("~(\\.($this->extensions))\$~", $_FILES["fields"]["name"][$name], $regs2)) {
 				return false;
 			}
 			//! unlink old
-			$filename = (function_exists('random_bytes') ? bin2hex(random_bytes(8)) : uniqid("", true)) . $regs2[0];
+			$filename = Adminer\rand_string() . $regs2[0];
 			if (!move_uploaded_file($_FILES["fields"]["tmp_name"][$name], $this->uploadPath . Adminer\friendly_url($table) . "/$regs[1]-$filename")) {
 				return false;
 			}
@@ -55,5 +55,6 @@ class AdminerFileUpload extends Adminer\Plugin {
 		'pl' => array('' => 'Edytuj pola kończące się na "_path" za pomocą <input type="file"> i link do przesłanych plików z wybierz'),
 		'ro' => array('' => 'Modificați câmpurile care se termină cu "_path" prin <input type="file"> și creați un link către fișierele încărcate din select'),
 		'ja' => array('' => '列名が "_path" で終わる列を <input type="file"> で変更し、"選択" からアップロードされたファイルにリンク'),
+		'hr' => array('' => 'Uređuje polja koja završavaju s "_path" putem <input type="file"> i povezuje ih s učitanim datotekama'),
 	);
 }

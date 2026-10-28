@@ -38,7 +38,11 @@ function target_blank(): string {
 
 /** Escape for HTML */
 function h(?string $string): string {
-	return str_replace("\0", "&#0;", htmlspecialchars($string, ENT_QUOTES, 'utf-8'));
+	return str_replace( // this is 50× faster than htmlspecialchars()
+		array('&', '<', '"', "'", "\0"),
+		array('&amp;', '&lt;', '&quot;', '&#039;', '&#0;'),
+		$string
+	);
 }
 
 /** Convert \n to <br> */
@@ -146,7 +150,7 @@ function js_escape(string $string): string {
 function pagination(int $page, ?int $current): string {
 	return " " . ($page == $current
 		? $page + 1
-		: '<a href="' . h(remove_from_uri("page") . ($page ? "&page=$page" . ($_GET["next"] ? "&next=" . urlencode($_GET["next"]) : "") : "")) . '">' . ($page + 1) . "</a>"
+		: '<a href="' . h(remove_from_uri("page|next") . ($page ? "&page=$page" . ($_GET["next"] ? "&next=" . urlencode($_GET["next"]) : "") : "")) . '">' . ($page + 1) . "</a>"
 	);
 }
 
@@ -218,7 +222,7 @@ function input(array $field, $value, ?string $function, ?bool $autofocus = false
 	if (is_array($value) && !$function) {
 		$function = "json";
 	}
-	$json = ($function == "json" || preg_match('~^jsonb?$~', $field["type"]));
+	$json = ($function == "json" || preg_match('~^jsonb?$~', $field["full_type"]));
 	if ($json && $value != '' && (JUSH != "pgsql" || $field["type"] != "json")) {
 		$value = json_encode(is_array($value) ? $value : json_decode($value), 128 | 64 | 256); // 128 - JSON_PRETTY_PRINT, 64 - JSON_UNESCAPED_SLASHES, 256 - JSON_UNESCAPED_UNICODE available since PHP 5.4
 	}
@@ -305,6 +309,19 @@ function input(array $field, $value, ?string $function, ?bool $autofocus = false
 function process_input(array $field) {
 	$idf = bracket_escape($field["field"]);
 	$function = idx($_POST["function"], $idf);
+	if ($function == "orig") {
+		return (preg_match('~^CURRENT_TIMESTAMP~i', $field["on_update"]) ? idf_escape($field["field"]) : false);
+	}
+	if ($function == "NULL") {
+		return "NULL";
+	}
+	if (is_blob($field) && ini_bool("file_uploads")) {
+		$file = get_file("fields-$idf");
+		if (!is_string($file)) {
+			return false; //! report errors
+		}
+		return driver()->quoteBinary($file);
+	}
 	$value = idx($_POST["fields"], $idf);
 	if ($value === null) {
 		return false;
@@ -322,12 +339,6 @@ function process_input(array $field) {
 	if ($field["auto_increment"] && $value == "") {
 		return null;
 	}
-	if ($function == "orig") {
-		return (preg_match('~^CURRENT_TIMESTAMP~i', $field["on_update"]) ? idf_escape($field["field"]) : false);
-	}
-	if ($function == "NULL") {
-		return "NULL";
-	}
 	if ($field["type"] == "set") {
 		$value = implode(",", (array) $value);
 	}
@@ -338,13 +349,6 @@ function process_input(array $field) {
 			return false; //! report errors
 		}
 		return $value;
-	}
-	if (is_blob($field) && ini_bool("file_uploads")) {
-		$file = get_file("fields-$idf");
-		if (!is_string($file)) {
-			return false; //! report errors
-		}
-		return driver()->quoteBinary($file);
 	}
 	return adminer()->processInput($field, $value, $function);
 }
@@ -400,7 +404,7 @@ function edit_form(string $table, array $fields, $row, ?bool $update, string $er
 	if (!$fields) {
 		echo "<p class='error'>" . lang('You have no privileges to update this table.') . "\n";
 	} else {
-		echo "<table class='layout'>" . script("qsl('table').onkeydown = editingKeydown;");
+		echo "<table class='layout nowrap'>" . script("qsl('table').onkeydown = editingKeydown;");
 		$autofocus = !$_POST;
 		foreach ($fields as $name => $field) {
 			echo "<tr><th>" . adminer()->fieldName($field);
@@ -457,15 +461,13 @@ function edit_form(string $table, array $fields, $row, ?bool $update, string $er
 					$autofocus = false;
 				}
 			}
-			echo "\n";
 		}
 		if (!support("table") && !fields($table)) {
 			echo "<tr>"
 				. "<th><input name='field_keys[]'>"
-				. script("qsl('input').oninput = fieldChange;")
+				. script("qsl('input').oninput = fieldChange;", "")
 				. "<td class='function'>" . html_select("field_funs[]", adminer()->editFunctions(array("null" => isset($_GET["select"]))))
 				. "<td><input name='field_vals[]'>"
-				. "\n"
 			;
 		}
 		echo "</table>\n";
@@ -503,5 +505,5 @@ function shorten_utf8(string $string, int $length = 80, string $suffix = ""): st
 
 /** Get button with icon */
 function icon(string $icon, string $name, string $html, string $title): string {
-	return "<button type='submit' name='$name' title='" . h($title) . "' class='icon icon-$icon'><span>$html</span></button>";
+	return "<button type='submit' " . ($name ? "name='$name'" : "draggable='true'") . " title='" . h($title) . "' class='icon icon-$icon" . ($name ? "" : " jsonly") . "'><span>$html</span></button>";
 }

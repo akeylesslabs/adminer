@@ -1,3 +1,80 @@
+## Adminer 5.5.1 (released 2026-07-21)
+- Ignore invalid X-Forwarded-Prefix (GHSA-fr74-9mf9-gf44)
+- Login: Allow :/_ in server (bug #1305, regression from 5.5.0)
+- Compile: Valid UTF-8 (bug #1113, #1213)
+- Compile: Replace LZW with deflate compression
+- Add missing translations
+- Syntax highlighting: Update MySQL, MariaDB, SQLite, PostgreSQL
+- Support disabled set_time_limit() and ini_set() (bug #1288)
+- PostgreSQL: Log in with empty server (bug #1304, regression from 5.5.0)
+
+## Adminer 5.5.0 (released 2026-07-17)
+- Disallow invalid port or socket (GHSA-58cq-mgw2-38m5)
+- Ignore invalid X-Forwarded-Prefix (GHSA-8478-xrj3-h9c2)
+- Hide copy to clipboard in insecure contexts
+- Process list: Copy query to clipboard
+- Wrap uneditable values in edit form
+- Syntax highlighting: Speed up
+- Allow connecting to socket without hostname (bug #1199, regression from 5.4.0)
+- MySQL: Do not export IN in FUNCTION parameters (regression from 5.4.2)
+- MySQL: Convert vector columns to text in select and edit
+- MySQL: Unsupport MySQL &lt; 5.1
+- MySQL, SQLite: Draggable columns in alter table
+- MariaDB: Support inet4 and inet6 types
+- MariaDB: Allow setting password with password validation plugin (bug SF-814)
+- MariaDB 11.7+: Support vector columns and indexes
+- PostgreSQL 9.2+: Highlight queries in process list
+- SQLite: Support ANY type
+- SQLite: Support STRICT and WITHOUT ROWID tables
+- SQLite: Do not treat INTEGER PRIMARY KEY without AUTOINCREMENT as auto increment
+- SQLite: Disable editing of sqlite_schema
+- MS SQL: Fix multiple result sets (bug #1180)
+- New plugin: Redis driver
+- New plugin: Login behind a reverse proxy
+
+## Adminer 5.4.4 (released 2026-07-11)
+- Fix blob editing (bug #1251, regression from 5.4.2)
+- Speed up HTML escaping (bug #1147)
+- MySQL: Fix routine fields length (bug #1267, regression from 5.4.2)
+- MySQL: Preserve DETERMINISTIC and DATA ACCESS in routine definition (regression from 5.4.2)
+- MySQL: Export binary data as hex (bug #1123, SF-741)
+- MariaDB: Hash password in privileges (bug #1166, regression from 4.7.2)
+- MariaDB: Speed up getting checks (bug #1245, regression from 5.4.2)
+- MariaDB, PostgreSQL: Use CREATE OR REPLACE FUNCTION if possible
+- PostgreSQL: Allow exporting more schemas at once (bug #1243)
+- PostgreSQL: Fix editing jsonb[] columns (bug #1300, regression from 5.4.2)
+- PostgreSQL: Fix displayed size of bytea
+- PostgreSQL 18: Support VIRTUAL generated columns (bug #1286)
+- MS SQL: Fix table status (bug #1146)
+- PDO: Increase precision of double (bug #1214)
+- Editor PDO: Fix foreign key value in edit (bug #1242)
+- Editor PostgreSQL: Fix enums (bug #1241)
+- Plugins: Method menuActions() (bug #1303)
+
+## Adminer 5.4.3 (released 2026-07-09)
+- Check Sec-Fetch-Site header (GHSA-33j4-hc95-pggg)
+- Escape REQUEST_URI (GHSA-c533-9qwm-8w5h, bug #1298)
+- Validate server (GHSA-r4x9-5m63-3vxw)
+- Validate server version (GHSA-h6jr-7pr6-grgj)
+- SQLite: Disallow ATTACH commands (GHSA-q4f2-39gr-45jh)
+- SQLite: Disallow VACUUM INTO commands (GHSA-gmx3-g29w-77wf)
+- SQLite: Check filename before deleting (GHSA-6pg3-chwq-wgqc)
+- Avoid unserialize() in brute force protection (bug #1289)
+- Tables overview: allow sorting (bug #1231)
+- Select: Disable Ctrl+click inline edit without UPDATE privilege
+- Select: Display NULL in column title
+- Export: Remember unchecked objects (regression from 5.0.6)
+- Foreign key: Display new field in case of an error
+- PostgreSQL: Order NULL last
+- PostgreSQL: Display all SQL command warnings and only once
+- PostgreSQL: Export serial as serial, not nextval()
+- PostgreSQL: Fix GENERATED AS IDENTITY export (bug #1260)
+- PostgreSQL: Export schema in nextval()
+- PostgreSQL: Export schema in REFERENCES
+- PostgreSQL: Add ~* operator (bug #1271)
+- Editor: Display tinyint(1) as checkbox (bug #1246, regression from 5.4.2)
+- Croatian translation
+
 ## Adminer 5.4.2 (released 2026-02-08)
 - Avoid denial-of-service via version check (GHSA-q4f2-39gr-45jh, regression from 4.6.2)
 - Pretty print JSON in edit
@@ -9,6 +86,9 @@
 - Shorten all but numeric and date types in select
 - Fix escaping spaces in cookie value (bug #1208)
 - Don't quote comma in TSV export (bug #1238)
+- Autocomplete: fix in empty textarea (bug #1173)
+- Prolong printed SQL query to 10000 characters (bug #1186)
+- MySQL: Use information_schema to get routine definition (bug #1179, SF-711)
 - MariaDB: Don't display checks with the same name from another table (bug #1135)
 - PostgreSQL: Offer foreign keys in create table
 - PostgreSQL: Add missing parentheses to CHECK export

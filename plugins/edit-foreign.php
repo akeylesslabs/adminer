@@ -30,7 +30,8 @@ class AdminerEditForeign extends Adminer\Plugin {
 					if (preg_match('~binary~', $field["type"])) {
 						$column = "HEX($column)";
 					}
-					$options = array("" => "") + Adminer\get_vals("SELECT $column FROM " . Adminer\table($target) . " ORDER BY 1" . ($this->limit ? " LIMIT " . ($this->limit + 1) : ""));
+					$options = array("" => "")
+						+ Adminer\get_vals("SELECT $column FROM " . ($foreignKey["ns"] ? Adminer\idf_escape($foreignKey["ns"]) . "." : "") . Adminer\idf_escape($target) . " ORDER BY 1" . ($this->limit ? " LIMIT " . ($this->limit + 1) : ""));
 					if ($this->limit && count($options) - 1 > $this->limit) {
 						return;
 					}
@@ -46,5 +47,6 @@ class AdminerEditForeign extends Adminer\Plugin {
 		'pl' => array('' => 'Wybierz klucz obcy w formularzu edycji'),
 		'ro' => array('' => 'Selectați cheia străină în formularul de editare'),
 		'ja' => array('' => '外部キーを編集フォームで選択'),
+		'hr' => array('' => 'Odabir stranog ključa u obrascu za uređivanje'),
 	);
 }

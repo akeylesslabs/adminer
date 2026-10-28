@@ -142,10 +142,6 @@ if (isset($_GET["mssql"])) {
 					sqlsrv_fetch($this->result); // SQLSRV_SCROLL_ABSOLUTE added in sqlsrv 1.1
 				}
 			}
-
-			function __destruct() {
-				sqlsrv_free_stmt($this->result);
-			}
 		}
 
 		function last_id($result) {
@@ -336,7 +332,7 @@ if (isset($_GET["mssql"])) {
 	function table_status($name = "") {
 		$return = array();
 		foreach (
-			get_rows("SELECT ao.name AS Name, ao.type_desc AS Engine, (SELECT value FROM fn_listextendedproperty(default, 'SCHEMA', schema_name(schema_id), 'TABLE', ao.name, null, null)) AS Comment
+			get_rows("SELECT ao.name AS Name, ao.type_desc AS Engine, (SELECT cast(value as varchar(max)) FROM fn_listextendedproperty(default, 'SCHEMA', schema_name(schema_id), 'TABLE', ao.name, null, null)) AS Comment
 FROM sys.all_objects AS ao
 WHERE schema_id = SCHEMA_ID(" . q(get_schema()) . ") AND type IN ('S', 'U', 'V') " . ($name != "" ? "AND name = " . q($name) : "ORDER BY name")) as $row
 		) {

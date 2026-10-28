@@ -16,22 +16,8 @@ function syntaxHighlighting(version, vendor) {
 					if (typeof obj[key] != 'string') {
 						obj = obj[key];
 						key = 0;
-						if (vendor == 'maria') {
-							for (let i = 1; i < obj.length; i++) {
-								obj[i] = obj[i]
-									.replace('.html', '/')
-									.replace('-type-syntax', '-data-types')
-									.replace(/numeric-(data-types)/, '$1-$&')
-									.replace(/replication-options-(master|binary-log)\//, 'replication-and-binary-log-system-variables/')
-									.replace('server-options/', 'server-system-variables/')
-									.replace('innodb-parameters/', 'innodb-system-variables/')
-									.replace(/#(statvar|sysvar|option_mysqld)_(.*)/, '#$2')
-									.replace(/#sysvar_(.*)/, '#$1')
-								;
-							}
-						}
 					}
-
+					// MariaDB page keys are resolved by jush itself from the 'mysql-key maria-key' entries
 					obj[key] = (vendor == 'maria' ? obj[key].replace('dev.mysql.com/doc/mysql', 'mariadb.com/kb') : obj[key]) // MariaDB
 						.replace('/doc/mysql', '/doc/refman/' + version) // MySQL
 					;
@@ -93,9 +79,17 @@ function messagesPrint(parent) {
 	for (const el of qsa('.toggle', parent)) {
 		el.onclick = partial(toggle, el.getAttribute('href').substr(1));
 	}
+	copyCode(parent);
+}
+
+/** Copy code to clipboard
+* @param [HTMLElement]
+*/
+function copyCode(parent) {
 	for (const el of qsa('.copy', parent)) {
 		el.onclick = () => {
-			navigator.clipboard.writeText(qs('code', el.parentElement).innerText).then(() => el.textContent = '✓');
+			const code = qs('code', el.parentElement);
+			navigator.clipboard.writeText(code.dataset.full || code.innerText).then(() => el.textContent = '✓');
 			setTimeout(() => el.textContent = '🗐', 1000);
 			return false;
 		};
@@ -258,6 +252,26 @@ function editFields() {
 			onmouseout: helpMouseout
 		});
 	}
+	let dragged;
+	mixin(qs('#edit-fields'), {
+		ondragstart: e => {
+			if (e.target.draggable) {
+				dragged = parentTag(e.target, 'tr');
+				e.dataTransfer.effectAllowed = 'move';
+			}
+		},
+		ondragend: () => dragged = null,
+		ondragover: e => {
+			const row = parentTag(e.target, 'tr');
+			if (dragged && qs('[draggable]', row)) {
+				e.preventDefault();
+				if (row != dragged) {
+					const rows = [...row.parentNode.children];
+					row.parentNode.insertBefore(dragged, (rows.indexOf(row) < rows.indexOf(dragged) ? row : row.nextSibling));
+				}
+			}
+		}
+	});
 }
 
 /** Handle clicks on fields editing
@@ -285,8 +299,7 @@ function editingClick(event) {
 		el = el && qs('input', el);
 	}
 	if (el) {
-		const name = el.name;
-		if (name == 'auto_increment_col') {
+		if (el.name == 'auto_increment_col') {
 			const field = el.form['fields[' + el.value + '][field]'];
 			if (!field.value) {
 				field.value = 'id';

@@ -2,8 +2,7 @@
 namespace Adminer;
 
 Lang::$translations = array(
-	// label for database system selection (MySQL, SQLite, ...)
-	'System' => 'System',
+	'System' => 'System', // label for database system selection (MySQL, SQLite, ...)
 	'Server' => 'Server',
 	'Username' => 'Användarnamn',
 	'Password' => 'Lösenord',
@@ -32,8 +31,7 @@ Lang::$translations = array(
 	'%s version: %s through PHP extension %s' => '%s version: %s genom PHP-tillägg %s',
 	'Refresh' => 'Ladda om',
 
-	// text direction - 'ltr' or 'rtl'
-	'ltr' => 'ltr',
+	'ltr' => 'ltr', // text direction - 'ltr' or 'rtl'
 
 	'Privileges' => 'Privilegier',
 	'Create user' => 'Skapa användare',
@@ -60,12 +58,11 @@ Lang::$translations = array(
 	'Error in query' => 'Fel i förfrågan',
 	'Unknown error.' => 'Okänt fel.',
 	'Warnings' => 'Varningar',
-	'ATTACH queries are not supported.' => 'ATTACH-förfrågor stöds inte.',
+	'%s queries are not supported.' => '%s-förfrågor stöds inte.',
 	'Execute' => 'Kör',
 	'Stop on error' => 'Stanna på fel',
 	'Show only errors' => 'Visa bara fel',
-	// sprintf() format for time of the command
-	'%.3f s' => '%.3f s',
+	'%.3f s' => '%.3f s', // sprintf() format for time of the command
 	'History' => 'Historia',
 	'Clear' => 'Rensa',
 	'Edit all' => 'Redigera alla',
@@ -104,11 +101,9 @@ Lang::$translations = array(
 	'Create database' => 'Skapa databas',
 	'Database schema' => 'Databasschema',
 
-	// link to current database schema layout
-	'Permanent link' => 'Permanent länk',
+	'Permanent link' => 'Permanent länk', // link to current database schema layout
 
-	// thousands separator - must contain single byte
-	',' => ',',
+	',' => ',', // thousands separator - must contain single byte
 	'0123456789' => '0123456789',
 	'Engine' => 'Motor',
 	'Collation' => 'Kollationering',
@@ -185,8 +180,6 @@ Lang::$translations = array(
 	'Are you sure?' => 'Är du säker?',
 	'Size' => 'Storlek',
 	'Compute' => 'Beräkna',
-	'Move up' => 'Flytta upp',
-	'Move down' => 'Flytta ner',
 	'Remove' => 'Ta bort',
 	'Maximum number of allowed fields exceeded. Please increase %s.' => 'Högsta nummer tillåtna fält är överskridet. Vänligen höj %s.',
 
@@ -267,20 +260,17 @@ Lang::$translations = array(
 	'%d row(s) have been imported.' => array('%d rad har importerats.', '%d rader har importerats.'),
 	'File must be in UTF-8 encoding.' => 'Filer måste vara i UTF-8-format.',
 
-	// in-place editing in select
-	'Modify' => 'Ändra',
+	'Modify' => 'Ändra', // in-place editing in select
 	'Ctrl+click on a value to modify it.' => 'Ctrl+klicka på ett värde för att ändra det.',
 	'Use edit link to modify this value.' => 'Använd redigeringslänken för att ändra värdet.',
 
-	// %s can contain auto-increment value
-	'Item%s has been inserted.' => 'Sak%s har skapats.',
+	'Item%s has been inserted.' => 'Sak%s har skapats.', // %s can contain auto-increment value
 	'Item has been deleted.' => 'En sak har tagits bort.',
 	'Item has been updated.' => 'En sak har ändrats.',
 	'%d item(s) have been affected.' => array('%d sak har blivit förändrad.', '%d saker har blivit förändrade.'),
 	'New item' => 'Ny sak',
 	'original' => 'original',
-	// label for value '' in enum data type
-	'empty' => 'tom',
+	'empty' => 'tom', // label for value '' in enum data type
 	'edit' => 'redigera',
 	'Edit' => 'Redigera',
 	'Insert' => 'Infoga',
@@ -303,18 +293,14 @@ Lang::$translations = array(
 	'Relations' => 'Relationer',
 
 	'Editor' => 'Redigerare',
-	// date format in Editor: $1 yyyy, $2 yy, $3 mm, $4 m, $5 dd, $6 d
-	'$1-$3-$5' => '$1-$3-$5',
-	// hint for date format - use language equivalents for day, month and year shortcuts
-	'[yyyy]-mm-dd' => 'yyyy-mm-dd',
-	// hint for time format - use language equivalents for hour, minute and second shortcuts
-	'HH:MM:SS' => 'HH:MM:SS',
+	'$1-$3-$5' => '$1-$3-$5', // date format in Editor: $1 yyyy, $2 yy, $3 mm, $4 m, $5 dd, $6 d
+	'[yyyy]-mm-dd' => 'yyyy-mm-dd', // hint for date format - use language equivalents for day, month and year shortcuts
+	'HH:MM:SS' => 'HH:MM:SS', // hint for time format - use language equivalents for hour, minute and second shortcuts
 	'now' => 'nu',
 	'yes' => 'ja',
 	'no' => 'nej',
 
-	// general SQLite error in create, drop or rename database
-	'File exists.' => 'Filen finns redan.',
+	'File exists.' => 'Filen finns redan.', // general SQLite error in create, drop or rename database
 	'Please use one of the extensions %s.' => 'Vänligen använd en av filändelserna %s.',
 
 	// PostgreSQL and MS SQL schema support
@@ -334,12 +320,30 @@ Lang::$translations = array(
 	'Sequence has been altered.' => 'Sekvens har ändrats.',
 	'Alter sequence' => 'Ändra sekvens',
 
-	// PostgreSQL user types support
+	// PostgreSQL user-defined types support
 	'User types' => 'Användartyper',
 	'Create type' => 'Skapa typ',
 	'Type has been dropped.' => 'Typ har, typ, tagits bort.',
 	'Type has been created.' => 'Typ har skapats.',
 	'Alter type' => 'Ändra typ',
+	'Check has been dropped.' => 'Kontrollvillkoret har tagits bort.', // Claude Fable 5
+	'Check has been altered.' => 'Kontrollvillkoret har ändrats.', // Claude Fable 5
+	'Check has been created.' => 'Kontrollvillkoret har skapats.', // Claude Fable 5
+	'Alter check' => 'Ändra kontrollvillkor', // Claude Fable 5
+	'Create check' => 'Skapa kontrollvillkor', // Claude Fable 5
+	'Algorithm' => 'Algoritm', // Claude Fable 5
+	'Columns' => 'Kolumner', // Claude Fable 5
+	'Condition' => 'Villkor', // Claude Fable 5
+	'Inherits from' => 'Ärver från', // Claude Fable 5
+	'Checks' => 'Kontrollvillkor', // Claude Fable 5
+	'Inherited by' => 'Ärvs av', // Claude Fable 5
+	'hostname[:port] or :socket' => 'hostname[:port] eller :socket', // Claude Fable 5
+	'Invalid server.' => 'Ogiltig server.', // Claude Fable 5
+	'Loaded plugins' => 'Laddade plugins', // Claude Fable 5
+	'screenshot' => 'skärmbild', // Claude Fable 5
+	'Increase %s.' => 'Öka %s.', // Claude Fable 5
+	'%s must <a%s>return an array</a>.' => '%s måste <a%s>returnera en array</a>.', // Claude Fable 5
+	'<a%s>Configure</a> %s in %s.' => '<a%s>Konfigurera</a> %s i %s.', // Claude Fable 5
 );
 
 // run `php ../../lang.php sv` to update this file

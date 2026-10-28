@@ -66,13 +66,13 @@ Lang::$translations = array(
 	'Table' => 'Tabella',
 	'Foreign keys' => 'Chiavi esterne',
 	'Triggers' => 'Trigger',
-	'View' => 'Vedi',
+	'View' => 'Vista', // Claude Fable 5
 	'Unable to select the table' => 'Selezione della tabella non riuscita',
 	'Invalid CSRF token. Send the form again.' => 'Token CSRF non valido. Reinvia la richiesta.',
 	'Comment' => 'Commento',
 	'Default values' => 'Valori predefiniti',
 	'%d byte(s)' => array('%d byte', '%d bytes'),
-	'No commands to execute.' => 'Nessun commando da eseguire.',
+	'No commands to execute.' => 'Nessun comando da eseguire.',
 	'Unable to upload a file.' => 'Caricamento del file non riuscito.',
 	'File upload' => 'Caricamento file',
 	'File uploads are disabled.' => 'Caricamento file disabilitato.',
@@ -141,8 +141,6 @@ Lang::$translations = array(
 	'Revoke' => 'Revoca',
 	'Too big POST data. Reduce the data or increase the %s configuration directive.' => 'Troppi dati via POST. Ridurre i dati o aumentare la direttiva di configurazione %s.',
 	'Logged as: %s' => 'Autenticato come: %s',
-	'Move up' => 'Sposta su',
-	'Move down' => 'Sposta giu',
 	'Functions' => 'Funzioni',
 	'Aggregation' => 'Aggregazione',
 	'Export' => 'Esporta',
@@ -271,20 +269,20 @@ Lang::$translations = array(
 	'Modify' => 'Modifica',
 	'Load more data' => 'Carica piú dati',
 	'Loading' => 'Caricamento',
-	'ATTACH queries are not supported.' => 'ATTACH queries non sono supportate.',
+	'%s queries are not supported.' => '%s queries non sono supportate.',
 	'Warnings' => 'Attenzione',
 	'%d / ' => '%d / ',
 	'Limit rows' => 'Limite righe',
-	'Adminer does not support accessing a database without a password, <a href="https://www.adminer.org/en/password/"%s>more information</a>.' => 'Adminer non supporta accesso a databse senza password, <a href="https://www.adminer.org/it/password/"%s>piú informazioni</a>.',
+	'Adminer does not support accessing a database without a password, <a href="https://www.adminer.org/en/password/"%s>more information</a>.' => 'Adminer non supporta accesso a database senza password, <a href="https://www.adminer.org/it/password/"%s>piú informazioni</a>.',
 	'Default value' => 'Valore predefinito',
 	'Full table scan' => 'Analizza intera tabella',
 	'Too many unsuccessful logins, try again in %d minute(s).' => array('Troppi tentativi infruttuosi di login, si prega di riprovare in %d minuto.', 'Troppi tentativi infruttuosi di login, si prega di riprovare in %d minuti.'),
 	'Master password expired. <a href="https://www.adminer.org/en/extension/"%s>Implement</a> %s method to make it permanent.' => 'La password principale é scaduta. <a href="https://www.adminer.org/it/extension/"%s>Implementare</a> %s come metodo per renderla permanente.',
 	'The action will be performed after successful login with the same credentials.' => 'La azione verrá eseguita dopo un login valido con le stesse credenziali.',
-	'Connecting to privileged ports is not allowed.' => 'LA connessione a porte privilegiate non é permessa.',
-	'There is a space in the input password which might be the cause.' => 'Esiste uno spazio nella passoword inserita che potrebbe essere la causa.',
+	'Connecting to privileged ports is not allowed.' => 'La connessione a porte privilegiate non é permessa.',
+	'There is a space in the input password which might be the cause.' => 'Esiste uno spazio nella password inserita che potrebbe essere la causa.',
 	'If you did not send this request from Adminer then close this page.' => 'Se non hai inviato tu la richiesta tramite Adminer puoi chiudere la pagina.',
-	'You can upload a big SQL file via FTP and import it from server.' => 'Puoi caricare un grande file SQL tramite FTP ed impirtarlo dal server.',
+	'You can upload a big SQL file via FTP and import it from server.' => 'Puoi caricare un grande file SQL tramite FTP ed importarlo dal server.',
 	'Size' => 'Taglia',
 	'Compute' => 'Elabora',
 	'You are offline.' => 'Sei disconnesso.',
@@ -295,6 +293,25 @@ Lang::$translations = array(
 	'Disable %s or enable %s or %s extensions.' => 'Disabilita %s o abilita %s oppure %s estensioni.',
 	'yes' => 'si',
 	'no' => 'no',
+	'Check has been dropped.' => 'Controllo eliminato.', // Claude Fable 5
+	'Check has been altered.' => 'Controllo modificato.', // Claude Fable 5
+	'Check has been created.' => 'Controllo creato.', // Claude Fable 5
+	'Alter check' => 'Modifica controllo', // Claude Fable 5
+	'Create check' => 'Crea controllo', // Claude Fable 5
+	'Algorithm' => 'Algoritmo', // Claude Fable 5
+	'Columns' => 'Colonne', // Claude Fable 5
+	'Condition' => 'Condizione', // Claude Fable 5
+	'Inherits from' => 'Eredita da', // Claude Fable 5
+	'Checks' => 'Controlli', // Claude Fable 5
+	'Inherited by' => 'Ereditata da', // Claude Fable 5
+	'hostname[:port] or :socket' => 'hostname[:port] o :socket', // Claude Fable 5
+	'Thanks for using Adminer, consider <a href="https://www.adminer.org/en/donation/">donating</a>.' => 'Grazie per aver usato Adminer, considera una <a href="https://www.adminer.org/en/donation/">donazione</a>.', // Claude Fable 5
+	'Invalid server.' => 'Server non valido.', // Claude Fable 5
+	'Loaded plugins' => 'Plugin caricati', // Claude Fable 5
+	'screenshot' => 'screenshot', // Claude Fable 5
+	'Increase %s.' => 'Aumenta %s.', // Claude Fable 5
+	'%s must <a%s>return an array</a>.' => '%s deve <a%s>restituire un array</a>.', // Claude Fable 5
+	'<a%s>Configure</a> %s in %s.' => '<a%s>Configura</a> %s in %s.', // Claude Fable 5
 );
 
 // run `php ../../lang.php it` to update this file

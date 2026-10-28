@@ -12,7 +12,7 @@ $adminer_import = get_settings("adminer_import");
 $rights = array(); // privilege => 0
 $columns = array(); // selectable columns
 $search_columns = array(); // searchable columns
-$order_columns = array(); // searchable columns
+$order_columns = array(); // sortable columns
 $text_length = "";
 foreach ($fields as $key => $field) {
 	$name = adminer()->fieldName($field);
@@ -110,10 +110,13 @@ if ($_POST && !$error) {
 			$affected = 0;
 			$set = array();
 			if (!$_POST["delete"]) {
-				foreach ($_POST["fields"] as $name => $val) {
-					$val = process_input($fields[$name]);
-					if ($val !== null && ($_POST["clone"] || $val !== false)) {
-						$set[idf_escape($name)] = ($val !== false ? $val : idf_escape($name));
+				foreach ($fields as $name => $val) {
+					$idf = bracket_escape($name);
+					if (isset($_POST["fields"][$idf]) || $_FILES["fields-$idf"]) {
+						$val = process_input($fields[$name]);
+						if ($val !== null && ($_POST["clone"] || $val !== false)) {
+							$set[idf_escape($name)] = ($val !== false ? $val : idf_escape($name));
+						}
 					}
 				}
 			}
@@ -458,7 +461,8 @@ if (!$columns && support("table")) {
 						$html = select_value($val, $link, $field, $text_length);
 						$id = h("val[$unique_idf][" . bracket_escape($key) . "]");
 						$posted = idx(idx($_POST["val"], $unique_idf), bracket_escape($key));
-						$editable = !is_array($row[$key]) && is_utf8($html) && $rows[$n][$key] == $row[$key] && !$functions[$key] && !$field["generated"];
+						$update = idx($field["privileges"], "update");
+						$editable = !is_array($row[$key]) && is_utf8($html) && $rows[$n][$key] == $row[$key] && !$functions[$key] && !$field["generated"] && $update;
 						$type = (preg_match('~^(AVG|MIN|MAX)\((.+)\)~', $column, $match) ? $fields[idf_unescape($match[2])]["type"] : $field["type"]);
 						$text = preg_match('~text|json|lob~', $type);
 						$is_number = preg_match(number_type(), $type) || preg_match('~^(CHAR_LENGTH|ROUND|FLOOR|CEIL|TIME_TO_SEC|COUNT|SUM)\(~', $column);
@@ -468,10 +472,11 @@ if (!$columns && support("table")) {
 							echo ">" . ($text ? "<textarea name='$id' cols='30' rows='" . (substr_count($row[$key], "\n") + 1) . "'>$h_value</textarea>" : "<input name='$id' value='$h_value' size='$lengths[$key]'>");
 						} else {
 							$long = strpos($html, "<i>…</i>");
-							echo " data-text='" . ($long ? 2 : ($text ? 1 : 0)) . "'"
-								. ($editable ? "" : " data-warning='" . h(lang('Use edit link to modify this value.')) . "'")
-								. ">$html"
-							;
+							echo ($update
+								? " data-text='" . ($long ? 2 : ($text ? 1 : 0)) . "'"
+									. ($editable ? "" : " data-warning='" . h(lang('Use edit link to modify this value.')) . "'")
+								: ""
+							) . ">$html";
 						}
 					}
 					next($select);
@@ -511,7 +516,7 @@ if (!$columns && support("table")) {
 				$pagination = ($limit && ($found_rows === false || $found_rows > $limit || $page));
 				if ($pagination) {
 					echo (($found_rows === false ? count($rows) + 1 : $found_rows - $page * $limit) > $limit
-						? '<p><a href="' . h(remove_from_uri("page") . "&page=" . ($page + 1)) . '" class="loadmore">' . lang('Load more data') . '</a>'
+						? '<p><a href="' . h(remove_from_uri("page|next") . ($_GET["next"] ? "&next=" . urlencode($_GET["next"]) : "") . "&page=" . ($page + 1)) . '" class="loadmore">' . lang('Load more data') . '</a>'
 							. script("qsl('a').onclick = partial(selectLoadMore, $limit, '" . lang('Loading') . "…');", "")
 						: ''
 					);
@@ -522,11 +527,11 @@ if (!$columns && support("table")) {
 				if ($pagination) {
 					// display first, previous 4, next 4 and last page
 					$max_page = ($found_rows === false
-						? $page + (count($rows) >= $limit ? 2 : 1)
+						? $page + ($rows ? (count($rows) >= $limit ? 2 : 1) : 0)
 						: floor(($found_rows - 1) / $limit)
 					);
 					echo "<fieldset>";
-					if (JUSH != "simpledb") {
+					if (JUSH != "simpledb" && JUSH != "redis") {
 						echo "<legend><a href='" . h(remove_from_uri("page")) . "'>" . lang('Page') . "</a></legend>";
 						echo script("qsl('a').onclick = function () { pageClick(this.href, +prompt('" . lang('Page') . "', '" . ($page + 1) . "')); return false; };");
 						echo pagination(0, $page) . ($page > 5 ? " …" : "");

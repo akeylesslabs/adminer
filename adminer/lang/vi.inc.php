@@ -2,8 +2,7 @@
 namespace Adminer;
 
 Lang::$translations = array(
-	// label for database system selection (MySQL, SQLite, ...)
-	'System' => 'Hệ thống',
+	'System' => 'Hệ thống', // label for database system selection (MySQL, SQLite, ...)
 	'Server' => 'Máy chủ',
 	'Username' => 'Tên người dùng',
 	'Password' => 'Mật khẩu',
@@ -14,7 +13,7 @@ Lang::$translations = array(
 	'Logout successful.' => 'Đã thoát xong.',
 	'Invalid credentials.' => 'Tài khoản sai.',
 	'Too many unsuccessful logins, try again in %d minute(s).' => 'Bạn gõ sai tài khoản quá nhiều lần, hãy thử lại sau %d phút nữa.',
-	'Master password expired. <a href="https://www.adminer.org/en/extension/"%s>Implement</a> %s method to make it permanent.' => 'Mật khẩu đã hết hạn. <a href="https://www.adminer.org/en/extension/"%s>Thử cách làm</a> để giữ cố định.',
+	'Master password expired. <a href="https://www.adminer.org/en/extension/"%s>Implement</a> %s method to make it permanent.' => 'Mật khẩu chính đã hết hạn. <a href="https://www.adminer.org/en/extension/"%s>Triển khai</a> phương thức %s để giữ cố định.', // Claude Fable 5
 	'Language' => 'Ngôn ngữ',
 	'Invalid CSRF token. Send the form again.' => 'Mã kiểm tra CSRF sai, hãy nhập lại biểu mẫu.',
 	'No extension' => 'Không có phần mở rộng',
@@ -24,8 +23,7 @@ Lang::$translations = array(
 	'%s version: %s through PHP extension %s' => 'Phiên bản %s: %s (PHP extension: %s)',
 	'Refresh' => 'Làm mới',
 
-	// text direction - 'ltr' or 'rtl'
-	'ltr' => 'ltr',
+	'ltr' => 'ltr', // text direction - 'ltr' or 'rtl'
 
 	'Privileges' => 'Quyền truy cập',
 	'Create user' => 'Tạo người dùng',
@@ -53,8 +51,7 @@ Lang::$translations = array(
 	'Execute' => 'Thực hiện',
 	'Stop on error' => 'Dừng khi có lỗi',
 	'Show only errors' => 'Chỉ hiện lỗi',
-	// sprintf() format for time of the command
-	'%.3f s' => '%.3f s',
+	'%.3f s' => '%.3f s', // sprintf() format for time of the command
 	'History' => 'Lịch sử',
 	'Clear' => 'Xoá',
 	'Edit all' => 'Sửa tất cả',
@@ -90,11 +87,9 @@ Lang::$translations = array(
 	'Create database' => 'Tạo CSDL',
 	'Database schema' => 'Cấu trúc CSDL',
 
-	// link to current database schema layout
-	'Permanent link' => 'Liên kết cố định',
+	'Permanent link' => 'Liên kết cố định', // link to current database schema layout
 
-	// thousands separator - must contain single byte
-	',' => ',',
+	',' => ',', // thousands separator - must contain single byte
 	'0123456789' => '0123456789',
 	'Engine' => 'Cơ chế lưu trữ',
 	'Collation' => 'Bộ mã',
@@ -102,7 +97,7 @@ Lang::$translations = array(
 	'Index Length' => 'Kích thước chỉ mục',
 	'Data Free' => 'Dữ liệu trống',
 	'Rows' => 'Số dòng',
-	'%d in total' => '%s',
+	'%d in total' => 'Tổng cộng %d',
 	'Analyze' => 'Phân tích',
 	'Optimize' => 'Tối ưu',
 	'Vacuum' => 'Dọn dẹp',
@@ -167,8 +162,6 @@ Lang::$translations = array(
 	'Are you sure?' => 'Bạn có chắc',
 	'Size' => 'Kích thước',
 	'Compute' => 'Tính',
-	'Move up' => 'Chuyển lên trên',
-	'Move down' => 'Chuyển xuống dưới',
 	'Remove' => 'Xoá',
 	'Maximum number of allowed fields exceeded. Please increase %s.' => 'Thiết lập %s cần tăng thêm. (Đã vượt giới hạnố trường tối đa cho phép trong một biểu mẫu).',
 
@@ -234,7 +227,7 @@ Lang::$translations = array(
 	'Full table scan' => 'Quét toàn bộ bảng',
 	'Unable to select the table' => 'Không thể xem dữ liệu',
 	'No rows.' => 'Không có dòng dữ liệu nào.',
-	'%d row(s)' => '%s dòng',
+	'%d row(s)' => '%d dòng',
 	'Page' => 'trang',
 	'last' => 'cuối',
 	'Load more data' => 'Xem thêm dữ liệu',
@@ -243,23 +236,20 @@ Lang::$translations = array(
 	'%d byte(s)' => '%d byte(s)',
 
 	'Import' => 'Nhập khẩu',
-	'%d row(s) have been imported.' => 'Đã nhập % dòng dữ liệu.',
+	'%d row(s) have been imported.' => 'Đã nhập %d dòng dữ liệu.',
 	'File must be in UTF-8 encoding.' => 'Tệp phải mã hoá bằng chuẩn UTF-8.',
 
-	// in-place editing in select
-	'Modify' => 'Sửa',
+	'Modify' => 'Sửa', // in-place editing in select
 	'Ctrl+click on a value to modify it.' => 'Nhấn Ctrl và bấm vào giá trị để sửa.',
 	'Use edit link to modify this value.' => 'Dùng nút sửa để thay đổi giá trị này.',
 
-	// %s can contain auto-increment value
-	'Item%s has been inserted.' => 'Đã thêm%s.',
+	'Item%s has been inserted.' => 'Đã thêm%s.', // %s can contain auto-increment value
 	'Item has been deleted.' => 'Đã xoá.',
 	'Item has been updated.' => 'Đã cập nhật.',
 	'%d item(s) have been affected.' => '%d phần đã thay đổi.',
 	'New item' => 'Thêm',
 	'original' => 'bản gốc',
-	// label for value '' in enum data type
-	'empty' => 'trống',
+	'empty' => 'trống', // label for value '' in enum data type
 	'edit' => 'sửa',
 	'Edit' => 'Sửa',
 	'Insert' => 'Thêm',
@@ -282,18 +272,14 @@ Lang::$translations = array(
 	'Relations' => 'Quan hệ',
 
 	'Editor' => 'Biên tập',
-	// date format in Editor: $1 yyyy, $2 yy, $3 mm, $4 m, $5 dd, $6 d
-	'$1-$3-$5' => '$1-$3-$5',
-	// hint for date format - use language equivalents for day, month and year shortcuts
-	'[yyyy]-mm-dd' => '[yyyy]-mm-dd',
-	// hint for time format - use language equivalents for hour, minute and second shortcuts
-	'HH:MM:SS' => 'HH:MM:SS',
+	'$1-$3-$5' => '$1-$3-$5', // date format in Editor: $1 yyyy, $2 yy, $3 mm, $4 m, $5 dd, $6 d
+	'[yyyy]-mm-dd' => '[yyyy]-mm-dd', // hint for date format - use language equivalents for day, month and year shortcuts
+	'HH:MM:SS' => 'HH:MM:SS', // hint for time format - use language equivalents for hour, minute and second shortcuts
 	'now' => 'hiện tại',
 	'yes' => 'có',
 	'no' => 'không',
 
-	// general SQLite error in create, drop or rename database
-	'File exists.' => 'Tệp đã có rồi.',
+	'File exists.' => 'Tệp đã có rồi.', // general SQLite error in create, drop or rename database
 	'Please use one of the extensions %s.' => 'Cần phải dùng một trong các phần mở rộng sau: %s.',
 
 	// PostgreSQL and MS SQL schema support
@@ -313,12 +299,50 @@ Lang::$translations = array(
 	'Sequence has been altered.' => 'Đã sửa dãy số.',
 	'Alter sequence' => 'Thay đổi dãy số',
 
-	// PostgreSQL user types support
+	// PostgreSQL user-defined types support
 	'User types' => 'Kiểu tự định nghĩa',
 	'Create type' => 'Tạo kiểu',
 	'Type has been dropped.' => 'Đã xoá kiểu.',
 	'Type has been created.' => 'Đã tạo kiểu.',
 	'Alter type' => 'Sửa kiểu dữ liệu',
+	'Check has been dropped.' => 'Kiểm tra đã bị xoá.', // Claude Fable 5
+	'Check has been altered.' => 'Kiểm tra đã được sửa.', // Claude Fable 5
+	'Check has been created.' => 'Kiểm tra đã được tạo.', // Claude Fable 5
+	'Alter check' => 'Sửa kiểm tra', // Claude Fable 5
+	'Create check' => 'Tạo kiểm tra', // Claude Fable 5
+	'Drop %s?' => 'Xoá %s?', // Claude Fable 5
+	'overwrite' => 'ghi đè', // Claude Fable 5
+	'DB' => 'CSDL', // Claude Fable 5
+	'Algorithm' => 'Thuật toán', // Claude Fable 5
+	'Columns' => 'Cột', // Claude Fable 5
+	'Condition' => 'Điều kiện', // Claude Fable 5
+	'%s queries are not supported.' => 'Không hỗ trợ truy vấn %s.', // Claude Fable 5
+	'Warnings' => 'Cảnh báo', // Claude Fable 5
+	'%d / ' => '%d / ', // Claude Fable 5
+	'Limit rows' => 'Giới hạn số dòng', // Claude Fable 5
+	'Materialized view' => 'Khung nhìn vật chất hoá', // Claude Fable 5
+	'Inherits from' => 'Kế thừa từ', // Claude Fable 5
+	'Checks' => 'Kiểm tra', // Claude Fable 5
+	'Inherited by' => 'Được kế thừa bởi', // Claude Fable 5
+	'hostname[:port] or :socket' => 'hostname[:port] hoặc :socket', // Claude Fable 5
+	'Adminer does not support accessing a database without a password, <a href="https://www.adminer.org/en/password/"%s>more information</a>.' => 'Adminer không hỗ trợ truy cập cơ sở dữ liệu không có mật khẩu, <a href="https://www.adminer.org/en/password/"%s>thêm thông tin</a>.', // Claude Fable 5
+	'Default value' => 'Giá trị mặc định', // Claude Fable 5
+	'Thanks for using Adminer, consider <a href="https://www.adminer.org/en/donation/">donating</a>.' => 'Cảm ơn bạn đã sử dụng Adminer, hãy cân nhắc <a href="https://www.adminer.org/en/donation/">quyên góp</a>.', // Claude Fable 5
+	'The action will be performed after successful login with the same credentials.' => 'Hành động sẽ được thực hiện sau khi đăng nhập thành công với cùng thông tin đăng nhập.', // Claude Fable 5
+	'Invalid server.' => 'Máy chủ không hợp lệ.', // Claude Fable 5
+	'Connecting to privileged ports is not allowed.' => 'Không được phép kết nối đến các cổng đặc quyền.', // Claude Fable 5
+	'There is a space in the input password which might be the cause.' => 'Có một dấu cách trong mật khẩu đã nhập, đó có thể là nguyên nhân.', // Claude Fable 5
+	'If you did not send this request from Adminer then close this page.' => 'Nếu bạn không gửi yêu cầu này từ Adminer thì hãy đóng trang này.', // Claude Fable 5
+	'Loaded plugins' => 'Các plugin đã nạp', // Claude Fable 5
+	'screenshot' => 'ảnh chụp màn hình', // Claude Fable 5
+	'You are offline.' => 'Bạn đang ngoại tuyến.', // Claude Fable 5
+	'Increase %s.' => 'Hãy tăng %s.', // Claude Fable 5
+	'Saving' => 'Đang lưu', // Claude Fable 5
+	'Unknown error.' => 'Lỗi không xác định.', // Claude Fable 5
+	'%s must <a%s>return an array</a>.' => '%s phải <a%s>trả về một mảng</a>.', // Claude Fable 5
+	'<a%s>Configure</a> %s in %s.' => '<a%s>Cấu hình</a> %s trong %s.', // Claude Fable 5
+	'Disable %s or enable %s or %s extensions.' => 'Hãy tắt phần mở rộng %s hoặc bật phần mở rộng %s hoặc %s.', // Claude Fable 5
+	'Database does not support password.' => 'Cơ sở dữ liệu không hỗ trợ mật khẩu.', // Claude Fable 5
 );
 
 // run `php ../../lang.php vi` to update this file

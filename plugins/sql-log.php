@@ -26,7 +26,7 @@ class AdminerSqlLog extends Adminer\Plugin {
 
 	private function log($query) {
 		if ($this->filename == "") {
-			$this->filename = Adminer\adminer()->database() . ($_GET["ns"] != "" ? ".$_GET[ns]" : "") . ".sql"; // no database goes to ".sql" to avoid collisions
+			$this->filename = urlencode(Adminer\adminer()->database() . ($_GET["ns"] != "" ? ".$_GET[ns]" : "")) . ".sql"; // no database goes to ".sql" to avoid collisions
 		}
 		$fp = fopen($this->filename, "a");
 		flock($fp, LOCK_EX);
@@ -42,5 +42,6 @@ class AdminerSqlLog extends Adminer\Plugin {
 		'pl' => array('' => 'Rejestruj wszystkie zapytania do pliku SQL'),
 		'ro' => array('' => 'Logați toate interogările în fișierul SQL'),
 		'ja' => array('' => '全クエリを SQL ファイルに記録'),
+		'hr' => array('' => 'Bilježi sve upite u SQL datoteku'),
 	);
 }

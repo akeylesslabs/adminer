@@ -139,8 +139,6 @@ Lang::$translations = array(
 	'%s version: %s through PHP extension %s' => 'Version de %s : %s via l\'extension PHP %s',
 	'Logged as: %s' => 'Authentifié en tant que : %s',
 	'Too big POST data. Reduce the data or increase the %s configuration directive.' => 'Données POST trop grandes. Réduisez la taille des données ou augmentez la valeur de %s dans la configuration de PHP.',
-	'Move up' => 'Déplacer vers le haut',
-	'Move down' => 'Déplacer vers le bas',
 	'Export' => 'Exporter',
 	'Tables' => 'Tables',
 	'Data' => 'Données',
@@ -286,15 +284,34 @@ Lang::$translations = array(
 	'Drop %s?' => 'Supprimer %s?',
 	'overwrite' => 'écraser',
 	'DB' => 'BD',
-	'ATTACH queries are not supported.' => 'Requêtes ATTACH ne sont pas supportées.',
+	'%s queries are not supported.' => 'Requêtes %s ne sont pas supportées.',
 	'Warnings' => 'Avertissements',
 	'Adminer does not support accessing a database without a password, <a href="https://www.adminer.org/en/password/"%s>more information</a>.' => 'Adminer ne supporte pas l\'accès aux bases de données sans mot de passe, <a href="https://www.adminer.org/en/password/"%s>plus d\'information</a>.',
 	'The action will be performed after successful login with the same credentials.' => 'Cette action sera exécutée après s\'être connecté avec les mêmes données de connexion.',
 	'Connecting to privileged ports is not allowed.' => 'La connexion aux ports privilégiés n\'est pas autorisée.',
 	'There is a space in the input password which might be the cause.' => 'Il y a un espace dans le mot de passe entré qui pourrait en être la cause.',
 	'Unknown error.' => 'Erreur inconnue.',
-	'Database does not support password.' => 'La base de données ne support pas les mots de passe.',
-	'Disable %s or enable %s or %s extensions.' => 'Désactiver %s ou activer %s or %s extensions.',
+	'Database does not support password.' => 'La base de données ne supporte pas les mots de passe.',
+	'Disable %s or enable %s or %s extensions.' => 'Désactivez %s ou activez les extensions %s ou %s.',
+	'Check has been dropped.' => 'La vérification a été supprimée.', // Claude Fable 5
+	'Check has been altered.' => 'La vérification a été modifiée.', // Claude Fable 5
+	'Check has been created.' => 'La vérification a été créée.', // Claude Fable 5
+	'Alter check' => 'Modifier la vérification', // Claude Fable 5
+	'Create check' => 'Créer une vérification', // Claude Fable 5
+	'Algorithm' => 'Algorithme', // Claude Fable 5
+	'Columns' => 'Colonnes', // Claude Fable 5
+	'Condition' => 'Condition', // Claude Fable 5
+	'Inherits from' => 'Hérite de', // Claude Fable 5
+	'Checks' => 'Vérifications', // Claude Fable 5
+	'Inherited by' => 'Héritée par', // Claude Fable 5
+	'hostname[:port] or :socket' => 'hostname[:port] ou :socket', // Claude Fable 5
+	'Thanks for using Adminer, consider <a href="https://www.adminer.org/en/donation/">donating</a>.' => 'Merci d\'utiliser Adminer, pensez à <a href="https://www.adminer.org/en/donation/">faire un don</a>.', // Claude Fable 5
+	'Invalid server.' => 'Serveur invalide.', // Claude Fable 5
+	'Loaded plugins' => 'Plugins chargés', // Claude Fable 5
+	'screenshot' => 'capture d\'écran', // Claude Fable 5
+	'Increase %s.' => 'Augmentez %s.', // Claude Fable 5
+	'%s must <a%s>return an array</a>.' => '%s doit <a%s>retourner un tableau</a>.', // Claude Fable 5
+	'<a%s>Configure</a> %s in %s.' => '<a%s>Configurez</a> %s dans %s.', // Claude Fable 5
 );
 
 // run `php ../../lang.php fr` to update this file

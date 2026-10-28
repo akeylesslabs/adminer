@@ -93,7 +93,7 @@ CREATE PROCEDURE adminer_alter (INOUT alter_command text) BEGIN
 					$default = $row["COLUMN_DEFAULT"];
 					$row["default"] = ($default !== null ? Adminer\q($default) : "NULL");
 					$row["after"] = Adminer\q($after); //! rgt AFTER lft, lft AFTER id doesn't work
-					$row["alter"] = Adminer\escape_string(
+					$row["alter"] = substr(Adminer\q(
 						Adminer\idf_escape($row["COLUMN_NAME"])
 						. " $row[COLUMN_TYPE]"
 						. ($row["COLLATION_NAME"] ? " COLLATE $row[COLLATION_NAME]" : "")
@@ -102,7 +102,7 @@ CREATE PROCEDURE adminer_alter (INOUT alter_command text) BEGIN
 						. ($row["EXTRA"] ? " $row[EXTRA]" : "")
 						. ($row["COLUMN_COMMENT"] ? " COMMENT " . Adminer\q($row["COLUMN_COMMENT"]) : "")
 						. ($after ? " AFTER " . Adminer\idf_escape($after) : " FIRST")
-					);
+					), 1, -1);
 					echo ", ADD $row[alter]";
 					$fields[] = $row;
 					$after = $row["COLUMN_NAME"];
@@ -174,5 +174,6 @@ DROP PROCEDURE adminer_alter;
 		'pl' => array('' => 'Eksportuje jedną bazę danych (np. programistyczną), aby można ją było zsynchronizować z inną bazą danych (np. produkcyjną)'),
 		'ro' => array('' => 'Exportați o bază de date (de exemplu, development) astfel încât să poată fi sincronizată cu o altă bază de date (de exemplu, de producție)'),
 		'ja' => array('' => 'データベース (開発用など) をエクスポートし、別のデータベース (本番用など) と同期'),
+		'hr' => array('' => 'Izvozi bazu podataka (npr. razvojnu) tako da se može sinkronizirati s drugom bazom (npr. produkcijskom)'),
 	);
 }

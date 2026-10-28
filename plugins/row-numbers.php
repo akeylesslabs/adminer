@@ -23,5 +23,6 @@ class AdminerRowNumbers extends Adminer\Plugin {
 
 	protected $translations = array(
 		'cs' => array('' => 'Zobrazí čísla řádek ve výpisu'),
+		'hr' => array('' => 'Prikazuje brojeve redaka u ispisu'),
 	);
 }
