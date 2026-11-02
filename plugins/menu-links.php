@@ -7,6 +7,8 @@
 * @license https://www.gnu.org/licenses/gpl-2.0.html GNU General Public License, version 2 (one or other)
 */
 class AdminerMenuLinks extends Adminer\Plugin {
+	static $optional = true;
+
 	private $menu;
 
 	/** @param ''|'hover'|'table'|'select'|'auto' $menu see config() for explanation */
@@ -88,7 +90,7 @@ li:hover .hover, p:hover .hover, div:hover > .hover, .hover.active, tr:hover td.
 	}
 
 	function screenshot() {
-		return "https://www.adminer.org/static/plugins/menu-links.png";
+		return "https://www.adminer.org/static/plugins/menu-links.webp";
 	}
 
 	protected $translations = array(

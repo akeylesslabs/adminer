@@ -423,6 +423,7 @@ if (!$columns && support("table")) {
 					$fun = apply_sql_function(h($val["fun"]), $name);
 					$sortable = isset($field["privileges"]["order"]) || $val["fun"];
 					echo ($sortable ? "<a href='" . h($href . ($sorted && $sort_column == $order[0] ? $desc : '')) . "'>$fun</a>" : $fun);
+					echo doc_link(array(JUSH => $field["doc"]));
 					$menu = ($sortable ? "<a href='" . h($href . $desc) . "' title='" . lang('descending') . "' class='text'> ↓</a>" : '');
 					if (!$val["fun"] && isset($field["privileges"]["where"])) {
 						$menu .= "<a href='#fieldset-search' title='" . lang('Search') . "' class='text jsonly'" . on('click', 'selectSearch', $key) . "> =</a>";
@@ -590,7 +591,7 @@ if (!$columns && support("table")) {
 						if (($_GET["modify"] && $editable && $edit_val !== null) || $posted !== null) {
 							$h_value = h($posted !== null ? $posted : $edit_val);
 							echo ">" . ($text
-								? "<textarea name='$id' cols='30' rows='" . (substr_count($edit_val, "\n") + 1) . "'>$h_value</textarea>"
+								? "<textarea name='$id' cols='30' rows='" . (substr_count($edit_val, "\n") + 1) . "'>\n$h_value</textarea>" // \n to preserve the leading newline
 								: "<input name='$id' value='$h_value' size='$lengths[$key]'>"
 							);
 						} else {

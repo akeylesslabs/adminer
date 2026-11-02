@@ -7,6 +7,8 @@
 * @license https://www.gnu.org/licenses/gpl-2.0.html GNU General Public License, version 2 (one or other)
 */
 class AdminerSelectExpression extends Adminer\Plugin {
+	static $optional = true;
+
 	protected $functions;
 	protected $lists = array(); // datalist index => columns
 	protected $searching = false;
@@ -160,7 +162,7 @@ class AdminerSelectExpression extends Adminer\Plugin {
 			$sql = $token;
 			$space = true;
 			if ($type == 1) {
-				$sql = Adminer\q(str_replace("''", "'", substr($token, 1, -1)));
+				$sql = Adminer\q(Adminer\idf_unescape($token));
 			} elseif ($type == 2) {
 				$name = Adminer\idf_unescape($token);
 				if (!isset($columns[$name])) {

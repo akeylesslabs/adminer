@@ -7,6 +7,7 @@
 * @license https://www.gnu.org/licenses/gpl-2.0.html GNU General Public License, version 2 (one or other)
 */
 class AdminerEnumOption extends Adminer\Plugin {
+	static $optional = true;
 
 	function editInput($table, $field, $attrs, $value) {
 		if ($field["type"] == "enum") {
@@ -22,9 +23,9 @@ class AdminerEnumOption extends Adminer\Plugin {
 			if ($field["null"]) {
 				$options["null"] = "NULL";
 			}
-			preg_match_all("~'((?:[^']|'')*)'~", $field["length"], $matches);
-			foreach ($matches[1] as $val) {
-				$val = stripcslashes(str_replace("''", "'", $val));
+			preg_match_all("~'(?:[^']|'')*'~", $field["length"], $matches);
+			foreach ($matches[0] as $val) {
+				$val = stripcslashes(Adminer\idf_unescape($val));
 				$options["val-$val"] = $val;
 			}
 			return "<select$attrs>" . Adminer\optionlist($options, $selected, 1) . "</select>"; // 1 - use keys

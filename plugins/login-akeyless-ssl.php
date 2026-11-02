@@ -45,6 +45,13 @@ class AdminerAkeylessLoginSsl extends Adminer\Plugin {
 		return null;
 	}
 
+	// Every portal request reaches Adminer from the same local address, so the default key would
+	// make one target's failed logins lock out every database user on the pod.
+	function bruteForceKey() {
+		$auth = (isset($_POST["auth"]) && is_array($_POST["auth"]) ? $_POST["auth"] : array());
+		return $_SERVER["REMOTE_ADDR"] . "|" . (isset($auth["server"]) ? (string) $auth["server"] : "") . "|" . (isset($auth["username"]) ? (string) $auth["username"] : "");
+	}
+
 	private function currentDriver(array $auth) {
 		if (isset($_GET["pgsql"])) {
 			return "pgsql";

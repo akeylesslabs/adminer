@@ -77,8 +77,8 @@ if (isset($_GET["clickhouse"])) {
 			}
 
 			function query(string $query, bool $unbuffered = false) {
-				if (preg_match('~^\s*USE\s+(?:`((?:``|[^`])+)`|([A-Za-z_][A-Za-z0-9_]*))\s*;?\s*$~i', $query, $match)) {
-					$this->_db = str_replace("``", "`", ($match[1] !== '' ? $match[1] : $match[2]));
+				if (preg_match('~^\s*USE\s+(`(?:``|[^`])+`|[A-Za-z_][A-Za-z0-9_]*)\s*;?\s*$~i', $query, $match)) {
+					$this->_db = idf_unescape($match[1]);
 					return true;
 				}
 				return $this->rootQuery($this->_db, $query);
@@ -196,6 +196,10 @@ if (isset($_GET["clickhouse"])) {
 		);
 		public $generated = array("MATERIALIZED", "ALIAS", "EPHEMERAL");
 
+		function errorLine(string $query): int {
+			return (preg_match('~\(line (\d+), col \d+\)~', $this->conn->error, $match) ? (int) $match[1] : 0); // Syntax error: failed at position 18 (...) (line 3, col 10)
+		}
+
 		function operators(?array $tableStatus): array {
 			return array("=", "<", ">", "<=", ">=", "!=", "LIKE", "LIKE %%", "ILIKE", "ILIKE %%", "IN", "IS NULL", "NOT LIKE", "NOT ILIKE", "NOT IN", "IS NOT NULL", "SQL");
 		}
@@ -251,6 +255,13 @@ if (isset($_GET["clickhouse"])) {
 		function engines(): array {
 			$engines = get_vals("SELECT name FROM system.table_engines ORDER BY name");
 			return ($engines ?: array("MergeTree", "ReplacingMergeTree", "Memory", "Log", "TinyLog"));
+		}
+
+		function tableHelp(string $name, bool $is_view = false) {
+			$db = strtolower(DB); // there are both information_schema and INFORMATION_SCHEMA
+			if ($db == "system" || $db == "information_schema") {
+				return "https://clickhouse.com/docs/reference/system-tables/" . ($db == "system" ? $name : $db);
+			}
 		}
 
 		function allFields(): array {
@@ -322,8 +333,8 @@ if (isset($_GET["clickhouse"])) {
 	}
 
 	function clickhouse_default_value(string $expression): string {
-		if (preg_match("~^'(.*)'$~s", $expression, $match)) {
-			return stripcslashes(str_replace("''", "'", $match[1]));
+		if (preg_match("~^'.*'$~s", $expression)) {
+			return stripcslashes(idf_unescape($expression));
 		}
 		return $expression;
 	}

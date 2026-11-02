@@ -8,6 +8,8 @@
 * @license https://www.gnu.org/licenses/gpl-2.0.html GNU General Public License, version 2 (one or other)
 */
 class AdminerHighlightMonaco extends Adminer\Plugin {
+	static $optional = true;
+
 	private $root;
 
 	function __construct($root = "https://cdn.jsdelivr.net/npm/monaco-editor@0.52/min/vs") {
@@ -17,6 +19,9 @@ class AdminerHighlightMonaco extends Adminer\Plugin {
 	function syntaxHighlighting($tableStatuses) {
 		echo Adminer\script_src("$this->root/loader.js", true);
 		?>
+<style>
+.adminer-error-line { background: #fc05; }
+</style>
 <script <?php echo Adminer\nonce(); ?>>
 addEventListener('DOMContentLoaded', () => {
 	require.config({ paths: { vs: '<?php echo $this->root; ?>' } });
@@ -54,6 +59,15 @@ addEventListener('DOMContentLoaded', () => {
 				]);
 				// Monaco handles Ctrl+Enter itself, pass it to Adminer which sends the form
 				editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => el.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter', ctrlKey: true, bubbles: true})));
+				const errorLine = +el.dataset.errorLine;
+				if (errorLine) {
+					const mark = editor.createDecorationsCollection([{range: new monaco.Range(errorLine, 1, errorLine, 1), options: {isWholeLine: true, className: 'adminer-error-line'}}]);
+					editor.revealLineInCenter(errorLine);
+					const listener = editor.onDidChangeModelContent(() => {
+						mark.clear();
+						listener.dispose();
+					});
+				}
 			}
 		}
 	});

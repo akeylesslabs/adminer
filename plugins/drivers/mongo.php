@@ -33,7 +33,7 @@ if (isset($_GET["mongo"])) {
 				if (($auth_source = getenv("MONGO_AUTH_SOURCE"))) {
 					$options["authSource"] = $auth_source;
 				}
-				$hostport = url_host($server["host"]) . ($server["port"] != "" ? ":$server[port]" : "");
+				$hostport = (empty($server["raw"]) ? url_host($server["host"]) . ($server["port"] != "" ? ":$server[port]" : "") : $server["host"]);
 				if (empty($options["username"])) {
 					// ping doesn't require authentication so it would pass even on a server requiring it
 					$this->_link = new \MongoDB\Driver\Manager("mongodb://$hostport", $options);
@@ -250,7 +250,12 @@ if (isset($_GET["mongo"])) {
 
 		function found_rows($table_status, $where) {
 			$where = where_to_query($where);
-			$toArray = connection()->executeCommand(array('count' => $table_status['Name'], 'query' => $where))->toArray();
+			// an empty filter must be a BSON document, an empty PHP array is sent as a BSON array which servers 4.2 and newer refuse
+			$result = connection()->executeCommand(array('count' => $table_status['Name'], 'query' => (object) $where));
+			if (!($result instanceof \MongoDB\Driver\Cursor)) {
+				return false;
+			}
+			$toArray = $result->toArray();
 			return $toArray[0]->n;
 		}
 
@@ -348,7 +353,7 @@ if (isset($_GET["mongo"])) {
 
 
 	class Driver extends SqlDriver {
-		static $extensions = array("mongodb");
+		static $extensions = array("MongoDB");
 		static $jush = "mongo";
 
 		public $insertFunctions = array("json");
@@ -379,9 +384,25 @@ if (isset($_GET["mongo"])) {
 			);
 		}
 
+		/** Seed list with an optional option string, like h1:27017,h2:27017/?replicaSet=rs0 or host/?tls=true */
+		const SEED_LIST = '~^([-\w.]+(:(\d+))?(,[-\w.]+(:(\d+))?)*)(/\?[-\w.=&%:,]*)?$~D';
+
 		static function connect($server, $username, $password) {
 			if ($server == "") {
 				$server = "localhost:27017";
+			}
+			// Akeyless: SRA items keep seed lists and URI options, which the strict server parser refuses
+			if (preg_match(self::SEED_LIST, $server, $match) && ($match[4] != "" || $match[7] != "")) {
+				preg_match_all('~:(\d+)~', $match[1], $ports);
+				foreach ($ports[1] as $port) {
+					if ($port > 65535 || $port < 1024) {
+						return lang('Connecting to privileged ports is not allowed.');
+					}
+				}
+				$parts = server_parts(array("host" => $server));
+				$parts["raw"] = true;
+				$connection = new Db;
+				return ($connection->attach($parts, $username, $password) ?: $connection);
 			}
 			return parent::connect($server, $username, $password);
 		}

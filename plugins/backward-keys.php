@@ -7,6 +7,8 @@
 * @license https://www.gnu.org/licenses/gpl-2.0.html GNU General Public License, version 2 (one or other)
 */
 class AdminerBackwardKeys extends Adminer\Plugin {
+	static $optional = true;
+
 	// this is copy-pasted from Adminer Editor
 
 	function backwardKeys($table, $tableName) {
@@ -101,7 +103,7 @@ ORDER BY
 	}
 
 	function screenshot() {
-		return "https://www.adminer.org/static/plugins/backward-keys.png";
+		return "https://www.adminer.org/static/plugins/backward-keys.webp";
 	}
 
 	protected $translations = array(

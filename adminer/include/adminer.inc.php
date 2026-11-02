@@ -349,7 +349,7 @@ class Adminer {
 				. "$return<div id='$id' class='hidden'>\n$warnings</div>\n"
 			;
 		}
-		return "<p><code class='jush-" . JUSH . "'>" . h(str_replace("\n", " ", $query)) . "</code> <span class='time'>(" . format_time($start) . ")</span>"
+		return "<p><code class='sql jush-" . JUSH . "'>" . h(str_replace("\n", " ", $query)) . "</code> <span class='time'>(" . format_time($start) . ")</span>"
 			. (support("sql") ? " <a href='" . h(ME) . "sql=" . url_escape($query) . "' class='hover'>" . lang('Edit') . "</a>" : "")
 			. $return
 		;
@@ -452,7 +452,7 @@ class Adminer {
 		echo "<thead><tr><th>" . lang('Column') . "<th>" . lang('Type') . (support("comment") ? "<th>" . lang('Comment') : "") . "<tbody>\n";
 		$user_types = (support("type") ? types() : array()); // not structuredTypes() - the types created by extensions are offered in the type dropdown but the type page doesn't manage them
 		foreach ($fields as $field) {
-			echo "<tr><th>" . h($field["field"]);
+			echo "<tr><th>" . h($field["field"]) . doc_link(array(JUSH => $field["doc"]));
 			$type = h($field["full_type"]);
 			$collation = h($field["collation"]);
 			echo "<td><span title='$collation'>"
@@ -464,8 +464,8 @@ class Adminer {
 			echo ($field["null"] ? " <i>NULL</i>" : "");
 			echo ($field["auto_increment"] ? " <i>" . lang('Auto Increment') . "</i>" : "");
 			echo (isset($field["default"])
-				? " <span title='" . lang('Default value') . "'>[<b>" . ($field["generated"]
-					? "<code class='jush-" . JUSH . "'>" . shorten_utf8(preg_replace('~\s+~', ' ', ltrim($field["default"])), 80, "</code>")
+				? " <span title='" . lang('Default value') . "'>[<b>" . ($field["generated"] || $field["default_sql"]
+					? "<code class='sql jush-" . JUSH . "'>" . shorten_utf8(preg_replace('~\s+~', ' ', ltrim($field["default"])), 80, "</code>")
 					: h($field["default"])
 				) . "</b>]</span>"
 				: ""
@@ -500,9 +500,9 @@ class Adminer {
 
 			echo "<tr title='" . h($name) . "'>";
 			echo "<th>" . h($index["type"]) . ($default_algorithm && $index['algorithm'] != $default_algorithm ? " (" . h($index['algorithm']) . ")" : "");
-			echo "<td>" . implode(", ", $print);
+			echo "<td>" . implode(", ", $print) . ($index["invalid"] ? " <span class='error'>INVALID</span>" : "");
 			if ($partial) {
-				echo "<td>" . ($index['partial'] ? "<code class='jush-" . JUSH . "'>WHERE " . h($index['partial']) : "");
+				echo "<td>" . ($index['partial'] ? "<code class='sql jush-" . JUSH . "'>WHERE " . h($index['partial']) : "");
 			}
 			echo "\n";
 		}
@@ -858,7 +858,7 @@ class Adminer {
 	function editRowPrint(string $table, array $fields, $row, ?bool $update, string $query = '', string $time = ''): void {
 		// some drivers get the row without a query; the query selects a single row so there's no point in editing it
 		echo ($query != ""
-			? "<p><code class='jush-" . JUSH . "'>" . h(str_replace("\n", " ", $query)) . "</code> <span class='time'>($time)</span>\n"
+			? "<p><code class='sql jush-" . JUSH . "'>" . h(str_replace("\n", " ", $query)) . "</code> <span class='time'>($time)</span>\n"
 			: ""
 		);
 	}

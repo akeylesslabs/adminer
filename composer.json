@@ -37,9 +37,9 @@
     "require-dev": {
         "squizlabs/php_codesniffer": "4.0.4",
         "slevomat/coding-standard": "8.31.1",
-        "phpcompatibility/php-compatibility": "dev-develop#299a472",
-        "phpstan/phpstan": "2.2.15",
-        "phpstan/phpstan-strict-rules": "2.0.12"
+        "phpcompatibility/php-compatibility": "dev-develop#4b1ac83",
+        "phpstan/phpstan": "2.3.1",
+        "phpstan/phpstan-strict-rules": "2.1.0"
     },
     "config": {
         "allow-plugins": {
@@ -49,7 +49,7 @@
     "scripts": {
         "post-install-cmd": "@submodules",
         "post-update-cmd": "@submodules",
-        "submodules": "@php -r \"passthru('git submodule update --init --recursive'); if (getenv('COMPOSER_DEV_MODE') !== '0') { passthru('npm install --no-save --prefix . eslint @eslint/js globals @playwright/test'); }\"",
+        "submodules": "@php -r \"passthru('git submodule update --init --recursive'); if (getenv('COMPOSER_DEV_MODE') !== '0') { passthru('npm install --no-save --prefix . eslint @eslint/js @stylistic/eslint-plugin globals @playwright/test'); }\"",
         "check": [
             "phpcs --standard=conf/phpcs.xml",
             "phpstan analyse -c conf/phpstan.neon",
