@@ -11,27 +11,33 @@ let helpOpen;
 function helpMouseover() {
 }
 
+function helpValueMouseover() {
+}
+
 function helpMouseout() {
+}
+
+function helpKeep() {
 }
 
 function helpClose() {
 }
 
 /** Display typeahead
-* @param string
+* @param {string} url
 * @this HTMLInputElement
 */
 function whisper(url) {
 	const field = this;
 	field.orig = field.value;
 	field.previousSibling.value = field.value; // accept number, reject string
-	return ajax(url + encodeURIComponent(field.value), xmlhttp => {
+	ajax(url + urlEscape(field.value), xmlhttp => {
 		if (xmlhttp.status && field.orig == field.value) { // ignore old responses
 			field.nextSibling.innerHTML = xmlhttp.responseText;
 			field.nextSibling.style.display = '';
 			const a = field.nextSibling.firstChild;
 			if (a && a.firstChild.data == field.value) {
-				field.previousSibling.value = decodeURIComponent(a.href.replace(/.*=/, ''));
+				field.previousSibling.value = urlUnescape(a.href.replace(/.*=/, ''));
 				a.classList.add('active');
 			}
 		}
@@ -39,16 +45,16 @@ function whisper(url) {
 }
 
 /** Select typeahead value
-* @param MouseEvent
-* @return boolean false for success
+* @param {MouseEvent} event
+* @return {boolean} false for success
 * @this HTMLDivElement
 */
 function whisperClick(event) {
 	const field = this.previousSibling;
 	const el = event.target;
-	if (isTag(el, 'a') && !(event.button || event.shiftKey || event.altKey || isCtrl(event))) {
+	if (el.matches('a') && !(event.button || event.shiftKey || event.altKey || isCtrl(event))) {
 		field.value = el.firstChild.data;
-		field.previousSibling.value = decodeURIComponent(el.href.replace(/.*=/, ''));
+		field.previousSibling.value = urlUnescape(el.href.replace(/.*=/, ''));
 		field.nextSibling.style.display = 'none';
 		return false;
 	}

@@ -1,0 +1,170 @@
+<?xml version="1.0"?>
+<ruleset name="Adminer Coding Standard">
+	<description>The coding standard for Adminer.</description>
+	<arg value="s"/>
+	<arg name="parallel" value="8"/>
+	<arg name="cache"/><!-- PHP_CodeSniffer stores the cache in the system temp directory -->
+
+	<file>..</file>
+	<exclude-pattern>/adminer/static/jush/</exclude-pattern><!-- Submodule -->
+	<exclude-pattern>/conf/JsShrink/</exclude-pattern><!-- Submodule -->
+	<exclude-pattern>/conf/PhpShrink/</exclude-pattern><!-- Submodule -->
+	<exclude-pattern>/vendor/</exclude-pattern><!-- Created by Composer in CI -->
+	<exclude-pattern>/node_modules/</exclude-pattern><!-- Created by npm, the flatted package ships a PHP file -->
+	<exclude-pattern>/\.claude/</exclude-pattern><!-- Git worktrees created by Claude Code -->
+	<exclude-pattern>/designs/</exclude-pattern>
+	<exclude-pattern>/tests/results/</exclude-pattern><!-- Playwright traces store the pages they captured -->
+	<exclude-pattern type="relative">^(adminer|editor)[-.]</exclude-pattern>
+	<exclude-pattern type="relative">^drivers/</exclude-pattern><!-- Built by compile.php, the sources are in plugins/drivers/ -->
+	<exclude-pattern>/adminer-plugins/</exclude-pattern><!-- Local plugins used by the dev server -->
+	<exclude-pattern>/adminer-plugins\.php</exclude-pattern>
+
+	<rule ref="PSR12">
+		<exclude name="Generic.WhiteSpace.DisallowTabIndent"/><!-- Replaced by: Generic.WhiteSpace.DisallowSpaceIndent -->
+		<exclude name="PSR1.Files.SideEffects.FoundWithSymbols"/>
+		<exclude name="PSR1.Classes.ClassDeclaration.MultipleClasses"/>
+		<exclude name="PSR2.Classes.ClassDeclaration.OpenBraceNewLine"/><!-- Replaced by: Generic.Classes.OpeningBraceSameLine -->
+		<exclude name="PSR2.Classes.PropertyDeclaration.Underscore"/>
+		<exclude name="PSR2.Methods.MethodDeclaration.Underscore"/>
+		<exclude name="Squiz.Functions.MultiLineFunctionDeclaration.BraceOnSameLine"/><!-- Replaced by: Generic.Functions.OpeningFunctionBraceKernighanRitchie -->
+		<exclude name="PSR12.Properties.ConstantVisibility.NotFound"/><!-- PHP 7.1 is not required. -->
+
+		<!-- More readable. -->
+		<exclude name="PSR12.Files.FileHeader.SpacingAfterBlock"/><!-- PHP_CodeSniffer 3 -->
+		<exclude name="PSR12.Files.FileHeader.SpacingAfterTagBlock"/>
+		<exclude name="PSR12.Files.FileHeader.SpacingAfterDocblockBlock"/>
+		<exclude name="PSR12.Classes.OpeningBraceSpace.Found"/>
+		<exclude name="PSR12.Operators.OperatorSpacing.NoSpaceBefore"/>
+		<exclude name="PSR12.Operators.OperatorSpacing.NoSpaceAfter"/>
+		<exclude name="Squiz.WhiteSpace.ControlStructureSpacing.SpacingBeforeClose"/>
+
+		<!-- Saves bytes. -->
+		<exclude name="PSR2.Classes.PropertyDeclaration.Multiple"/>
+		<exclude name="PSR2.Classes.PropertyDeclaration.ScopeMissing"/>
+		<exclude name="PSR12.Classes.ClassInstantiation.MissingParentheses"/>
+		<exclude name="Squiz.Scope.MethodScope.Missing"/>
+
+		<!-- False positives. -->
+		<exclude name="Generic.WhiteSpace.ScopeIndent.Incorrect"/>
+		<exclude name="Generic.WhiteSpace.ScopeIndent.IncorrectExact"/>
+	</rule>
+
+	<rule ref="Generic.WhiteSpace.ScopeIndent">
+		<properties>
+			<property name="ignoreIndentationTokens" type="array">
+				<element value="T_OPEN_TAG"/>
+			</property>
+		</properties>
+	</rule>
+
+	<rule ref="PSR1.Methods.CamelCapsMethodName.NotCamelCaps">
+		<exclude-pattern>adminer/drivers/</exclude-pattern>
+		<exclude-pattern>adminer/include/db.inc.php</exclude-pattern>
+		<exclude-pattern>adminer/include/pdo.inc.php</exclude-pattern>
+		<exclude-pattern>/plugins/foreign-system.php</exclude-pattern>
+		<exclude-pattern>/plugins/drivers/</exclude-pattern>
+	</rule>
+
+	<rule ref="Generic.Files.LineLength">
+		<properties>
+			<property name="lineLimit" value="200"/>
+		</properties>
+		<exclude-pattern>adminer/lang/</exclude-pattern>
+		<exclude-pattern>plugins/foreign-system.php</exclude-pattern>
+	</rule>
+
+	<rule ref="PSR1.Classes.ClassDeclaration.MissingNamespace">
+		<exclude-pattern>plugins/[^/]+\.php</exclude-pattern>
+		<exclude-pattern>editor/example\.php</exclude-pattern>
+	</rule>
+
+	<rule ref="Generic.Arrays.DisallowShortArraySyntax"/>
+	<rule ref="Generic.Classes.OpeningBraceSameLine"/>
+	<rule ref="Generic.CodeAnalysis.EmptyPHPStatement"/>
+	<rule ref="Generic.CodeAnalysis.EmptyStatement"/>
+	<rule ref="Generic.CodeAnalysis.ForLoopShouldBeWhileLoop"/>
+	<rule ref="Generic.CodeAnalysis.JumbledIncrementer"/>
+	<rule ref="Generic.CodeAnalysis.RequireExplicitBooleanOperatorPrecedence"/>
+	<rule ref="Generic.CodeAnalysis.UnconditionalIfStatement"/>
+	<rule ref="Generic.CodeAnalysis.UnnecessaryFinalModifier"/>
+	<rule ref="Generic.CodeAnalysis.UselessOverridingMethod"/>
+	<rule ref="Generic.Files.EndFileNewline"/>
+	<rule ref="Generic.Files.LowercasedFilename"/>
+	<rule ref="Generic.Formatting.SpaceAfterCast"/>
+	<rule ref="Generic.Functions.OpeningFunctionBraceKernighanRitchie"/>
+	<rule ref="Generic.NamingConventions.ConstructorName"/>
+	<rule ref="Generic.PHP.BacktickOperator"/>
+	<rule ref="Generic.PHP.DisallowRequestSuperglobal"/>
+	<rule ref="Generic.PHP.ForbiddenFunctions"/>
+	<rule ref="Generic.Strings.UnnecessaryHeredoc"/>
+	<rule ref="Generic.VersionControl.GitMergeConflict"/>
+	<rule ref="Generic.WhiteSpace.DisallowSpaceIndent"/>
+	<rule ref="Generic.WhiteSpace.LanguageConstructSpacing"/>
+
+	<rule ref="Squiz.Arrays.ArrayBracketSpacing"/>
+	<rule ref="Squiz.Classes.LowercaseClassKeywords"/>
+	<rule ref="Squiz.Classes.SelfMemberReference"/>
+	<rule ref="Squiz.Functions.FunctionDuplicateArgument"/>
+	<rule ref="Squiz.Operators.IncrementDecrementUsage"/>
+	<rule ref="Squiz.Operators.ValidLogicalOperators"/>
+	<rule ref="Squiz.PHP.DiscouragedFunctions"/>
+	<rule ref="Squiz.PHP.Eval"/>
+	<rule ref="Squiz.PHP.Heredoc"/>
+	<rule ref="Squiz.PHP.InnerFunctions"/>
+	<rule ref="Squiz.PHP.LowercasePHPFunctions"/>
+	<rule ref="Squiz.PHP.NonExecutableCode"/>
+	<rule ref="Squiz.Scope.StaticThisUsage"/>
+	<rule ref="Squiz.WhiteSpace.FunctionOpeningBraceSpace"/>
+	<rule ref="Squiz.WhiteSpace.LogicalOperatorSpacing"/>
+	<rule ref="Squiz.WhiteSpace.ObjectOperatorSpacing"/>
+
+	<rule ref="SlevomatCodingStandard.Classes.DisallowConstructorPropertyPromotion"/>
+	<rule ref="SlevomatCodingStandard.Commenting.EmptyComment"/>
+	<rule ref="SlevomatCodingStandard.Commenting.UselessFunctionDocComment"/>
+	<rule ref="SlevomatCodingStandard.Commenting.UselessInheritDocComment"/>
+	<rule ref="SlevomatCodingStandard.ControlStructures.DisallowNullSafeObjectOperator"/>
+	<rule ref="SlevomatCodingStandard.ControlStructures.DisallowYodaComparison"/>
+	<rule ref="SlevomatCodingStandard.ControlStructures.UselessIfConditionWithReturn"/>
+	<rule ref="SlevomatCodingStandard.ControlStructures.UselessTernaryOperator"/>
+	<rule ref="SlevomatCodingStandard.Exceptions.DeadCatch"/>
+	<rule ref="SlevomatCodingStandard.Exceptions.DisallowNonCapturingCatch"/>
+	<rule ref="SlevomatCodingStandard.Functions.DisallowArrowFunction"/>
+	<rule ref="SlevomatCodingStandard.Functions.DisallowNamedArguments"/>
+	<rule ref="SlevomatCodingStandard.Functions.UnusedInheritedVariablePassedToClosure"/>
+	<rule ref="SlevomatCodingStandard.Functions.UselessParameterDefaultValue"/>
+	<rule ref="SlevomatCodingStandard.Namespaces.UnusedUses"/>
+	<rule ref="SlevomatCodingStandard.Operators.RequireCombinedAssignmentOperator"/>
+	<rule ref="SlevomatCodingStandard.PHP.TypeCast"/>
+	<rule ref="SlevomatCodingStandard.PHP.UselessSemicolon"/>
+	<rule ref="SlevomatCodingStandard.TypeHints.LongTypeHints"/>
+	<rule ref="SlevomatCodingStandard.TypeHints.NullTypeHintOnLastPosition"/>
+	<!-- @param, @return and @var are used only if they say more than the type declaration. -->
+	<rule ref="SlevomatCodingStandard.TypeHints.ParameterTypeHint.UselessAnnotation"/>
+	<rule ref="SlevomatCodingStandard.TypeHints.PropertyTypeHint.UselessAnnotation"/>
+	<rule ref="SlevomatCodingStandard.TypeHints.ReturnTypeHint.UselessAnnotation"/>
+	<rule ref="SlevomatCodingStandard.TypeHints.UselessConstantTypeHint"/>
+	<rule ref="SlevomatCodingStandard.Variables.DuplicateAssignmentToVariable"/>
+
+	<!--
+	Slevomat sniffs which are not used, with the number of places they report (measured 2026-08-09):
+	Namespaces.ReferenceUsedNamesOnly, Namespaces.FullyQualifiedGlobalFunctions (2000+) - the namespace fallback is intentional, see url_escape() in docs/developing.md
+	Operators.DisallowEqualOperators (1183) - $var != "" is used on purpose because a table can be named 0
+	Strings.DisallowVariableParsing (2607) - "{$var}" is longer
+	Commenting.DocCommentSpacing (844) - the doc-comments are not indented by one space
+	Arrays.TrailingArrayComma, Functions.RequireTrailingCommaInCall (hundreds) - a trailing comma only makes the compiled file bigger
+	TypeHints.DeclareStrictTypes - the type declarations are stripped during compilation
+	ControlStructures.RequireNullCoalesceOperator (many) - idx() reports a typo in the variable name, ?? doesn't
+	ControlStructures.DisallowShortTernaryOperator (145) - ?: saves bytes
+	ControlStructures.DisallowEmpty (12) - each of them needs to be decided separately
+	ControlStructures.AssignmentInCondition (32) - 24 of them are while ($row = $result->fetch_row())
+	Functions.RequireStaticClosure (39) - static costs bytes in the compiled file, PHPStan reports $this in a closure anyway
+	Functions.UnusedParameter (many) - the methods overridable by plugins keep the parameters
+	Variables.UnusedVariable (4) - all of them are false positives (a static variable, a global one and two used in the next iteration)
+	Variables.UselessVariable - the result is constructed in $return on purpose
+	PHP.UselessParentheses (12) - 11 of them make the precedence explicit, e.g. ($pos + 7) & ~7
+	Classes.UnusedPrivateElements - reported by PHPStan
+	Whitespaces.DuplicateSpaces (1) - PSR12 expands the tabs so a tab before an inline comment looks like duplicate spaces
+	-->
+
+	<!-- The compiled files are checked for compatibility with the oldest supported PHP by conf/phpcompat.xml. -->
+</ruleset>

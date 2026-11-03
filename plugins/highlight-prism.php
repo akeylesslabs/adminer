@@ -1,6 +1,6 @@
 <?php
 
-/** Use Prism Code Editor for syntax highlighting and <textarea>
+/** Use Prism Code Editor for syntax highlighting and the <textarea>
 * @link https://prism-code-editor.netlify.app/
 * @link https://www.adminer.org/plugins/#use
 * @author Jakub Vrana, https://www.vrana.cz/
@@ -8,6 +8,8 @@
 * @license https://www.gnu.org/licenses/gpl-2.0.html GNU General Public License, version 2 (one or other)
 */
 class AdminerHighlightPrism extends Adminer\Plugin {
+	static $optional = true;
+
 	private $editorRoot;
 	private $minified;
 	private $theme;
@@ -24,6 +26,7 @@ class AdminerHighlightPrism extends Adminer\Plugin {
 @import url(<?php echo "$this->editorRoot/layout$this->minified.css"; ?>);
 @import url(<?php echo "$this->editorRoot/themes/$this->theme$this->minified.css"; ?>);
 .prism-code-editor { border: 1px inset #ccc; resize: both; }
+.adminer-error-line { background: #fc05; }
 </style>
 <script type="module"<?php echo Adminer\nonce(); ?>>
 import { editorFromPlaceholder } from '<?php echo $this->editorRoot; ?>/index.js';
@@ -31,29 +34,42 @@ import { highlightText } from '<?php echo $this->editorRoot; ?>/prism/index.js';
 import '<?php echo $this->editorRoot; ?>/prism/languages/json.js';
 import '<?php echo $this->editorRoot; ?>/prism/languages/sql.js';
 
+const language = el => (
+	/jush-json/.test(el.className) ? 'json' : (
+	/jush-(\w*sql|oracle|clickhouse|firebird)/.test(el.className) ? 'sql' : (
+	''
+)));
+
 adminerHighlighter = els => els.forEach(el => {
-	const mode = (
-		/jush-js/.test(el.className) ? 'json' : (
-		/jush-(\w*sql|oracle|clickhouse|firebird)/.test(el.className) ? 'sql' : (
-		''
-	)));
+	const mode = language(el);
 	if (mode) {
 		el.innerHTML = highlightText(el.textContent, mode);
 	}
 });
 adminerHighlighter(qsa('code'));
 
-const el = document.querySelector('.sqlarea');
-if (el) {
+for (const el of qsa('textarea[class*="jush-"]')) {
 	const name = el.name;
+	const className = el.className;
 	const width = el.clientWidth;
 	const height = el.clientHeight;
-	const editor = editorFromPlaceholder('.sqlarea', { language: 'sql', lineNumbers: false });
+	const errorLine = +el.dataset.errorLine;
+	const editor = editorFromPlaceholder(el, { language: language(el) || 'sql', lineNumbers: false });
 	editor.wrapper.parentElement.style.width = width + 'px';
 	editor.wrapper.style.height = height + 'px';
 	editor.textarea.name = name;
-	editor.textarea.className = 'sqlarea';
+	editor.textarea.className = className;
 	editor.textarea.onchange = editor.update;
+	const line = errorLine && editor.wrapper.children[errorLine]; // [0] holds the overlays
+	if (line) {
+		line.classList.add('adminer-error-line');
+		editor.scrollContainer.scrollTop = line.offsetTop - height / 3;
+		const unmark = () => {
+			line.classList.remove('adminer-error-line');
+			editor.removeListener('update', unmark);
+		};
+		editor.addListener('update', unmark);
+	}
 }
 </script>
 <?php
@@ -63,8 +79,11 @@ if (el) {
 	protected $translations = array(
 		'cs' => array('' => 'Použije Prism Code Editor pro zvýrazňování syntaxe a <textarea>'),
 		'de' => array('' => 'Prism Code Editor verwenden, für die Syntaxhervorhebung und <textarea>'),
-		'ja' => array('' => '構文や <textarea> の強調表示に Prism Code Editor を使用'),
-		'pl' => array('' => 'Użyj Prism Code Editora do podświetlania składni i <textarea>'),
 		'hr' => array('' => 'Koristi Prism Code Editor za isticanje sintakse i SQL <textarea>'),
+		'ja' => array('' => '構文強調表示と <textarea> に Prism Code Editor を使用'), // Claude Opus 5
+		'pl' => array('' => 'Użyj Prism Code Editora do podświetlania składni i <textarea>'),
+		'ro' => array('' => 'Folosește Prism Code Editor pentru evidențierea sintaxei și <textarea>'), // Claude Opus 5
+		'sk' => array('' => 'Použije Prism Code Editor na zvýrazňovanie syntaxe a <textarea>'), // Claude Opus 5
+		'zh' => array('' => '使用 Prism Code Editor 实现语法高亮和 <textarea>'), // Claude Opus 5
 	);
 }

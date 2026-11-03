@@ -9,9 +9,10 @@ if (!$plugins) {
 
 unset($_COOKIE["adminer_lang"]);
 $_SESSION["lang"] = $_SERVER["argv"][1]; // Adminer functions read language from session
-if (isset($_SESSION["lang"])) {
+if (isset($_SESSION["lang"]) && $_SESSION["lang"] != "stats") {
 	if (isset($_SERVER["argv"][2]) || !file_exists(__DIR__ . "/adminer/lang/$_SESSION[lang].inc.php")) {
 		echo "Usage: php lang.php [no-plugins] [lang]\nPurpose: Update adminer/lang/*.inc.php from source code messages.\n";
+		echo "Usage: php lang.php stats\nPurpose: Update the table in adminer/lang/README.md.\n";
 		exit(1);
 	}
 }
@@ -19,24 +20,34 @@ if (isset($_SESSION["lang"])) {
 $messages_all = array();
 foreach (glob(__DIR__ . "/{adminer,adminer/include,adminer/drivers,editor,editor/include}/*.php", GLOB_BRACE) as $include) {
 	$file = file_get_contents($include);
-	if (preg_match_all("~[^>]lang\\(('(?:[^\\\\']+|\\\\.)*')([),])~", $file, $matches)) { // lang() always uses apostrophes
+	if (preg_match_all("~[^>]lang\\(\\s*('(?:[^\\\\']+|\\\\.)*')\\s*([),])~", $file, $matches)) { // lang() always uses apostrophes, the message can be on its own line
 		$messages_all += array_combine($matches[1], $matches[2]);
 	}
+}
+
+$plugins_messages = array();
+foreach (glob(__DIR__ . "/plugins/*.php") as $filename) {
+	$file = file_get_contents($filename);
+	if (preg_match('~extends Adminer\\\\Plugin~', $file)) {
+		preg_match_all("~\\\$this->lang\\(\\s*('(?:[^\\\\']+|\\\\.)*')\\s*([),])~", $file, $matches);
+		$plugins_messages[$filename] = array("''" => "") + array_combine($matches[1], $matches[2]);
+	}
+}
+
+if ($_SESSION["lang"] == "stats") {
+	update_stats($messages_all, $plugins_messages);
+	exit;
 }
 
 foreach (glob(__DIR__ . "/adminer/lang/" . ($_SESSION["lang"] ?: "*") . ".inc.php") as $filename) {
 	$lang = basename($filename, ".inc.php");
 	update_translations($lang, $messages_all, $filename, '~(\$translations = array\(\n)(.*\n)(?=\);)~sU');
 	if ($plugins && $lang != "xx") {
-		foreach (glob(__DIR__ . "/plugins/*.php") as $filename) {
+		foreach ($plugins_messages as $filename => $messages) {
 			$file = file_get_contents($filename);
-			if (preg_match('~extends Adminer\\\\Plugin~', $file)) {
-				preg_match_all("~\\\$this->lang\\(('(?:[^\\\\']+|\\\\.)*')([),])~", $file, $matches);
-				$messages = array("''" => "") + array_combine($matches[1], $matches[2]);
-				$file = preg_replace("~(\\\$translations = array\\((?!.*'$lang').*?)\t\\);~s", "\\1\t\t'$lang' => array(\n\t\t),\n\t);", $file);
-				file_put_contents($filename, $file);
-				update_translations($lang, $messages, $filename, "~(\\\$translations = array\\(.*'$lang' => array\\(\n)(.*)(?=^\t\t\\),)~msU", "\t\t\t");
-			}
+			$file = preg_replace("~(\\\$translations = array\\((?!.*'$lang').*?)\t\\);~s", "\\1\t\t'$lang' => array(\n\t\t),\n\t);", $file);
+			file_put_contents($filename, $file);
+			update_translations($lang, $messages, $filename, "~(\\\$translations = array\\(.*'$lang' => array\\(\n)(.*)(?=^\t\t\\),)~msU", "\t\t\t");
 		}
 	}
 }
@@ -48,7 +59,8 @@ function update_translations($lang, $messages, $filename, $pattern, $tabs = "\t"
 	$s = preg_replace_callback($pattern, function ($match) use ($lang, $messages, $filename, $file, $tabs, &$start) {
 		$prefix = $match[1][0];
 		$start = $match[2][1];
-		preg_match_all("~^(\\s*(?:// [^'].*\\s+)?)(?:// )?(('(?:[^\\\\']+|\\\\.)*') => (.*?[^,\n])),?( // .*)?$~m", $match[2][0], $matches, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
+		// a trailing //! is a TODO, e.g. about a regional variant
+		preg_match_all("~^(\\s*(?:// [^'].*\\s+)?)(?:// )?(('(?:[^\\\\']+|\\\\.)*') => (.*?[^,\n])),?( //!? .*)?$~m", $match[2][0], $matches, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
 		$s = "";
 		$fullstop = ($lang == 'bn' || $lang == 'hi' ? '।' : (preg_match('~^(ja|zh)~', $lang) ? '。' : ($lang == 'he' ? '[^.]' : '\.')));
 		foreach ($matches as $match) {
@@ -60,7 +72,7 @@ function update_translations($lang, $messages, $filename, $pattern, $tabs = "\t"
 				unset($messages[$en]);
 				$en_fullstop = (substr($en, -2, 1) == ".");
 				//! check in array
-				if (!in_array($en, array('\'$1-$3-$5\'', "'[yyyy]-mm-dd'", "','")) && ($en_fullstop xor preg_match("~$fullstop'\)?\$~", $line))) {
+				if (!in_array($en, array('\'$1-$3-$5\'', "'[yyyy]-mm-dd'", "'#,##0'")) && ($en_fullstop xor preg_match("~$fullstop'\)?\$~", $line))) {
 					if ($lang != ($en_fullstop ? "ja" : "he")) { // fullstop is optional in 'ja', forbidden in 'he'
 						echo "$filename:" . (substr_count($file, "\n", 0, $start + $offset) + 1) . ":Not matching fullstop: $line\n";
 					}
@@ -91,6 +103,59 @@ function update_translations($lang, $messages, $filename, $pattern, $tabs = "\t"
 		file_put_contents($filename, $s);
 		echo "$filename:" . (substr_count($s, "\n", 0, $start) + 1) . ":Updated.\n";
 	}
+}
+
+/** Update the table of reviewed translations in adminer/lang/README.md
+* @param array<string, string> $messages_all
+* @param array<string, array<string, string>> $plugins_messages
+*/
+function update_stats($messages_all, $plugins_messages) {
+	$entry = "~^\t*('(?:[^\\\\']+|\\\\.)*') => (?!null\\b).*?( // Claude .*)?$~m"; // the comment marks a machine translation
+	$stats = array();
+	foreach (glob(__DIR__ . "/adminer/lang/*.inc.php") as $filename) {
+		$lang = basename($filename, ".inc.php");
+		if ($lang != "en" && $lang != "xx") {
+			$stats[$lang] = array(0, 0, 0); // reviewed, machine, reviewed in plugins
+			preg_match_all($entry, file_get_contents($filename), $matches, PREG_SET_ORDER);
+			foreach ($matches as $match) {
+				if (isset($messages_all[$match[1]])) {
+					$stats[$lang][isset($match[2]) ? 1 : 0]++;
+				}
+			}
+		}
+	}
+	$plugins_total = 0;
+	foreach ($plugins_messages as $filename => $messages) {
+		$plugins_total += count($messages);
+		preg_match('~\$translations = array\((.*?)^\t\);~ms', file_get_contents($filename), $match);
+		$blocks = preg_split("~^\t\t'([a-z-]+)' => array\\(~m", $match[1], -1, PREG_SPLIT_DELIM_CAPTURE); // language followed by its translations
+		for ($i = 1; $i < count($blocks); $i += 2) {
+			preg_match_all($entry, $blocks[$i + 1], $matches, PREG_SET_ORDER);
+			foreach ($matches as $match) {
+				if (isset($messages[$match[1]], $stats[$blocks[$i]]) && !isset($match[2])) {
+					$stats[$blocks[$i]][2]++;
+				}
+			}
+		}
+	}
+	preg_match_all("~^\t\t'([a-z-]+)' => '(.*?)',~m", file_get_contents(__DIR__ . "/adminer/include/lang.inc.php"), $matches);
+	$names = array_combine($matches[1], $matches[2]);
+	$order = array_flip($matches[1]);
+	uksort($stats, function ($a, $b) use ($stats, $order) {
+		// more machine translations with the same number of reviewed means fewer missing, a machine translation is better than none; the last ties are broken by the order in langs()
+		return array($stats[$b][0], $stats[$b][1], $stats[$b][2], $order[$a]) <=> array($stats[$a][0], $stats[$a][1], $stats[$a][2], $order[$b]);
+	});
+	$total = count($messages_all);
+	$stats = array('en' => array($total, 0, $plugins_total)) + $stats; // the source language first
+	$s = "| | Language | Reviewed | To review | Missing | Plugins | |\n|---|---|--:|--:|--:|--:|---|\n";
+	foreach ($stats as $lang => list($reviewed, $machine, $plugins)) {
+		$percent = floor(100 * $reviewed / $total); // not rounded to not display 100% with anything left
+		$s .= "| " . ($percent >= 95 ? "🟩" : ($percent >= 85 ? "🟨" : "🟥"))
+			. " | [$names[$lang]]($lang.inc.php) | $percent% | " . ($machine ?: "") . " | " . (($total - $reviewed - $machine) ?: "")
+			. " | " . floor(100 * $plugins / $plugins_total) . "% | [🔔](https://github.com/vrana/adminer/commits/main/adminer/lang/$lang.inc.php.atom) |\n";
+	}
+	$filename = __DIR__ . "/adminer/lang/README.md";
+	file_put_contents($filename, preg_replace('~\n\|.*~s', '', file_get_contents($filename)) . "\n$s");
 }
 
 /** Check that printf placeholders in the translation match the English original
@@ -144,5 +209,5 @@ function placeholder_errors($lang, $en, $translation) {
 * @return int
 */
 function plural_forms($lang) {
-	return ($lang == 'sl' ? 4 : (preg_match('~^(cs|sk|pl|lt|lv|bs|hr|ru|sr|uk)$~', $lang) ? 3 : 2));
+	return ($lang == 'sl' ? 4 : (preg_match('~^(cs|sk|pl|lt|lv|ro|bs|hr|ru|sr|uk)$~', $lang) ? 3 : 2));
 }

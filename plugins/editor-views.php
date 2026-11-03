@@ -15,9 +15,11 @@ class AdminerEditorViews extends Adminer\Plugin {
 	protected $translations = array(
 		'cs' => array('' => 'Zobrazení pohledů v Adminer Editoru'),
 		'de' => array('' => 'Views im Adminer Editor anzeigen'),
+		'hr' => array('' => 'Prikazuje poglede u Adminer Editoru'),
+		'ja' => array('' => 'Adminer Editor にビューを表示'),
 		'pl' => array('' => 'Wyświetlaj widoki w Adminer Editorze'),
 		'ro' => array('' => 'Afișează vizualizări în Adminer Editor'),
-		'ja' => array('' => 'Adminer Editor にビューを表示'),
-		'hr' => array('' => 'Prikazuje poglede u Adminer Editoru'),
+		'sk' => array('' => 'Zobrazenie pohľadov v Adminer Editore'), // Claude Opus 5
+		'zh' => array('' => '在 Adminer Editor 中显示视图'), // Claude Opus 5
 	);
 }

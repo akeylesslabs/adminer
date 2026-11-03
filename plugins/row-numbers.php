@@ -7,6 +7,7 @@
 * @license https://www.gnu.org/licenses/gpl-2.0.html GNU General Public License, version 2 (one or other)
 */
 class AdminerRowNumbers extends Adminer\Plugin {
+	static $optional = true;
 
 	function backwardKeys($table, $tableName) {
 		return array(1);
@@ -23,6 +24,12 @@ class AdminerRowNumbers extends Adminer\Plugin {
 
 	protected $translations = array(
 		'cs' => array('' => 'Zobrazí čísla řádek ve výpisu'),
+		'de' => array('' => 'Zeigt Zeilennummern im Select an'), // Claude Opus 5
 		'hr' => array('' => 'Prikazuje brojeve redaka u ispisu'),
+		'ja' => array('' => '一覧に行番号を表示'), // Claude Opus 5
+		'pl' => array('' => 'Wyświetla numery wierszy w wyniku'), // Claude Opus 5
+		'ro' => array('' => 'Afișează numerele rândurilor în select'), // Claude Opus 5
+		'sk' => array('' => 'Zobrazí čísla riadkov vo výpise'), // Claude Opus 5
+		'zh' => array('' => '在选择数据时显示行号'), // Claude Opus 5
 	);
 }

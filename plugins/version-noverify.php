@@ -8,16 +8,18 @@
 */
 class AdminerVersionNoverify extends Adminer\Plugin {
 
-	function head($dark = null) {
-		echo Adminer\script("verifyVersion = () => { };");
+	function verifyVersion() {
+		return false;
 	}
 
 	protected $translations = array(
 		'cs' => array('' => 'Zakáže kontrolu nových verzí'),
 		'de' => array('' => 'Deaktivieren Sie die Versionsprüfung'),
+		'hr' => array('' => 'Onemogućuje provjeru novih verzija'),
+		'ja' => array('' => 'バージョンチェックを無効化'),
 		'pl' => array('' => 'Wyłącz sprawdzanie wersji'),
 		'ro' => array('' => 'Dezactivați verificatorul de versiuni'),
-		'ja' => array('' => 'バージョンチェックを無効化'),
-		'hr' => array('' => 'Onemogućuje provjeru novih verzija'),
+		'sk' => array('' => 'Zakáže kontrolu nových verzií'), // Claude Opus 5
+		'zh' => array('' => '禁用版本检查'), // Claude Opus 5
 	);
 }

@@ -18,7 +18,22 @@ if ($_POST && !$error) {
 	}
 }
 
-page_header($SEQUENCE != "" ? lang('Alter sequence') . ": " . h($SEQUENCE) : lang('Create sequence'), $error);
+// not information_schema.sequences which omits the sequences of identity columns, the same as in db.inc.php
+$not_found = (!$_POST && $SEQUENCE != ""
+	&& !get_val("SELECT relname FROM pg_class WHERE relkind = 'S' AND relnamespace = " . driver()->nsOid . " AND relname = " . q($SEQUENCE))
+);
+
+page_header(
+	($SEQUENCE != "" ? lang('Alter sequence') . ": " . h($SEQUENCE) : lang('Create sequence')),
+	$error,
+	"#sequences",
+	"",
+	$not_found,
+	doc_link(array(
+		'pgsql' => "sql-createsequence.html",
+		'cockroach' => "create-sequence",
+	))
+);
 
 if (!$row) {
 	$row["name"] = $SEQUENCE;
@@ -27,10 +42,10 @@ if (!$row) {
 
 <form action="" method="post">
 <p><input name="name" value="<?php echo h($row["name"]); ?>" autocapitalize="off">
-<input type="submit" value="<?php echo lang('Save'); ?>">
+<input type='submit' value='<?php echo lang('Save'); ?>'>
 <?php
 if ($SEQUENCE != "") {
-	echo "<input type='submit' name='drop' value='" . lang('Drop') . "'>" . confirm(lang('Drop %s?', $SEQUENCE)) . "\n";
+	echo "<input type='submit' name='drop' value='" . lang('Drop') . "'" . confirm(lang('Drop %s?', $SEQUENCE)) . ">\n";
 }
 echo input_token();
 ?>

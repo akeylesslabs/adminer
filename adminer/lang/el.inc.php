@@ -9,18 +9,20 @@ Lang::$translations = array(
 	'Permanent login' => 'Μόνιμη Σύνδεση',
 	'Login' => 'Σύνδεση',
 	'Logout' => 'Αποσύνδεση',
-	'Logged as: %s' => 'Συνδεθήκατε ως %s',
+	'Logged in as: %s' => 'Συνδεθήκατε ως %s',
 	'Logout successful.' => 'Αποσυνδεθήκατε με επιτυχία.',
 	'Invalid credentials.' => 'Εσφαλμένα Διαπιστευτήρια.',
 	'Too many unsuccessful logins, try again in %d minute(s).' => array('Επανειλημμένες ανεπιτυχείς προσπάθειες σύνδεσης, δοκιμάστε ξανά σε %d λεπτό.', 'Επανειλημμένες ανεπιτυχείς προσπάθειες σύνδεσης, δοκιμάστε ξανά σε %d λεπτά.'),
-	'Master password expired. <a href="https://www.adminer.org/en/extension/"%s>Implement</a> %s method to make it permanent.' => 'Έληξε ο Κύριος Κωδικός. <a href="https://www.adminer.org/en/extension/"%s>Ενεργοποιήστε</a> τη μέθοδο %s για να τον κάνετε μόνιμο.',
+	'Use the %s <a%s>plugin</a> if Adminer runs behind a reverse proxy.' => 'Χρησιμοποιήστε το <a%2$s>πρόσθετο</a> %1$s αν το Adminer εκτελείται πίσω από αντίστροφο διακομιστή μεσολάβησης.', // Claude Opus 5
+	'Master password expired. <a href="https://www.adminer.org/en/extension/"%s>Implement</a> the %s method to make it permanent.' => 'Έληξε ο Κύριος Κωδικός. <a href="https://www.adminer.org/en/extension/"%s>Ενεργοποιήστε</a> τη μέθοδο %s για να τον κάνετε μόνιμο.',
 	'Language' => 'Γλώσσα',
-	'Invalid CSRF token. Send the form again.' => 'Άκυρο κουπόνι CSRF. Στείλτε τη φόρμα ξανά.',
-	'If you did not send this request from Adminer then close this page.' => 'Αν δε στείλατε αυτό το αίτημα από το Adminer, τότε κλείστε αυτή τη σελίδα.',
+	'Invalid CSRF token. Submit the form again.' => 'Άκυρο κουπόνι CSRF. Στείλτε τη φόρμα ξανά.',
+	'If you did not send this request from Adminer, close this page.' => 'Αν δε στείλατε αυτό το αίτημα από το Adminer, τότε κλείστε αυτή τη σελίδα.',
+	'Not found.' => 'Δεν βρέθηκε.', // Claude Opus 5
 	'No extension' => 'Καμία Επέκταση',
 	'None of the supported PHP extensions (%s) are available.' => 'Καμία από τις υποστηριζόμενες επεκτάσεις PHP (%s) δεν είναι διαθέσιμη.',
 	'Session support must be enabled.' => 'Πρέπει να είναι ενεργοποιημένη η υποστήριξη συνεδριών.',
-	'Session expired, please login again.' => 'Η συνεδρία έληξε, παρακαλώ συνδεθείτε ξανά.',
+	'Session expired. Please log in again.' => 'Η συνεδρία έληξε, παρακαλώ συνδεθείτε ξανά.',
 	'%s version: %s through PHP extension %s' => '%s έκδοση: %s μέσω επέκτασης PHP %s',
 	'Refresh' => 'Ανανέωση',
 
@@ -45,7 +47,7 @@ Lang::$translations = array(
 	'Status' => 'Κατάσταση',
 
 	'SQL command' => 'Εντολή SQL',
-	'%d query(s) executed OK.' => array('Το ερώτημα %d εκτελέστηκε ΟΚ.', 'Τα ερώτηματα %d εκτελέστηκαν ΟΚ.'),
+	'%d query(ies) executed OK.' => array('Το ερώτημα %d εκτελέστηκε ΟΚ.', 'Τα ερώτηματα %d εκτελέστηκαν ΟΚ.'),
 	'Query executed OK, %d row(s) affected.' => array('Το ερώτημα εκτελέστηκε ΟΚ, επηρεάστηκε %d σειρά.', 'Το ερώτημα εκτελέστηκε ΟΚ, επηρεάστηκαν %d σειρές.'),
 	'No commands to execute.' => 'Δεν υπάρχουν εντολές να εκτελεστούν.',
 	'Error in query' => 'Σφάλμα στο ερώτημα',
@@ -65,22 +67,24 @@ Lang::$translations = array(
 	'File uploads are disabled.' => 'Έχει απενεργοποιηθεί η μεταφόρτωση αρχείων.',
 	'Unable to upload a file.' => 'Αδυναμία μεταφόρτωσης αρχείου.',
 	'Maximum allowed file size is %sB.' => 'Το μέγιστο επιτρεπόμενο μέγεθος αρχείου είναι %sB.',
-	'Too big POST data. Reduce the data or increase the %s configuration directive.' => 'Πολλά δεδομένα POST. Μείωστε τα περιεχόμενα ή αυξήστε την σχετική ρύθμιση %s.',
-	'You can upload a big SQL file via FTP and import it from server.' => 'Μπορείτε να μεταφορτώσετε ένα μεγάλο αρχείο SQL μέσω FTP και να το εισάγετε από το διακομιστή.',
+	'The POST data is too large. Reduce the data or increase the %s configuration directive.' => 'Πολλά δεδομένα POST. Μείωστε τα περιεχόμενα ή αυξήστε την σχετική ρύθμιση %s.',
+	'You can upload a large SQL file via FTP and import it from the server.' => 'Μπορείτε να μεταφορτώσετε ένα μεγάλο αρχείο SQL μέσω FTP και να το εισάγετε από το διακομιστή.',
 	'You are offline.' => 'Βρίσκεστε εκτός σύνδεσης.',
+	'Menu' => 'Μενού', // Claude Opus 5
+	'Documentation' => 'Τεκμηρίωση', // Claude Opus 5
+	'Database management in a single PHP file' => 'Διαχείριση βάσεων δεδομένων σε ένα μόνο αρχείο PHP', // Claude Opus 5
 
 	'Export' => 'Εξαγωγή',
 	'Output' => 'Αποτέλεσμα',
 	'open' => 'άνοιγμα',
 	'save' => 'αποθήκευση',
-	'Saving' => 'Γίνεται Αποθήκευση',
+	'Saving…' => 'Γίνεται Αποθήκευση…',
 	'Format' => 'Μορφή',
 	'Data' => 'Δεδομένα',
 
 	'Database' => 'Β. Δεδομένων',
 	'Use' => 'χρήση',
 	'Select database' => 'Επιλέξτε Β.Δ.',
-	'Invalid database.' => 'Λανθασμένη Β.Δ.',
 	'Database has been dropped.' => 'Η Β.Δ. διαγράφηκε.',
 	'Databases have been dropped.' => 'Οι Β.Δ. διαγράφηκαν.',
 	'Database has been created.' => 'Η Β.Δ. δημιουργήθηκε.',
@@ -92,7 +96,7 @@ Lang::$translations = array(
 
 	'Permanent link' => 'Μόνιμος Σύνδεσμος', // link to current database schema layout
 
-	',' => '.', // thousands separator - must contain single byte
+	'#,##0' => '#.##0',
 	'0123456789' => '0123456789',
 	'Engine' => 'Μηχανή',
 	'Collation' => 'Collation',
@@ -108,7 +112,7 @@ Lang::$translations = array(
 	'Repair' => 'Επιδιόρθωση',
 	'Truncate' => 'Περικοπή',
 	'Tables have been truncated.' => 'Οι πίνακες περικόπηκαν.',
-	'Move to other database' => 'Μεταφορά σε άλλη Β.Δ.',
+	'Move to another database' => 'Μεταφορά σε άλλη Β.Δ.',
 	'Move' => 'Μεταφορά',
 	'Tables have been moved.' => 'Οι πίνακες μεταφέρθηκαν.',
 	'Copy' => 'Αντιγραφή',
@@ -142,6 +146,7 @@ Lang::$translations = array(
 
 	'Tables' => 'Πίνακες',
 	'Tables and views' => 'Πίνακες και Προβολές',
+	'All' => 'Όλα', // Claude Opus 5
 	'Table' => 'Πίνακας',
 	'No tables.' => 'Χωρίς πίνακες.',
 	'Alter table' => 'Τροποποίηση πίνακα',
@@ -189,9 +194,9 @@ Lang::$translations = array(
 	'Add next' => 'Προσθήκη επόμενου',
 	'Index Type' => 'Τύπος δείκτη',
 	'length' => 'μήκος',
+	'operator class' => 'κλάση τελεστών', // Claude Fable 5
 
 	'Foreign keys' => 'Εξαρτημένα κλειδιά',
-	'Foreign key' => 'Εξαρτημένο κλειδί',
 	'Foreign key has been dropped.' => 'Το εξαρτημένο κλειδί διαγράφηκε.',
 	'Foreign key has been altered.' => 'Το εξαρτημένο κλειδί τροποποιήθηκε.',
 	'Foreign key has been created.' => 'Το εξαρτημένο κλειδί δημιουργήθηκε.',
@@ -201,13 +206,13 @@ Lang::$translations = array(
 	'Target' => 'Στόχος',
 	'Add column' => 'Προσθήκη στήλης',
 	'Alter' => 'Τροποποίηση',
-	'Add foreign key' => 'Προσθήκη εξαρτημένου κλειδιού',
+	'Alter foreign key' => 'Τροποποίηση εξαρτημένου κλειδιού', // Claude Opus 5
+	'Create foreign key' => 'Δημιουργία εξαρτημένου κλειδιού', // Claude Opus 5
 	'ON DELETE' => 'ΚΑΤΑ ΤΗ ΔΙΑΓΡΑΦΗ',
 	'ON UPDATE' => 'ΚΑΤΑ ΤΗΝ ΑΛΛΑΓΗ',
-	'Source and target columns must have the same data type, there must be an index on the target columns and referenced data must exist.' => 'Οι στήλες στην πηγή και το στόχο πρέπει να έχουν τον ίδιο τύπο, πρέπει να υπάρχει δείκτης στη στήλη στόχο και να υπάρχουν εξαρτημένα δεδομένα.',
+	'Source and target columns must have the same data type, there must be an index on the target columns and the referenced data must exist.' => 'Οι στήλες στην πηγή και το στόχο πρέπει να έχουν τον ίδιο τύπο, πρέπει να υπάρχει δείκτης στη στήλη στόχο και να υπάρχουν εξαρτημένα δεδομένα.',
 
 	'Triggers' => 'Εναύσματα',
-	'Add trigger' => 'Προσθήκη εναύσματος',
 	'Trigger has been dropped.' => 'Το έναυσμα διαγράφηκε.',
 	'Trigger has been altered.' => 'Το έναυσμα τροποποιήθηκε.',
 	'Trigger has been created.' => 'Το έναυσμα δημιουργήθηκε.',
@@ -232,14 +237,14 @@ Lang::$translations = array(
 	'Text length' => 'Μήκος κειμένου',
 	'Action' => 'Ενέργεια',
 	'Full table scan' => 'Πλήρης σάρωση πινάκων',
-	'Unable to select the table' => 'Δεν είναι δυνατή η επιλογή πίνακα',
+	'Unable to select the table.' => 'Δεν είναι δυνατή η επιλογή πίνακα.',
 	'No rows.' => 'Χωρίς σειρές.',
 	'%d / ' => '%d / ',
 	'%d row(s)' => array('%d σειρά', '%d σειρές'),
 	'Page' => 'Σελίδα',
 	'last' => 'τελευταία',
 	'Load more data' => 'Φόρτωση κι άλλων δεδομένων',
-	'Loading' => 'Φορτώνει',
+	'Loading…' => 'Φορτώνει…',
 	'Whole result' => 'Όλο το αποτέλεσμα',
 	'%d byte(s)' => array('%d byte', '%d bytes'),
 
@@ -247,9 +252,10 @@ Lang::$translations = array(
 	'%d row(s) have been imported.' => array('%d σειρά εισήχθη.', '%d σειρές εισήχθησαν.'),
 	'File must be in UTF-8 encoding.' => 'Το αρχείο πρέπει να έχει κωδικοποίηση UTF-8.',
 
+	'All rows on this page' => 'Όλες οι γραμμές αυτής της σελίδας', // Claude Opus 5
 	'Modify' => 'Τροποποίηση', // in-place editing in select
 	'Ctrl+click on a value to modify it.' => 'Πιέστε Ctrl+click σε μια τιμή για να την τροποποιήσετε.',
-	'Use edit link to modify this value.' => 'Χρησιμοποιήστε το σύνδεσμο επεξεργασία για να τροποποιήσετε την τιμή.',
+	'Use the edit link to modify this value.' => 'Χρησιμοποιήστε το σύνδεσμο επεξεργασία για να τροποποιήσετε την τιμή.',
 
 	'Item%s has been inserted.' => 'Η εγγραφή%s εισήχθη.', // %s can contain auto-increment value
 	'Item has been deleted.' => 'Η εγγραφή διαγράφηκε.',
@@ -262,7 +268,7 @@ Lang::$translations = array(
 	'Edit' => 'Επεξεργασία',
 	'Insert' => 'Εισαγωγή',
 	'Save' => 'Αποθήκευση',
-	'Save and continue edit' => 'Αποθήκευση και συνέχεια επεξεργασίας',
+	'Save and continue editing' => 'Αποθήκευση και συνέχεια επεξεργασίας',
 	'Save and insert next' => 'Αποθήκευση και εισαγωγή επόμενου',
 	'Selected' => 'Επιλεγμένα',
 	'Clone' => 'Κλωνοποίηση',
@@ -277,9 +283,11 @@ Lang::$translations = array(
 	'Lists' => 'Λίστες',
 	'Network' => 'Δίκτυο',
 	'Geometry' => 'Γεωμετρία',
+	'Ranges' => 'Εύρη', // Claude Opus 5
 	'Relations' => 'Συσχετήσεις',
 
 	'Editor' => 'Επεξεργαστής',
+	'Data editing in a single PHP file' => 'Επεξεργασία δεδομένων σε ένα μόνο αρχείο PHP', // Claude Opus 5
 	'$1-$3-$5' => '$5/$3/$1', // date format in Editor: $1 yyyy, $2 yy, $3 mm, $4 m, $5 dd, $6 d
 	'[yyyy]-mm-dd' => 'ηη/μμ/[εεεε]', // hint for date format - use language equivalents for day, month and year shortcuts
 	'HH:MM:SS' => 'ΩΩ:ΛΛ:ΔΔ', // hint for time format - use language equivalents for hour, minute and second shortcuts
@@ -288,7 +296,7 @@ Lang::$translations = array(
 	'no' => 'όχι',
 
 	'File exists.' => 'Το αρχείο υπάρχει.', // general SQLite error in create, drop or rename database
-	'Please use one of the extensions %s.' => 'Παρακαλώ χρησιμοποιείστε μια από τις επεκτάσεις %s.',
+	'Please use one of these file extensions: %s.' => 'Παρακαλώ χρησιμοποιείστε μια από τις επεκτάσεις %s.',
 
 	// PostgreSQL and MS SQL schema support
 	'Alter schema' => 'Τροποποίηση σχήματος',
@@ -297,7 +305,6 @@ Lang::$translations = array(
 	'Schema has been created.' => 'Το σχήμα δημιουργήθηκε.',
 	'Schema has been altered.' => 'Το σχήμα τροποποιήθηκε.',
 	'Schema' => 'Σχήμα',
-	'Invalid schema.' => 'Άκυρο σχήμα.',
 
 	// PostgreSQL sequences support
 	'Sequences' => 'Αλληλουχία',
@@ -312,7 +319,10 @@ Lang::$translations = array(
 	'Create type' => 'Δημιουργία τύπου',
 	'Type has been dropped.' => 'Ο τύπος διαγράφηκε.',
 	'Type has been created.' => 'Ο τύπος δημιουργήθηκε.',
+	'Type has been altered.' => 'Ο τύπος τροποποιήθηκε.', // Claude Opus 5
 	'Alter type' => 'Τροποποίηση τύπου',
+	'Extensions' => 'Επεκτάσεις', // Claude Opus 5
+	'Version' => 'Έκδοση', // Claude Opus 5
 	'Check has been dropped.' => 'Ο έλεγχος διαγράφηκε.', // Claude Fable 5
 	'Check has been altered.' => 'Ο έλεγχος τροποποιήθηκε.', // Claude Fable 5
 	'Check has been created.' => 'Ο έλεγχος δημιουργήθηκε.', // Claude Fable 5
@@ -321,6 +331,7 @@ Lang::$translations = array(
 	'Drop %s?' => 'Διαγραφή %s;', // Claude Fable 5
 	'overwrite' => 'αντικατάσταση', // Claude Fable 5
 	'DB' => 'ΒΔ', // Claude Fable 5
+	'System%s' => 'Σύστημα%s', // Claude Opus 5
 	'Algorithm' => 'Αλγόριθμος', // Claude Fable 5
 	'Columns' => 'Στήλες', // Claude Fable 5
 	'Condition' => 'Συνθήκη', // Claude Fable 5
@@ -329,21 +340,31 @@ Lang::$translations = array(
 	'Inherits from' => 'Κληρονομεί από', // Claude Fable 5
 	'Checks' => 'Έλεγχοι', // Claude Fable 5
 	'Inherited by' => 'Κληρονομείται από', // Claude Fable 5
+	'Shadow tables' => 'Σκιώδεις πίνακες', // Claude Opus 5
 	'hostname[:port] or :socket' => 'hostname[:port] ή :socket', // Claude Fable 5
-	'Adminer does not support accessing a database without a password, <a href="https://www.adminer.org/en/password/"%s>more information</a>.' => 'Το Adminer δεν υποστηρίζει πρόσβαση σε βάση δεδομένων χωρίς κωδικό, <a href="https://www.adminer.org/en/password/"%s>περισσότερες πληροφορίες</a>.', // Claude Fable 5
-	'Thanks for using Adminer, consider <a href="https://www.adminer.org/en/donation/">donating</a>.' => 'Ευχαριστούμε που χρησιμοποιείτε το Adminer, σκεφτείτε να κάνετε μια <a href="https://www.adminer.org/en/donation/">δωρεά</a>.', // Claude Fable 5
+	'Adminer does not support accessing a database without a password.' => 'Το Adminer δεν υποστηρίζει πρόσβαση σε βάση δεδομένων χωρίς κωδικό.', // Claude Fable 5
+	'Thanks for using Adminer. Consider <a href="https://www.adminer.org/en/donation/">donating</a>.' => 'Ευχαριστούμε που χρησιμοποιείτε το Adminer, σκεφτείτε να κάνετε μια <a href="https://www.adminer.org/en/donation/">δωρεά</a>.', // Claude Fable 5
 	'The action will be performed after successful login with the same credentials.' => 'Η ενέργεια θα εκτελεστεί μετά από επιτυχή σύνδεση με τα ίδια διαπιστευτήρια.', // Claude Fable 5
 	'Invalid server.' => 'Μη έγκυρος διακομιστής.', // Claude Fable 5
 	'Connecting to privileged ports is not allowed.' => 'Η σύνδεση σε προνομιούχες θύρες δεν επιτρέπεται.', // Claude Fable 5
-	'There is a space in the input password which might be the cause.' => 'Υπάρχει ένα κενό στον κωδικό που εισαγάγατε, το οποίο μπορεί να είναι η αιτία.', // Claude Fable 5
+	'There is a space in the entered password, which might be the cause.' => 'Υπάρχει ένα κενό στον κωδικό που εισαγάγατε, το οποίο μπορεί να είναι η αιτία.', // Claude Fable 5
 	'Loaded plugins' => 'Φορτωμένα πρόσθετα', // Claude Fable 5
 	'screenshot' => 'στιγμιότυπο οθόνης', // Claude Fable 5
 	'Increase %s.' => 'Αυξήστε το %s.', // Claude Fable 5
 	'Unknown error.' => 'Άγνωστο σφάλμα.', // Claude Fable 5
 	'%s must <a%s>return an array</a>.' => 'Το %s πρέπει να <a%s>επιστρέφει έναν πίνακα</a>.', // Claude Fable 5
 	'<a%s>Configure</a> %s in %s.' => '<a%s>Ρυθμίστε</a> το %s στο %s.', // Claude Fable 5
-	'Disable %s or enable %s or %s extensions.' => 'Απενεργοποιήστε την επέκταση %s ή ενεργοποιήστε τις επεκτάσεις %s ή %s.', // Claude Fable 5
-	'Database does not support password.' => 'Η βάση δεδομένων δεν υποστηρίζει κωδικό.', // Claude Fable 5
+	'Every plugin must <a%s>be an object</a>.' => 'Κάθε πρόσθετο πρέπει να <a%s>είναι αντικείμενο</a>.', // Claude Opus 5
+	'Disable %s or enable the %s or %s extension.' => 'Απενεργοποιήστε τη ρύθμιση %s ή ενεργοποιήστε τις επεκτάσεις %s ή %s.', // Claude Opus 5
+	'The database does not support passwords.' => 'Η βάση δεδομένων δεν υποστηρίζει κωδικό.', // Claude Fable 5
+	'The server accepts any password, so filling it in protects nothing.' => 'Ο διακομιστής δέχεται οποιονδήποτε κωδικό, οπότε η συμπλήρωσή του δεν προστατεύει τίποτα.', // Claude Opus 5
+	'Require a password.' => 'Απαίτηση κωδικού.', // Claude Opus 5
+	'Save %s next to Adminer to require the entered password:' => 'Αποθηκεύστε το %s δίπλα στο Adminer για να απαιτείται ο κωδικός που εισαγάγατε:', // Claude Opus 5
+	'Save %s next to Adminer to require the password %s:' => 'Αποθηκεύστε το %s δίπλα στο Adminer για να απαιτείται ο κωδικός %s:', // Claude Opus 5
+	'Add this line to %s to require the entered password:' => 'Προσθέστε αυτή τη γραμμή στο %s για να απαιτείται ο κωδικός που εισαγάγατε:', // Claude Opus 5
+	'Add this line to %s to require the password %s:' => 'Προσθέστε αυτή τη γραμμή στο %s για να απαιτείται ο κωδικός %s:', // Claude Opus 5
+	'More options' => 'Περισσότερες επιλογές', // Claude Opus 5
+	'Require a password verified by Adminer' => 'Απαιτεί κωδικό που ελέγχεται από το Adminer', // Claude Opus 5
 );
 
 // run `php ../../lang.php el` to update this file

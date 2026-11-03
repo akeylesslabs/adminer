@@ -8,6 +8,8 @@
 * @license https://www.gnu.org/licenses/gpl-2.0.html GNU General Public License, version 2 (one or other)
 */
 class AdminerDumpZip extends Adminer\Plugin {
+	static $optional = true;
+
 	protected $filename, $data;
 
 	function dumpOutput() {
@@ -43,10 +45,12 @@ class AdminerDumpZip extends Adminer\Plugin {
 
 	protected $translations = array(
 		'cs' => array('' => 'Export do formátu ZIP'),
-		'de' => array('' => 'Export Im ZIP-Format'),
+		'de' => array('' => 'Export im ZIP-Format'),
+		'hr' => array('' => 'Izvoz u ZIP format'),
+		'ja' => array('' => 'ZIP 形式でエクスポート'),
 		'pl' => array('' => 'Zrzuć do formatu ZIP'),
 		'ro' => array('' => 'Dump în format ZIP'),
-		'ja' => array('' => 'ZIP 形式でエクスポート'),
-		'hr' => array('' => 'Izvoz u ZIP format'),
+		'sk' => array('' => 'Export do formátu ZIP'), // Claude Opus 5
+		'zh' => array('' => '导出为 ZIP 格式'), // Claude Opus 5
 	);
 }

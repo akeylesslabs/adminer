@@ -1,3 +1,4 @@
+/* Adminer design bueltge */
 /**
  * Alternative style for Adminer by Frank Bültge
  *
@@ -99,6 +100,10 @@ border: 1px #DfDfDf solid;
 border-width: 1px 0 0 1px;
 }
 tr:first-child td, tr:first-child th {
+border-top-width: 0;
+}
+/* default.css sets 1px there */
+table > :first-child > :first-child > td, table > :first-child > :first-child > th {
 border-top-width: 0;
 }
 td:first-child, th:first-child {

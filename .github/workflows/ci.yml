@@ -2,8 +2,11 @@ name: CI
 
 on:
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   build-test:
@@ -11,11 +14,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
+        with:
+          submodules: recursive # ESLint checks adminer/static/jush, otherwise it would silently find no files there
       - uses: php-actions/composer@v6
-      - uses: php-actions/phpcs@v1
+      - run: composer test
+      - uses: actions/setup-node@v7
         with:
-          path: .
-          standard: phpcs.xml
-      - uses: php-actions/phpstan@v3
-        with:
-          version: latest
+          node-version: lts/*
+      - run: npm install --no-save --prefix . eslint @eslint/js @stylistic/eslint-plugin globals # composer install runs in a container without npm
+      - run: composer check

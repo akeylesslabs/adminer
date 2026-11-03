@@ -1,6 +1,6 @@
 <?php
 
-/** AI prompt in SQL command generating the queries with Google Gemini
+/** Generate queries with Google Gemini from a prompt on the SQL command page
 * Beware that this sends your whole database structure (not data) to Google Gemini.
 * @link https://gemini.google.com/
 * @link https://www.adminer.org/plugins/#use
@@ -22,7 +22,7 @@ class AdminerSqlGemini extends Adminer\Plugin {
 	}
 
 	function headers() {
-		if (isset($_POST["gemini"]) && !isset($_POST["query"])) {
+		if (isset($_POST["gemini"]) && !isset($_POST["query"]) && Adminer\verify_token()) {
 			$prompt = "I have a " . Adminer\get_driver(Adminer\DRIVER) . " database with this structure:\n\n";
 			foreach (Adminer\tables_list() as $table => $type) {
 				$prompt .= Adminer\create_sql($table, false, "CREATE") . ";\n\n";
@@ -63,11 +63,11 @@ function setSqlareaValue(value) {
 }
 
 geminiButton.onclick = () => {
-	setSqlareaValue('-- <?php echo $this->lang('Just a sec...'); ?>');
+	setSqlareaValue('-- <?php echo $this->lang('Just a sec…'); ?>');
 	ajax(
 		'',
 		req => setSqlareaValue(req.responseText),
-		'gemini=' + encodeURIComponent(geminiText.value)
+		'gemini=' + encodeURIComponent(geminiText.value) + '&token=<?php echo Adminer\get_token(); ?>'
 	);
 };
 
@@ -82,7 +82,7 @@ geminiText.onblur = () => {
 };
 
 geminiText.onkeydown = event => {
-	if (isCtrl(event) && (event.keyCode == 13 || event.keyCode == 10)) {
+	if (isCtrl(event) && event.key == 'Enter') {
 		geminiButton.onclick();
 		event.stopPropagation();
 	}
@@ -100,26 +100,38 @@ geminiText.onkeydown = event => {
 		'cs' => array(
 			'' => 'Generování SQL příkazů pomocí umělé inteligence Google Gemini',
 			'Ask Gemini' => 'Zeptat se Gemini',
-			'Just a sec...' => 'Chviličku...',
-		),
-		'pl' => array(
-			'Ask Gemini' => 'Zapytaj Gemini',
-			'Just a sec...' => 'Chwileczkę...',
+			'Just a sec…' => 'Chviličku…',
 		),
 		'de' => array(
 			'' => 'KI-Eingabeaufforderung im SQL-Befehl zur Erstellung der Abfragen mit Google Gemini',
 			'Ask Gemini' => 'Gemini fragen',
-			'Just a sec...' => 'Einen Moment...',
-		),
-		'ja' => array(
-			'' => 'Google Gemini AI を用いて SQL 文を生成',
-			'Ask Gemini' => 'Gemini に聞く',
-			'Just a sec...' => 'しばらくお待ち下さい...',
+			'Just a sec…' => 'Einen Moment…',
 		),
 		'hr' => array(
 			'' => 'Generiranje SQL naredbi pomoću Google Gemini AI',
 			'Ask Gemini' => 'Pitaj Gemini',
-			'Just a sec...' => 'Samo trenutak...',
+			'Just a sec…' => 'Samo trenutak…',
+		),
+		'ja' => array(
+			'' => 'Google Gemini AI を用いて SQL 文を生成',
+			'Ask Gemini' => 'Gemini に聞く',
+			'Just a sec…' => 'しばらくお待ち下さい…',
+		),
+		'pl' => array(
+			'' => 'Monit AI w poleceniu SQL generującym zapytania za pomocą Google Gemini',
+			'Ask Gemini' => 'Zapytaj Gemini',
+			'Just a sec…' => 'Chwileczkę…',
+		),
+		'ro' => array(
+			'' => 'Prompt AI în comanda SQL care generează interogările cu Google Gemini', // Claude Opus 5
+		),
+		'sk' => array(
+			'' => 'Generovanie SQL príkazov pomocou umelej inteligencie Google Gemini', // Claude Opus 5
+		),
+		'zh' => array(
+			'' => '在 SQL 命令页面根据提示词用 Google Gemini 生成查询', // Claude Opus 5
+			'Ask Gemini' => '询问 Gemini', // Claude Opus 5
+			'Just a sec…' => '请稍等…', // Claude Opus 5
 		),
 	);
 }

@@ -8,6 +8,8 @@
 * @license https://www.gnu.org/licenses/gpl-2.0.html GNU General Public License, version 2 (one or other)
 */
 class AdminerDumpBz2 extends Adminer\Plugin {
+	static $optional = true;
+
 	protected $filename, $fp;
 
 	function dumpOutput() {
@@ -40,9 +42,11 @@ class AdminerDumpBz2 extends Adminer\Plugin {
 	protected $translations = array(
 		'cs' => array('' => 'Export do formátu Bzip2'),
 		'de' => array('' => 'Export im Bzip2-Format'),
+		'hr' => array('' => 'Izvoz u Bzip2 format'),
+		'ja' => array('' => 'Bzip2 形式でエクスポート'),
 		'pl' => array('' => 'Zrzuć do formatu Bzip2'),
 		'ro' => array('' => 'Dump în format Bzip2'),
-		'ja' => array('' => 'Bzip2 形式でエクスポート'),
-		'hr' => array('' => 'Izvoz u Bzip2 format'),
+		'sk' => array('' => 'Export do formátu Bzip2'), // Claude Opus 5
+		'zh' => array('' => '导出为 Bzip2 格式'), // Claude Opus 5
 	);
 }

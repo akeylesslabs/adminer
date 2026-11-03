@@ -12,7 +12,7 @@ if (JUSH == "pgsql" && $TABLE != "") {
 if ($_POST && !$error) {
 	$name = trim($row["name"]);
 	$as = " AS\n$row[select]";
-	$location = ME . "table=" . urlencode($name);
+	$location = ME . "table=" . url_escape($name);
 	$message = lang('View has been altered.');
 
 	$type = ($_POST["materialized"] ? "MATERIALIZED VIEW" : "VIEW");
@@ -20,7 +20,7 @@ if ($_POST && !$error) {
 	if (!$_POST["drop"] && $TABLE == $name && JUSH != "sqlite" && $type == "VIEW" && $orig_type == "VIEW") {
 		query_redirect((JUSH == "mssql" ? "ALTER" : "CREATE OR REPLACE") . " VIEW " . table($name) . $as, $location, $message);
 	} else {
-		$temp_name = $name . "_adminer_" . uniqid();
+		$temp_name = "adminer_" . uniqid();
 		drop_create(
 			"DROP $orig_type " . table($TABLE),
 			"CREATE $type " . table($name) . $as,
@@ -37,16 +37,32 @@ if ($_POST && !$error) {
 	}
 }
 
+$not_found = false;
 if (!$_POST && $TABLE != "") {
 	$row = view($TABLE);
+	$not_found = !$row["select"]; // an existing view always has a definition
 	$row["name"] = $TABLE;
 	$row["materialized"] = ($orig_type != "VIEW");
 	if (!$error) {
-		$error = error();
+		$error = adminer()->error();
 	}
 }
 
-page_header(($TABLE != "" ? lang('Alter view') : lang('Create view')), $error, array("table" => $TABLE), h($TABLE));
+page_header(
+	($TABLE != "" ? lang('Alter view') : lang('Create view')),
+	$error,
+	array("table" => $TABLE),
+	h($TABLE),
+	$not_found,
+	doc_link(array(
+		'sql' => "create-view.html",
+		'pgsql' => "sql-createview.html",
+		'cockroach' => "create-view",
+		'mssql' => "t-sql/statements/create-view-transact-sql",
+		'sqlite' => "lang_createview.html",
+		'oracle' => "sqlrf/CREATE-VIEW.html",
+	))
+);
 ?>
 
 <form action="" method="post">
@@ -54,9 +70,9 @@ page_header(($TABLE != "" ? lang('Alter view') : lang('Create view')), $error, a
 <?php echo (support("materializedview") ? " " . checkbox("materialized", 1, $row["materialized"], lang('Materialized view')) : ""); ?>
 <p><?php textarea("select", $row["select"]); ?>
 <p>
-<input type="submit" value="<?php echo lang('Save'); ?>">
+<input type='submit' value='<?php echo lang('Save'); ?>'>
 <?php if ($TABLE != "") { ?>
-<input type="submit" name="drop" value="<?php echo lang('Drop'); ?>"><?php echo confirm(lang('Drop %s?', $TABLE)); ?>
+<input type='submit' name='drop' value='<?php echo lang('Drop'); ?>'<?php echo confirm(lang('Drop %s?', $TABLE)); ?>>
 <?php } ?>
 <?php echo input_token(); ?>
 </form>

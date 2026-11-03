@@ -1,6 +1,6 @@
 <?php
 
-/** Use VS Code's Monaco Editor for syntax highlighting and SQL <textarea>
+/** Use VS Code's Monaco Editor for syntax highlighting and the SQL <textarea>
 * @link https://microsoft.github.io/monaco-editor/
 * @link https://www.adminer.org/plugins/#use
 * @author Jakub Vrana, https://www.vrana.cz/
@@ -8,6 +8,8 @@
 * @license https://www.gnu.org/licenses/gpl-2.0.html GNU General Public License, version 2 (one or other)
 */
 class AdminerHighlightMonaco extends Adminer\Plugin {
+	static $optional = true;
+
 	private $root;
 
 	function __construct($root = "https://cdn.jsdelivr.net/npm/monaco-editor@0.52/min/vs") {
@@ -17,6 +19,9 @@ class AdminerHighlightMonaco extends Adminer\Plugin {
 	function syntaxHighlighting($tableStatuses) {
 		echo Adminer\script_src("$this->root/loader.js", true);
 		?>
+<style>
+.adminer-error-line { background: #fc05; }
+</style>
 <script <?php echo Adminer\nonce(); ?>>
 addEventListener('DOMContentLoaded', () => {
 	require.config({ paths: { vs: '<?php echo $this->root; ?>' } });
@@ -38,7 +43,7 @@ addEventListener('DOMContentLoaded', () => {
 				container.style.height = el.clientHeight + 'px';
 				el.before(container);
 				el.style.display = 'none';
-				var editor = monaco.editor.create(container, {
+				const editor = monaco.editor.create(container, {
 					value: el.value,
 					lineNumbers: 'off',
 					glyphMargin: false,
@@ -51,15 +56,25 @@ addEventListener('DOMContentLoaded', () => {
 				el.onchange = () => editor.setValue(el.value);
 				monaco.editor.addKeybindingRules([
 					{keybinding: monaco.KeyCode.Tab, command: null}
-					//! Ctrl+Enter
 				]);
+				// Monaco handles Ctrl+Enter itself, pass it to Adminer which sends the form
+				editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => el.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter', ctrlKey: true, bubbles: true})));
+				const errorLine = +el.dataset.errorLine;
+				if (errorLine) {
+					const mark = editor.createDecorationsCollection([{range: new monaco.Range(errorLine, 1, errorLine, 1), options: {isWholeLine: true, className: 'adminer-error-line'}}]);
+					editor.revealLineInCenter(errorLine);
+					const listener = editor.onDidChangeModelContent(() => {
+						mark.clear();
+						listener.dispose();
+					});
+				}
 			}
 		}
 	});
 
 	function getMonacoLang(el) {
 		return (
-			/jush-js/.test(el.className) ? 'javascript' : (
+			/jush-json/.test(el.className) ? 'json' : (
 			/jush-sql/.test(el.className) ? 'mysql' : (
 			/jush-pgsql/.test(el.className) ? 'pgsql' : (
 			/jush-(sqlite|mssql|oracle|clickhouse|firebird)/.test(el.className) ? 'sql' : (
@@ -75,8 +90,11 @@ addEventListener('DOMContentLoaded', () => {
 	protected $translations = array(
 		'cs' => array('' => 'Použije Monaco Editor z VS Code pro zvýrazňování syntaxe a <textarea>'),
 		'de' => array('' => 'Monaco-Editor von VS Code verwenden, für die Syntaxhervorhebung und SQL <textarea>'),
-		'ja' => array('' => '構文や <textarea> の強調表示に VS Code の Monaco Editor を使用'),
-		'pl' => array('' => 'Użyj Monaco Editora programu VS Code do podświetlania składni i <textarea> SQL'),
 		'hr' => array('' => 'Koristi Monaco Editor iz VS Code za isticanje sintakse i SQL <textarea>'),
+		'ja' => array('' => '構文強調表示と SQL の <textarea> に VS Code の Monaco Editor を使用'), // Claude Opus 5
+		'pl' => array('' => 'Użyj Monaco Editora programu VS Code do podświetlania składni i <textarea> SQL'),
+		'ro' => array('' => 'Folosește Monaco Editor din VS Code pentru evidențierea sintaxei și <textarea> SQL'), // Claude Opus 5
+		'sk' => array('' => 'Použije Monaco Editor z VS Code na zvýrazňovanie syntaxe a SQL <textarea>'), // Claude Opus 5
+		'zh' => array('' => '使用 VS Code 的 Monaco Editor 实现语法高亮和 SQL <textarea>'), // Claude Opus 5
 	);
 }

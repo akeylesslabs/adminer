@@ -10,10 +10,19 @@
 
 namespace Adminer;
 
-include "./include/bootstrap.inc.php";
+if (!defined('Adminer\DIR')) { // the tests define it before including this file
+	define('Adminer\DIR', "./"); // path to the Adminer sources, the Editor has them in a sibling directory
+}
+if (isset($_GET["status"])) {
+	$_GET["variables"] = $_GET["status"];
+}
+if (isset($_GET["import"])) {
+	$_GET["sql"] = $_GET["import"];
+}
+include DIR . "include/bootstrap.inc.php";
 include "./include/tmpfile.inc.php";
 
-if (isset($_GET["select"]) && ($_POST["edit"] || $_POST["clone"]) && !$_POST["save"]) {
+if ($_GET["select"] != "" && ($_POST["edit"] || $_POST["clone"]) && !$_POST["save"]) {
 	$_GET["edit"] = $_GET["select"];
 }
 // this is matched by compile.php
@@ -68,7 +77,7 @@ if (isset($_GET["download"])) {
 	include "./user.inc.php";
 } elseif (isset($_GET["processlist"])) {
 	include "./processlist.inc.php";
-} elseif (isset($_GET["select"])) {
+} elseif ($_GET["select"] != "") { // an empty select= is the database overview in a driver with a single table
 	include "./select.inc.php";
 } elseif (isset($_GET["variables"])) {
 	include "./variables.inc.php";

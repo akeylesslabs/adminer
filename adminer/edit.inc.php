@@ -3,6 +3,8 @@ namespace Adminer;
 
 $TABLE = $_GET["edit"];
 $fields = fields($TABLE);
+// index.php routes here also from Select which prints the same form for the checked rows, so it serves four modes told apart by two independent conditions:
+// $update - modify existing rows (Edit) instead of inserting a new one (Insert, Clone); isset($_GET["select"]) - the form can affect more than one row (Clone, Edit from Select)
 $where = (isset($_GET["select"])
 	? ($_POST["check"] && count($_POST["check"]) == 1 ? where_check($_POST["check"][0], $fields) : "")
 	: where($_GET, $fields)
@@ -15,11 +17,12 @@ foreach ($fields as $name => $field) {
 }
 
 if ($_POST && !$error && !isset($_GET["select"])) {
-	$location = $_POST["referer"];
+	$location = relative_uri((string) $_POST["referer"]); // the field is sent by the browser so it can point anywhere
 	if ($_POST["insert"]) { // continue edit or insert
-		$location = ($update ? null : $_SERVER["REQUEST_URI"]);
+		//! it should redirect to Select if the values in ?where changed (handled only in JS)
+		$location = ($update ? null : relative_uri());
 	} elseif (!preg_match('~^.+&select=.+$~', $location)) {
-		$location = ME . "select=" . urlencode($TABLE);
+		$location = ME . "select=" . url_escape($TABLE);
 	}
 
 	$indexes = indexes($TABLE);
@@ -65,22 +68,34 @@ if ($_POST && !$error && !isset($_GET["select"])) {
 }
 
 $row = null;
+$query = "";
+$time = "";
 if ($where) {
 	$select = array();
+	$select_print = array("*"); // the columns are listed only because of the privileges, printing * is shorter
 	foreach ($fields as $name => $field) {
 		if (isset($field["privileges"]["select"])) {
 			$as = ($_POST["clone"] && $field["auto_increment"] ? "''" : convert_field($field));
-			$select[] = ($as ? "$as AS " : "") . idf_escape($name);
+			$column = ($as ? "$as AS " : "") . idf_escape($name);
+			$select[] = $column;
+			if ($as) {
+				$select_print[] = $column; // * doesn't cover the conversions
+			}
 		}
 	}
 	$row = array();
 	if (!support("table")) {
 		$select = array("*");
+		$select_print = $select;
 	}
 	if ($select) {
+		$start = microtime(true);
 		$result = driver()->select($TABLE, $select, array($where), $select, array(), (isset($_GET["select"]) ? 2 : 1));
+		// only the column list is replaced, a single column is contained also in the condition
+		$query = str_replace("SELECT " . implode(", ", $select), "SELECT " . implode(", ", $select_print), driver()->query);
+		$time = format_time($start);
 		if (!$result) {
-			$error = error();
+			$error = adminer()->error();
 		} else {
 			$row = $result->fetch_assoc();
 			if (!$row) { // MySQLi returns null
@@ -93,7 +108,7 @@ if ($where) {
 	}
 }
 
-if (!support("table") && !$fields) { // used by Mongo and SimpleDB
+if (!$fields && driver()->primary != "") {
 	if (!$where) { // insert
 		$result = driver()->select($TABLE, array("*"), array(), array("*"));
 		$row = ($result ? $result->fetch_assoc() : false);
@@ -112,7 +127,11 @@ if (!support("table") && !$fields) { // used by Mongo and SimpleDB
 }
 
 if ($_POST["save"]) {
-	$row = (array) $_POST["fields"] + ($row ? $row : array());
+	$post_fields = array();
+	foreach ((array) $_POST["fields"] as $key => $val) {
+		$post_fields[bracket_escape($key, true)] = $val;
+	}
+	$row = $post_fields + ($row ? $row : array());
 }
 
-edit_form($TABLE, $fields, $row, $update, $error);
+edit_form($TABLE, $fields, $row, $update, $error, $query, $time);

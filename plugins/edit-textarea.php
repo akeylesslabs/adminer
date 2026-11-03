@@ -7,6 +7,7 @@
 * @license https://www.gnu.org/licenses/gpl-2.0.html GNU General Public License, version 2 (one or other)
 */
 class AdminerEditTextarea extends Adminer\Plugin {
+	static $optional = true;
 
 	function editInput($table, $field, $attrs, $value) {
 		if (preg_match('~char~', $field["type"])) {
@@ -17,9 +18,11 @@ class AdminerEditTextarea extends Adminer\Plugin {
 	protected $translations = array(
 		'cs' => array('' => 'Použije <textarea> pro char a varchar'),
 		'de' => array('' => 'Verwenden Sie <textarea> für char und varchar Felder'),
+		'hr' => array('' => 'Koristi <textarea> za char i varchar polja'),
+		'ja' => array('' => 'char や varchar に <textarea> を使用'),
 		'pl' => array('' => 'Użyj <textarea> dla char i varchar'),
 		'ro' => array('' => 'Utilizați <textarea> pentru char și varchar'),
-		'ja' => array('' => 'char や varchar に <textarea> を使用'),
-		'hr' => array('' => 'Koristi <textarea> za char i varchar polja'),
+		'sk' => array('' => 'Použije <textarea> pre char a varchar'), // Claude Opus 5
+		'zh' => array('' => '对 char 和 varchar 使用 <textarea>'), // Claude Opus 5
 	);
 }

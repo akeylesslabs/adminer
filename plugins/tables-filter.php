@@ -1,13 +1,18 @@
 <?php
 
-/** Filter names in tables list
+/** Filter names in the table list
 * @link https://www.adminer.org/plugins/#use
 * @author Jakub Vrana, https://www.vrana.cz/
 * @license https://www.apache.org/licenses/LICENSE-2.0 Apache License, Version 2.0
 * @license https://www.gnu.org/licenses/gpl-2.0.html GNU General Public License, version 2 (one or other)
 */
 class AdminerTablesFilter extends Adminer\Plugin {
+	static $optional = true;
+
 	function tablesPrint($tables) {
+		if (Adminer\support("single_table")) {
+			return; // there is nothing to filter
+		}
 		?>
 <script<?php echo Adminer\nonce(); ?>>
 let tablesFilterTimeout = null;
@@ -55,8 +60,8 @@ function tablesFilterInput() {
 }
 
 sessionStorage && document.addEventListener('DOMContentLoaded', () => {
-	let db = qs('#dbs').querySelector('select');
-	db = db.options[db.selectedIndex].text;
+	let select = qs('#dbs') && qs('#dbs').querySelector('select'); // there is no select in drivers with a single database
+	let db = (select ? select.options[select.selectedIndex].text : '');
 	if (db == sessionStorage.getItem('adminer_tables_filter_db') && sessionStorage.getItem('adminer_tables_filter')){
 		qs('#filter-field').value = sessionStorage.getItem('adminer_tables_filter');
 		tablesFilter();
@@ -64,7 +69,7 @@ sessionStorage && document.addEventListener('DOMContentLoaded', () => {
 	sessionStorage.setItem('adminer_tables_filter_db', db);
 });
 </script>
-<p class="jsonly"><?php echo $this->lang('Filter'); ?>: <input id="filter-field" autocomplete="off" type="search"><?php echo Adminer\script("qs('#filter-field').oninput = tablesFilterInput;"); ?>
+<p class="jsonly"><?php echo $this->lang('Filter'); ?>: <input id="filter-field" autocomplete="off" type="search"<?php echo Adminer\on('input', 'tablesFilterInput'); ?>>
 <?php
 	}
 
@@ -76,18 +81,25 @@ sessionStorage && document.addEventListener('DOMContentLoaded', () => {
 		'de' => array(
 			'' => 'Filtern Sie Namen in der Tabellenliste',
 		),
-		'pl' => array(
-			'' => 'Filtruj nazwy na liście tabel',
-		),
-		'ro' => array(
-			'' => 'Nume de filtre în lista de tabele',
+		'hr' => array(
+			'' => 'Filtriranje tablice prema imenu',
+			'Filter' => 'Filtar',
 		),
 		'ja' => array(
 			'' => 'テーブル一覧をテーブル名でフィルタリング',
 		),
-		'hr' => array(
-			'' => 'Filtriranje tablice prema imenu',
-			'Filter' => 'Filtar',
+		'pl' => array(
+			'' => 'Filtruj nazwy na liście tabel',
+		),
+		'ro' => array(
+			'' => 'Filtrează numele în lista de tabele', // Claude Opus 5
+		),
+		'sk' => array(
+			'' => 'Filtruje názvy v zozname tabuliek', // Claude Opus 5
+		),
+		'zh' => array(
+			'' => '过滤表列表中的名称', // Claude Opus 5
+			'Filter' => '过滤', // Claude Opus 5
 		),
 	);
 }
